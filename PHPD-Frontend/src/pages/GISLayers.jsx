@@ -1,0 +1,626 @@
+const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+import { Layout } from "@/components/layout/Layout";
+import { CityMap } from "@/components/dashboard/CityMap";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import {
+  listProjects,
+  listDivisions,
+  listDistricts,
+  listTehsils,
+  getProjectById,
+  getProjectGanttData,
+  getProjectGanttAll,
+} from "@/api";
+import { FolderKanban, Loader2, AlertTriangle, CalendarCheck, Filter } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+
+import { cn } from "@/lib/utils";
+import { ProjectGanttTree } from "@/components/dashboard/ProjectGanttTree";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRef } from "react";
+
+
+
+/**
+ * Fallback map-centering helper (the old `@/data/areaMapCenters` module was removed).
+ * We default to Punjab; when a narrower area is selected, we gently zoom in.
+ */
+function getMapCenterForArea(
+  _divisionName,
+  districtName,
+  tehsilName,
+) {
+  // Punjab-ish center (Leaflet order: [lat, lng])
+  const base = { center: [31.0, 73.5], zoom: 7 };
+  if (tehsilName) return { ...base, zoom: 10 };
+  if (districtName) return { ...base, zoom: 9 };
+  return base;
+}
+
+/** Card config: id, label, icon, and Tailwind classes for bg + left border (situation-based colors) */
+const PROJECT_STAT_CARDS = [
+  { id: "total", label: "Total No of Projects", icon: FolderKanban, bgClass: "bg-primary", borderClass: "border-l-primary", iconOpacity: "opacity-90" },
+  { id: "in_progress", label: "Projects in Progress", icon: Loader2, bgClass: "bg-emerald-700", borderClass: "border-l-emerald-500", iconOpacity: "opacity-80" },
+  { id: "in_delay", label: "Projects in Delay", icon: AlertTriangle, bgClass: "bg-rose-600", borderClass: "border-l-rose-400", iconOpacity: "opacity-90" },
+  { id: "pending", label: "Pending Projects", icon: CalendarCheck, bgClass: "bg-amber-600", borderClass: "border-l-amber-400", iconOpacity: "opacity-80" },
+] ;
+
+ 
+
+/** Normalize project geom for Leaflet: accept geometry or Feature/FeatureCollection */
+function normalizeProjectGeom(geom) {
+  if (geom == null) return null;
+  const g = geom ;
+  if (g.type === "FeatureCollection" && Array.isArray(g.features)) return geom ;
+  if (g.type === "Feature" && g.geometry) return geom ;
+  if (g.type === "Polygon" || g.type === "MultiPolygon" || g.type === "Point" || g.type === "LineString")
+    return { type: "Feature", geometry: g, properties: {} } ;
+  return null;
+}
+
+
+
+function walkNestedTasks(
+  tasks,
+  visit,
+) {
+  if (!Array.isArray(tasks) || tasks.length === 0) return;
+  for (const t of tasks) {
+    visit(t);
+    if (Array.isArray((t ).subtasks) && (t ).subtasks.length > 0) {
+      walkNestedTasks((t ).subtasks, visit);
+    }
+  }
+}
+
+function deriveProjectStatusFromNestedGantt(
+  tasks,
+) {
+  // Priority:
+  // 1) delayed if any node has_delay === true
+  // 2) in_progress if any node progress > 0
+  // 3) pending if ALL nodes progress_status === "Not Started" (or tasks empty)
+  if (!Array.isArray(tasks) || tasks.length === 0) return "pending";
+
+  let anyDelay = false;
+  let anyProgress = false;
+  let allNotStarted = true;
+
+  walkNestedTasks(tasks, (t) => {
+    if (_optionalChain([t, 'optionalAccess', _ => _.has_delay]) === true) anyDelay = true;
+    const p = Number(_nullishCoalesce(_optionalChain([(t ), 'optionalAccess', _2 => _2.progress]), () => ( 0)));
+    if (Number.isFinite(p) && p > 0) anyProgress = true;
+
+    const ps = String(_nullishCoalesce(_optionalChain([(t ), 'optionalAccess', _3 => _3.progress_status]), () => ( ""))).trim();
+    if (ps !== "Not Started") allNotStarted = false;
+  });
+
+  if (anyDelay) return "in_delay";
+  if (anyProgress) return "in_progress";
+  if (allNotStarted) return "pending";
+  return "pending";
+}
+
+function geometryBboxCenter(geometry) {
+  // Returns [lat, lng] (Leaflet order)
+  const coords = _optionalChain([geometry, 'optionalAccess', _4 => _4.coordinates]);
+  if (!coords) return null;
+  let minLng = Number.POSITIVE_INFINITY;
+  let minLat = Number.POSITIVE_INFINITY;
+  let maxLng = Number.NEGATIVE_INFINITY;
+  let maxLat = Number.NEGATIVE_INFINITY;
+
+  const walk = (v) => {
+    if (!v) return;
+    // coordinate pair [lng, lat]
+    if (Array.isArray(v) && v.length === 2 && typeof v[0] === "number" && typeof v[1] === "number") {
+      const lng = v[0];
+      const lat = v[1];
+      if (Number.isFinite(lng) && Number.isFinite(lat)) {
+        minLng = Math.min(minLng, lng);
+        minLat = Math.min(minLat, lat);
+        maxLng = Math.max(maxLng, lng);
+        maxLat = Math.max(maxLat, lat);
+      }
+      return;
+    }
+    if (Array.isArray(v)) {
+      for (const x of v) walk(x);
+    }
+  };
+  walk(coords);
+
+  if (!Number.isFinite(minLng) || !Number.isFinite(minLat) || !Number.isFinite(maxLng) || !Number.isFinite(maxLat)) {
+    return null;
+  }
+  const centerLng = (minLng + maxLng) / 2;
+  const centerLat = (minLat + maxLat) / 2;
+  return [centerLat, centerLng];
+}
+
+/** Build a GeoJSON FeatureCollection from all projects that have geom (for map layer by division/district/tehsil) */
+function buildProjectsFeatureCollection(
+  projects,
+  statusByProjectId,
+) {
+  const features = [];
+  for (const p of projects) {
+    const normalized = normalizeProjectGeom(p.geom);
+    if (!normalized) continue;
+    const n = normalized ;
+    const baseProps = {
+      id: p.id,
+      project_name: _nullishCoalesce(p.project_name, () => ( `Project #${p.id}`)),
+      status: _nullishCoalesce(_optionalChain([statusByProjectId, 'optionalAccess', _5 => _5.get, 'call', _6 => _6(p.id)]), () => ( "pending")),
+    };
+    let markerAdded = false;
+    if (n.type === "FeatureCollection" && Array.isArray(n.features)) {
+      for (const f of n.features) {
+        if (!f.geometry) continue;
+        const center = geometryBboxCenter(f.geometry);
+        features.push({
+          type: "Feature",
+          geometry: f.geometry,
+          properties: {
+            ...(f.properties || {}),
+            ...baseProps,
+            __center: _nullishCoalesce(center, () => ( undefined)),
+            __marker: !markerAdded,
+          },
+        });
+        markerAdded = true;
+      }
+    } else if (n.type === "Feature" && n.geometry) {
+      const center = geometryBboxCenter(n.geometry);
+      features.push({
+        type: "Feature",
+        geometry: n.geometry,
+        properties: { ...(n.properties || {}), ...baseProps, __center: _nullishCoalesce(center, () => ( undefined)), __marker: true },
+      });
+    }
+  }
+  if (features.length === 0) return null;
+  return { type: "FeatureCollection", features };
+}
+
+export default function GISLayers() {
+  const [selectedCity, setSelectedCity] = useState("lahore");
+  const [showLegend, setShowLegend] = useState(true);
+  const [mapRef, setMapRef] = useState(null);
+  const ganttSectionRef = useRef(null);
+  const [selectedDivisionId, setSelectedDivisionId] = useState("all");
+  const [selectedDistrictId, setSelectedDistrictId] = useState("all");
+  const [selectedTehsilId, setSelectedTehsilId] = useState("all");
+  const [selectedProjectId, setSelectedProjectId] = useState("all");
+
+  const handleDivisionChange = (value) => {
+    setSelectedDivisionId(value);
+    setSelectedDistrictId("all");
+    setSelectedTehsilId("all");
+    setSelectedProjectId("all");
+  };
+
+  const handleDistrictChange = (value) => {
+    setSelectedDistrictId(value);
+    setSelectedTehsilId("all");
+    setSelectedProjectId("all");
+  };
+
+  const handleTehsilChange = (value) => {
+    setSelectedTehsilId(value);
+    setSelectedProjectId("all");
+  };
+
+  const divisionNumeric =
+    selectedDivisionId !== "all" ? Number(selectedDivisionId) : null;
+  const districtNumeric =
+    selectedDistrictId !== "all" ? Number(selectedDistrictId) : null;
+  const selectedProjectNumericId =
+    selectedProjectId !== "all" ? Number(selectedProjectId) : null;
+
+  const { data: divisions = [], isLoading: divisionsLoading } = useQuery({
+    queryKey: ["gis", "divisions"],
+    queryFn: () => listDivisions(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: districts = [], isFetching: districtsLoading } = useQuery({
+    queryKey: ["gis", "districts", divisionNumeric],
+    queryFn: () => listDistricts(divisionNumeric),
+    enabled: divisionNumeric != null && Number.isFinite(divisionNumeric),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: tehsils = [], isFetching: tehsilsLoading } = useQuery({
+    queryKey: ["gis", "tehsils", districtNumeric],
+    queryFn: () => listTehsils(districtNumeric),
+    enabled: districtNumeric != null && Number.isFinite(districtNumeric),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects"],
+    queryFn: listProjects,
+  });
+
+  // NEW: fetch nested gantt for ALL projects in one request; used to derive
+  // delay/pending/in-progress status for map boundaries + cards.
+  const { data: allProjectSchedules = [], isFetching: allGanttLoading } = useQuery({
+    queryKey: ["gis", "project-gantt-all"],
+    queryFn: getProjectGanttAll,
+    staleTime: 30 * 1000,
+  });
+
+  // When a project is selected, fetch that specific project via /api/list-project/?id=...
+  // (same behavior as Finance page).
+  const { data: selectedProjectDetails, isFetching: selectedProjectLoading } =
+    useQuery({
+      queryKey: ["gis", "project-by-id", selectedProjectNumericId],
+      queryFn: async () => {
+        if (selectedProjectNumericId == null) return null;
+        return await getProjectById(selectedProjectNumericId);
+      },
+      enabled:
+        selectedProjectNumericId != null &&
+        Number.isFinite(selectedProjectNumericId),
+      staleTime: 30 * 1000,
+    });
+
+  // When a project is selected, fetch nested gantt tasks for that project id.
+  const { data: selectedProjectGanttTasks = [], isFetching: ganttLoading } =
+    useQuery({
+      queryKey: ["gis", "project-gantt", selectedProjectNumericId],
+      queryFn: async () => {
+        if (selectedProjectNumericId == null) return [];
+        const tasks = await getProjectGanttData(selectedProjectNumericId);
+        return Array.isArray(tasks) ? tasks : [];
+      },
+      enabled:
+        selectedProjectNumericId != null &&
+        Number.isFinite(selectedProjectNumericId),
+      staleTime: 30 * 1000,
+    });
+
+  const filteredProjects = useMemo(() => {
+    let list = projects;
+    if (divisionNumeric != null && Number.isFinite(divisionNumeric)) {
+      list = list.filter((p) => p.division === divisionNumeric);
+    }
+    if (districtNumeric != null && Number.isFinite(districtNumeric)) {
+      list = list.filter((p) => p.district === districtNumeric);
+    }
+    const tehsilNumeric =
+      selectedTehsilId !== "all" ? Number(selectedTehsilId) : null;
+    if (tehsilNumeric != null && Number.isFinite(tehsilNumeric)) {
+      list = list.filter((p) => p.tehsil === tehsilNumeric);
+    }
+    return list;
+  }, [projects, divisionNumeric, districtNumeric, selectedTehsilId]);
+
+  const projectStatusById = useMemo(() => {
+    const statusByProjectId = new Map();
+    for (const s of allProjectSchedules ) {
+      const idNum = Number(_optionalChain([s, 'optionalAccess', _7 => _7._id]));
+      if (!Number.isFinite(idNum)) continue;
+      const status = deriveProjectStatusFromNestedGantt(_optionalChain([s, 'optionalAccess', _8 => _8.tasks]));
+      statusByProjectId.set(idNum, status);
+    }
+
+    const map = new Map();
+    for (const p of filteredProjects) {
+      const status = _nullishCoalesce(statusByProjectId.get(p.id), () => ( "pending"));
+      map.set(p.id, status);
+    }
+    return map;
+  }, [filteredProjects, allProjectSchedules]);
+
+  /**
+   * Project status counts (no hardcoding) — SINGLE approach:
+   * - pending: no activity started (percent_complete == 0 and/or no start_date)
+   * - in_delay: project has any nested gantt task with has_delay === true
+   * - in_progress: started but not delayed
+   *
+   * NOTE: `listProjects()` normalizes activities so `percent_complete` + `finish_date`
+   * are always present (even if backend sends `progress`/`end_date`).
+   */
+  const projectCounts = useMemo(() => {
+    let pending = 0;
+    let in_progress = 0;
+    let in_delay = 0;
+
+    for (const p of filteredProjects) {
+      const status = _nullishCoalesce(projectStatusById.get(p.id), () => ( "pending"));
+      if (status === "in_delay") in_delay += 1;
+      else if (status === "in_progress") in_progress += 1;
+      else pending += 1;
+    }
+
+    return {
+      total: filteredProjects.length,
+      pending,
+      in_progress,
+      in_delay,
+    } ;
+  }, [filteredProjects, projectStatusById]);
+
+  const mapView = useMemo(
+    () =>
+      getMapCenterForArea(
+        selectedDivisionId === "all"
+          ? ""
+          : _nullishCoalesce(_optionalChain([divisions, 'access', _9 => _9.find, 'call', _10 => _10((d) => String(d.id) === selectedDivisionId)
+, 'optionalAccess', _11 => _11.division_name]), () => ( "")),
+        selectedDistrictId === "all"
+          ? undefined
+          : _optionalChain([districts, 'access', _12 => _12.find, 'call', _13 => _13((d) => String(d.id) === selectedDistrictId)
+, 'optionalAccess', _14 => _14.district_name]),
+        selectedTehsilId === "all"
+          ? undefined
+          : _optionalChain([tehsils, 'access', _15 => _15.find, 'call', _16 => _16((t) => String(t.id) === selectedTehsilId), 'optionalAccess', _17 => _17.tehsil_name])
+      ),
+    [selectedDivisionId, selectedDistrictId, selectedTehsilId, divisions, districts, tehsils]
+  );
+
+  const selectedProject = useMemo(
+    () =>
+      selectedProjectId && selectedProjectId !== "all"
+        ? _nullishCoalesce(filteredProjects.find((p) => String(p.id) === selectedProjectId), () => ( null))
+        : null,
+    [filteredProjects, selectedProjectId]
+  );
+
+  // Use selected-project details (from /api/list-project/?id=...) when available.
+  const activeSelectedProject = _nullishCoalesce(selectedProjectDetails, () => ( selectedProject));
+
+  /** Combined GeoJSON of all filtered projects (by division/district/tehsil) — same list API as project-management; shows geojson/shapefile boundaries on map */
+  const allFilteredProjectsGeo = useMemo(
+    () => buildProjectsFeatureCollection(filteredProjects, projectStatusById),
+    [filteredProjects, projectStatusById]
+  );
+
+  // GeoJSON for the selected project only (used to zoom/focus map).
+  const selectedProjectGeo = useMemo(() => {
+    if (!activeSelectedProject || !activeSelectedProject.geom) return null;
+    return buildProjectsFeatureCollection([activeSelectedProject], projectStatusById);
+  }, [activeSelectedProject, projectStatusById]);
+
+  return (
+    React.createElement(Layout, { title: "Advanced GIS Intelligence"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 391}}
+      , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 392}}
+        /* Filters — card panel with clear hierarchy */
+        , React.createElement(Card, { className: "border border-border/60 bg-card shadow-sm overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 394}}
+          , React.createElement(CardContent, { className: "p-4 sm:p-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 395}}
+            , React.createElement('div', { className: "mx-auto w-full max-w-6xl"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 396}}
+              , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-center sm:gap-4"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 397}}
+                , React.createElement('div', { className: "flex items-center gap-2 shrink-0 pb-0.5 justify-center sm:justify-start"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 398}}
+                , React.createElement('div', { className: "flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 399}}
+                  , React.createElement(Filter, { className: "h-3.5 w-3.5" , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 400}} )
+                )
+                , React.createElement('span', { className: "text-sm font-semibold text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 402}}, "Filters")
+              )
+                , React.createElement('div', { className: "grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-wrap sm:items-end sm:justify-center sm:gap-3 min-w-0"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 404}}
+                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 405}}
+                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 406}}, "Division")
+                    , React.createElement(Select, { value: selectedDivisionId, onValueChange: handleDivisionChange, __self: this, __source: {fileName: _jsxFileName, lineNumber: 407}}
+                      , React.createElement(SelectTrigger, { className: "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 408}}
+                        , React.createElement(SelectValue, { placeholder: divisionsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 409}} )
+                      )
+                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 411}}
+                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 412}}, "All")
+                        , divisions.map((div) => (
+                          React.createElement(SelectItem, { key: div.id, value: String(div.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 414}}
+                            , div.division_name
+                          )
+                        ))
+                      )
+                    )
+                  )
+
+                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 422}}
+                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "District")
+                    , React.createElement(Select, {
+                      value: selectedDistrictId,
+                      onValueChange: handleDistrictChange,
+                      disabled: selectedDivisionId === "all" || districtsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
+
+                      , React.createElement(SelectTrigger, {
+                        className: cn(
+                          "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm",
+                          (selectedDivisionId === "all" || districtsLoading) &&
+                            "opacity-60 cursor-not-allowed",
+                        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
+
+                        , React.createElement(SelectValue, { placeholder: districtsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 436}} )
+                      )
+                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 438}}
+                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 439}}, "All")
+                        , selectedDivisionId !== "all" &&
+                          districts.map((dist) => (
+                            React.createElement(SelectItem, { key: dist.id, value: String(dist.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}
+                              , dist.district_name
+                            )
+                          ))
+                      )
+                    )
+                  )
+
+                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 450}}
+                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 451}}, "Tehsil")
+                    , React.createElement(Select, {
+                      value: selectedTehsilId,
+                      onValueChange: handleTehsilChange,
+                      disabled: 
+                        selectedDivisionId === "all" ||
+                        selectedDistrictId === "all" ||
+                        tehsilsLoading
+                      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 452}}
+
+                      , React.createElement(SelectTrigger, {
+                        className: cn(
+                          "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm",
+                          (selectedDivisionId === "all" ||
+                            selectedDistrictId === "all" ||
+                            tehsilsLoading) && "opacity-60 cursor-not-allowed",
+                        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 461}}
+
+                        , React.createElement(SelectValue, { placeholder: tehsilsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 469}} )
+                      )
+                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 471}}
+                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 472}}, "All")
+                        , selectedDivisionId !== "all" &&
+                          selectedDistrictId !== "all" &&
+                          tehsils.map((teh) => (
+                            React.createElement(SelectItem, { key: teh.id, value: String(teh.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 476}}
+                              , teh.tehsil_name
+                            )
+                          ))
+                      )
+                    )
+                  )
+
+                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 484}}
+                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 485}}, "Project")
+                    , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 486}}
+                      , React.createElement(SelectTrigger, { className: "h-8 w-full sm:w-[150px] border-border/60 bg-background rounded-lg shadow-sm"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 487}}
+                        , React.createElement(SelectValue, { placeholder: "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 488}} )
+                      )
+                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 490}}
+                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 491}}, "All (" , filteredProjects.length, ")")
+                        , filteredProjects.map((p) => (
+                          React.createElement(SelectItem, { key: p.id, value: String(p.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 493}}
+                            , p.project_name || `#${p.id}`
+                          )
+                        ))
+                      )
+                    )
+                  )
+
+                  , (selectedDivisionId !== "all" ||
+                    selectedDistrictId !== "all" ||
+                    selectedTehsilId !== "all" ||
+                    selectedProjectId !== "all") && (
+                    React.createElement(Button, {
+                      variant: "destructive",
+                      size: "sm",
+                      onClick: () => {
+                        setSelectedDivisionId("all");
+                        setSelectedDistrictId("all");
+                        setSelectedTehsilId("all");
+                        setSelectedProjectId("all");
+                      },
+                      className: "col-span-2 sm:col-span-auto h-7 min-h-7 px-2.5 text-white bg-red-600 hover:bg-red-700 border-0 rounded-md font-medium text-[11px]"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 505}}
+, "Clear filters"
+
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        /* Project stats cards — refined layout, accent bar, icon badge */
+        , React.createElement('div', { className: "grid grid-cols-2 lg:grid-cols-4 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 526}}
+          , PROJECT_STAT_CARDS.map((stat) => (
+            React.createElement(Card, {
+              key: stat.id,
+              className: `overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-200 rounded-xl border-l-4 ${stat.bgClass} ${stat.borderClass}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 528}}
+
+              , React.createElement(CardContent, { className: "p-5 flex flex-col gap-3 relative"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 532}}
+                , React.createElement('div', { className: "flex items-start justify-between gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 533}}
+                  , React.createElement('p', { className: "text-xs font-semibold uppercase tracking-wider text-white/90"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 534}}
+                    , stat.label
+                  )
+                  , React.createElement('div', { className: `flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 ${stat.iconOpacity} backdrop-blur-sm`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 537}}
+                    , React.createElement(stat.icon, { className: "h-5 w-5 text-white"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 538}} )
+                  )
+                )
+                , React.createElement('p', { className: "text-3xl font-bold font-heading tabular-nums text-white drop-shadow-sm"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 541}}
+                  , projectCounts[stat.id]
+                )
+              )
+            )
+          ))
+        )
+
+        , React.createElement('div', { className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 549}}
+
+          , React.createElement('div', { className: "w-full min-h-[480px] h-[65vh] max-h-[720px] rounded-xl overflow-hidden"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 551}}
+            , React.createElement(CityMap, {
+              city: selectedCity,
+              activeLayers: new Set(),
+              searchQuery: "",
+              onMapReady: setMapRef,
+              showLegend: showLegend,
+              onLegendClose: () => setShowLegend(false),
+              showStats: false,
+              showSurveillanceLayers: false,
+              legendProjects: filteredProjects,
+              onProjectSelect: (projectId) => {
+                setSelectedProjectId(String(projectId));
+                // scroll to gantt section (next tick so state renders)
+                setTimeout(() => {
+                  _optionalChain([ganttSectionRef, 'access', _18 => _18.current, 'optionalAccess', _19 => _19.scrollIntoView, 'call', _20 => _20({ behavior: "smooth", block: "start" })]);
+                }, 50);
+              },
+              filterCenter: 
+                !selectedProjectGeo &&
+                !allFilteredProjectsGeo &&
+                selectedDivisionId !== "all"
+                  ? mapView.center
+                  : undefined
+              ,
+              filterZoom: 
+                !selectedProjectGeo &&
+                !allFilteredProjectsGeo &&
+                selectedDivisionId !== "all"
+                  ? mapView.zoom
+                  : undefined
+              ,
+              geoData: _nullishCoalesce((_nullishCoalesce(selectedProjectGeo, () => ( allFilteredProjectsGeo))), () => ( undefined)), __self: this, __source: {fileName: _jsxFileName, lineNumber: 552}}
+            )
+          )
+
+          /* Selected Project Details (Gantt / WBS) */
+          , selectedProjectId !== "all" && (
+            React.createElement('div', { ref: ganttSectionRef, __self: this, __source: {fileName: _jsxFileName, lineNumber: 589}}
+              , React.createElement(Card, { className: "mt-4 border-border/60 shadow-sm overflow-hidden"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 590}}
+              , React.createElement(CardHeader, { className: "pb-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 591}}
+                , React.createElement(CardTitle, { className: "text-base sm:text-lg font-heading font-bold"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 592}}
+                  , (_optionalChain([activeSelectedProject, 'optionalAccess', _21 => _21.project_name]) || `Project ${selectedProjectId}`) +
+                    " — Project Gantt"
+                )
+              )
+              , React.createElement(CardContent, { className: "pt-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 597}}
+                , selectedProjectLoading || ganttLoading ? (
+                  React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 599}}
+                    , React.createElement(Skeleton, { className: "h-5 w-72 max-w-full"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}} )
+                    , React.createElement(Skeleton, { className: "h-64 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 601}} )
+                  )
+                ) : selectedProjectGanttTasks.length === 0 ? (
+                  React.createElement('p', { className: "text-sm text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 604}}, "No Gantt timeline data found for this project yet."
+
+                  )
+                ) : (
+                  React.createElement(ProjectGanttTree, {
+                    tasks: selectedProjectGanttTasks ,
+                    projectName: _nullishCoalesce(_optionalChain([activeSelectedProject, 'optionalAccess', _22 => _22.project_name]), () => ( undefined)),
+                    projectId: _nullishCoalesce(selectedProjectNumericId, () => ( undefined)),
+                    readOnly: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 608}}
+                  )
+                )
+              )
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+
