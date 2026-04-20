@@ -64,8 +64,7 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="min-h-screen w-full flex flex-col relative font-sans text-slate-800"
-             style={{ background: "linear-gradient(145deg, #f1f7f4 0%, #e8f2ec 100%)" }}>
+        <div className="min-h-screen w-full flex flex-col relative font-sans text-slate-800 bg-background">
             
             {/* Main scrollable content area */}
             <div className="flex-1 flex flex-col items-center justify-center px-5 py-10">

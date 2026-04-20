@@ -16,8 +16,7 @@ export function Layout({ children, title = "Dashboard" }) {
 
   return (
     React.createElement('div', { 
-      className: "min-h-screen w-full overflow-x-hidden transition-colors duration-500",
-      style: { background: "linear-gradient(145deg, #f1f7f4 0%, #e8f2ec 100%)" },
+      className: "min-h-screen w-full overflow-x-hidden transition-colors duration-500 bg-background",
        __self: this, __source: {fileName: _jsxFileName, lineNumber: 16}}
       , React.createElement(Sidebar, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 17}} )
       , React.createElement('div', { className: cn(

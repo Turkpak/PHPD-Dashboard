@@ -295,7 +295,7 @@ html {
 /* PHPD palette (from logo): dark green + white (with neutrals for readability) */
 :root {
   /* AuthPage gradient colors converted to HSL-ish for compatibility */
-  --background: 144 26% 96%; /* #f1f7f4 aprox */
+  --background: 0 0% 100%; /* white */
   --foreground: 215 25% 20%;
   
   --card: 0 0% 100%;
@@ -315,8 +315,8 @@ html {
   --muted: 210 16% 94%;
   --muted-foreground: 0 0% 46%;
   
-  /* Soft green-tinted surface */
-  --accent: 160 38% 94%;
+  /* Pure white surfaces (remove any tint) */
+  --accent: 0 0% 100%;
   --accent-foreground: 163 66% 16%;
   
   --destructive: 354 81% 47%;
@@ -340,7 +340,7 @@ html {
   --sidebar-foreground: 163 66% 12%;
   --sidebar-primary: 163 66% 19%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 160 30% 96%;
+  --sidebar-accent: 0 0% 100%;
   --sidebar-accent-foreground: 163 66% 16%;
   --sidebar-border: 220 20% 92%;
   --sidebar-ring: 162 55% 26%;
@@ -365,8 +365,8 @@ html {
   --muted: 163 28% 16%;
   --muted-foreground: 0 0% 75%;
   
-  --accent: 163 26% 16%;
-  --accent-foreground: 160 38% 78%;
+  --accent: 215 18% 16%;
+  --accent-foreground: 210 40% 96%;
   
   --destructive: 354 81% 47%;
   --destructive-foreground: 210 40% 98%;
@@ -379,7 +379,7 @@ html {
   --sidebar-foreground: 240 4.8% 95.9%;
   --sidebar-primary: 162 55% 34%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 163 28% 12%;
+  --sidebar-accent: 215 18% 12%;
   --sidebar-accent-foreground: 240 4.8% 95.9%;
   --sidebar-border: 163 28% 12%;
   --sidebar-ring: 162 55% 34%;
