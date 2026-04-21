@@ -2274,530 +2274,143 @@ export default function Dashboard() {
         }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2268}}
 
         /* Top Header Section - Enhanced Design with Filter Bar */
-        , React.createElement('div', {
-          className: "relative overflow-hidden rounded-[2.5rem] bg-white border shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)] flex flex-col mb-2 transition-all duration-500 hover:shadow-xl hover:shadow-primary/5"          ,
-          style: {
-            borderColor: "rgba(255,255,255,0.8)",
-          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2279}}
-
-          , React.createElement('div', { className: "absolute inset-0 bg-grid-pattern opacity-[0.02]"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2286}})
-          /* soft tint overlay so the page feels \"on track\" based on context */
-          , React.createElement('div', {
-            className: "absolute inset-0 pointer-events-none"  ,
-            style: {
-              backgroundImage: [
-                // stronger radial tint
-                `radial-gradient(900px circle at 18% 22%, var(--progress-accent-soft), transparent 55%)`,
-                // subtle top-to-bottom wash
-                `linear-gradient(180deg, var(--progress-accent-soft), transparent 55%)`,
-              ].join(", "),
-            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2288}}
-          )
-
-          /* Filter Bar Section - Radio Buttons */
-          , React.createElement('div', {
-            className: `relative transition-all duration-300 order-2 md:order-1 ${
-              isFilterBarExpanded
-                ? "border-b border-border/30 pb-3 px-3 sm:px-6 pt-3 sm:pt-4"
-                : "pb-2 px-3 sm:px-4 pt-2 sm:pt-3"
-            }`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2301}}
-
-            , React.createElement('div', { className: "flex items-start justify-between gap-2 sm:gap-4"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2308}}
-              , React.createElement('div', { className: "flex items-center gap-2 sm:gap-4 flex-1 min-w-0 overflow-hidden"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2309}}
-                /* Filters Label / Toggle */
-                , React.createElement('div', {
-                  className: "flex items-center gap-1.5 sm:gap-2 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"       ,
-                  onClick: () => setShowFilters(!showFilters), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2311}}
-
-                  , React.createElement(Filter, {
-                    className: `h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary transition-transform duration-300 ${showFilters ? "rotate-180" : ""}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2315}}
-                  )
-                  , React.createElement('span', { className: "text-xs sm:text-sm font-semibold text-foreground"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2318}}
-                    , showFilters ? "View:" : navigationFlow.length > 1 ? "Path:" : "View:"
-                  )
-                )
-
-                /* Radio Button Group with Animation */
-                , React.createElement(AnimatePresence, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2324}}
-                  , showFilters && (
-                    React.createElement(motion.div, {
-                      initial: { width: 0, opacity: 0, x: -20 },
-                      animate: { width: "auto", opacity: 1, x: 0 },
-                      exit: { width: 0, opacity: 0, x: -20 },
-                      transition: { duration: 0.4, ease: "circOut" },
-                      className: "overflow-hidden flex items-center min-w-0 w-full pb-1"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2326}}
-
-                      , React.createElement(RadioGroup, {
-                        value: viewType,
-                        onValueChange: (value) => {
-                          setViewType(
-                            value ,
-                          );
-                          setSelectedItemName(null);
-                          setSelectedItemType(null);
-                          setExpandedDivisions(false);
-                          setExpandedDistricts(false);
-                          // Initialize default districts (Lahore and Sheikhupura) when switching to tehsils view
-                          if (value === "tehsils") {
-                            const DEFAULT_DISTRICTS = ["Lahore", "Sheikhupura"];
-                            const defaultState = {};
-                            DEFAULT_DISTRICTS.forEach((districtName) => {
-                              defaultState[districtName] = true;
-                            });
-                            setExpandedTehsilGroups(defaultState);
-                            setAllTehsilGroupsExpanded(false);
-                          } else {
-                            setExpandedTehsilGroups({});
-                            setAllTehsilGroupsExpanded(false);
-                          }
-                          setTehsilSearchQuery("");
-                        },
-                        className: "grid grid-cols-2 gap-2 pl-1 sm:pl-2 sm:flex sm:items-center sm:gap-4 md:gap-6 sm:whitespace-nowrap"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2333}}
-
-                        , React.createElement('div', { className: "flex items-center space-x-1.5 sm:space-x-2 rounded-md bg-background/40 px-2 py-1"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2360}}
-                          , React.createElement(RadioGroupItem, {
-                            value: "divisions",
-                            id: "divisions",
-                            className: "h-4 w-4 sm:h-5 sm:w-5"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2361}}
-                          )
-                          , React.createElement(Label, {
-                            htmlFor: "divisions",
-                            className: "text-xs sm:text-sm font-medium text-foreground cursor-pointer"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2366}}
-
-                            , React.createElement('span', { className: "hidden sm:inline" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2370}}, "All Divisions"
-
-                            )
-                            , React.createElement('span', { className: "sm:hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2373}}, "Divisions")
-                          )
-                        )
-                        , React.createElement('div', { className: "flex items-center space-x-1.5 sm:space-x-2 rounded-md bg-background/40 px-2 py-1"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2376}}
-                          , React.createElement(RadioGroupItem, {
-                            value: "districts",
-                            id: "districts",
-                            className: "h-4 w-4 sm:h-5 sm:w-5"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2377}}
-                          )
-                          , React.createElement(Label, {
-                            htmlFor: "districts",
-                            className: "text-xs sm:text-sm font-medium text-foreground cursor-pointer"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2382}}
-
-                            , React.createElement('span', { className: "hidden sm:inline" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2386}}, "All Districts"
-
-                            )
-                            , React.createElement('span', { className: "sm:hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2389}}, "Districts")
-                          )
-                        )
-                        , React.createElement('div', { className: "flex items-center space-x-1.5 sm:space-x-2 rounded-md bg-background/40 px-2 py-1"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2392}}
-                          , React.createElement(RadioGroupItem, {
-                            value: "tehsils",
-                            id: "tehsils",
-                            className: "h-4 w-4 sm:h-5 sm:w-5"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2393}}
-                          )
-                          , React.createElement(Label, {
-                            htmlFor: "tehsils",
-                            className: "text-xs sm:text-sm font-medium text-foreground cursor-pointer"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2398}}
-
-                            , React.createElement('span', { className: "hidden sm:inline" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2402}}, "All Tehsils"
-
-                            )
-                            , React.createElement('span', { className: "sm:hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2405}}, "Tehsils")
-                          )
-                        )
-                        , React.createElement('div', { className: "flex items-center space-x-1.5 sm:space-x-2 rounded-md bg-background/40 px-2 py-1"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2408}}
-                          , React.createElement(RadioGroupItem, {
-                            value: "projects",
-                            id: "projects",
-                            className: "h-4 w-4 sm:h-5 sm:w-5"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2409}}
-                          )
-                          , React.createElement(Label, {
-                            htmlFor: "projects",
-                            className: "text-xs sm:text-sm font-medium text-foreground cursor-pointer"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2414}}
-
-                            , React.createElement('span', { className: "hidden sm:inline" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2418}}, "All Projects"
-
-                            )
-                            , React.createElement('span', { className: "sm:hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2421}}, "Projects")
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-
-                /* Compact breadcrumb on same row when filters are collapsed */
-                , !showFilters && navigationFlow.length > 1 && (
-                  React.createElement('div', { className: "grid grid-cols-2 gap-2 text-xs sm:text-sm min-w-0 sm:flex sm:flex-wrap sm:items-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2431}}
-                    , navigationFlow.map((step, idx) => (
-                      React.createElement('button', {
-                        key: `${step.key}-compact-${idx}`,
-                        type: "button",
-                        onClick: () =>
-                          step.clickable && handleNavigateToLevel(step.key)
-                        ,
-                        disabled: !step.clickable,
-                        className: `flex items-center gap-1.5 rounded-md border px-2 py-1 transition-colors min-w-0 justify-center sm:justify-start ${
-                          step.clickable
-                            ? "border-primary bg-primary text-white hover:bg-primary/90 cursor-pointer shadow-sm hover:shadow-md"
-                            : "border-secondary bg-secondary text-white cursor-default shadow-sm"
-                        }`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2433}}
-
-                        , idx > 0 && (
-                          React.createElement('span', { className: "text-white/80", 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2447}}
-                            , "->"
-                          )
-                        )
-                        , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2451}}, step.label)
-                      )
-                    ))
-                  )
-                )
-              )
-
-              /* Expand/Collapse Button */
-              , React.createElement(Button, {
-                variant: "outline",
-                size: "icon",
-                onClick: () => setIsFilterBarExpanded(!isFilterBarExpanded),
-                className: "rounded-xl w-9 h-9 border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all shadow-sm flex-shrink-0"        ,
-                title: isFilterBarExpanded ? "Collapse" : "Expand", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2459}}
-
-                , isFilterBarExpanded ? (
-                  React.createElement(ChevronUp, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2467}} )
-                ) : (
-                  React.createElement(ChevronDown, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2469}} )
-                )
-              )
-            )
-
-            /* Drilldown navigation flow (shown in header bar) */
-            , showFilters && navigationFlow.length > 1 && (
-              React.createElement('div', { className: "mt-2 ml-1 sm:ml-2 text-xs sm:text-sm"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2476}}
-                , React.createElement('span', { className: "font-medium text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2477}}, "Navigation:"
-
-                )
-                , React.createElement('div', { className: "mt-2 grid grid-cols-2 gap-2 sm:mt-0 sm:ml-2 sm:flex sm:flex-wrap sm:items-center sm:gap-2"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2480}}
-                  , navigationFlow.map((step, idx) => (
-                    React.createElement('button', {
-                      key: `${step.key}-${idx}`,
-                      type: "button",
-                      onClick: () =>
-                        step.clickable && handleNavigateToLevel(step.key)
-                      ,
-                      disabled: !step.clickable,
-                      className: `flex items-center gap-1.5 rounded-md border px-2 py-1 transition-colors min-w-0 justify-center sm:justify-start ${
-                        step.clickable
-                          ? "border-primary bg-primary text-white hover:bg-primary/90 cursor-pointer shadow-sm hover:shadow-md"
-                          : "border-secondary bg-secondary text-white cursor-default shadow-sm"
-                      }`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2482}}
-
-                      , idx > 0 && (
-                        React.createElement('span', { className: "text-white/80", 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2496}}
-                          , "->"
-                        )
-                      )
-                      , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2500}}, step.label)
-                    )
-                  ))
-                )
-              )
-            )
-          )
-
-          /* Header Content Section - Collapsible */
-          , React.createElement('div', {
-            className: `relative flex flex-col md:flex-row md:items-start justify-between gap-4 transition-all duration-300 ease-in-out overflow-hidden order-1 md:order-2 ${
-              isFilterBarExpanded
-                ? "max-h-[500px] opacity-100 px-4 md:px-6 pt-2 pb-4 md:pb-5"
-                : "max-h-0 opacity-0 p-0"
-            }`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2509}}
-
-            , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2516}}
-              , (() => {
+        , <div className="flex flex-col gap-6 w-full mb-6 mt-4">
+          {/* TITLE & PROGRESS ROW */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
+            <div className="flex flex-col">
+              {(() => {
                 const titleText =
-                  selectedItemName && selectedItemType === "division"
-                    ? `${selectedItemName} Division`
-                    : selectedItemName && selectedItemType === "district"
-                      ? `${selectedItemName} District`
-                      : selectedItemName && selectedItemType === "tehsil"
-                        ? `${selectedItemName} Tehsil`
-                        : viewType === "divisions"
-                          ? "All Punjab Divisions"
-                          : viewType === "districts"
-                            ? "All Punjab Districts"
-                            : viewType === "tehsils"
-                              ? "All Punjab Tehsils"
-                              : viewType === "projects"
-                                ? "All Projects"
-                                : "PHPD Progress Dashboard";
+                  selectedItemName && selectedItemType === "division" ? `${selectedItemName} Division`
+                  : selectedItemName && selectedItemType === "district" ? `${selectedItemName} District`
+                  : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
+                  : viewType === "divisions" ? "All Punjab Divisions"
+                  : viewType === "districts" ? "All Punjab Districts"
+                  : viewType === "tehsils" ? "All Punjab Tehsils"
+                  : viewType === "projects" ? "All Projects"
+                  : "PHPD Progress Dashboard";
 
-                if (isLoading) {
-                  return (
-                    React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2537}}
-                      , React.createElement('div', { className: "flex items-center justify-between gap-2 min-w-0"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2538}}
-                        , React.createElement('h1', { className: "text-xl sm:text-3xl md:text-4xl font-bold font-heading bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent truncate sm:whitespace-normal"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2539}}
-                          , titleText
-                        )
-                        , React.createElement(Skeleton, { className: "h-7 w-28 rounded-full shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2542}} )
-                      )
-                    )
-                  );
-                }
+                if (isLoading) return <Skeleton className="h-12 w-80" />;
 
-                if (!((selectedItemName && singleItemData) || aggregatedData)) {
-                  return (
-                    React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2550}}
-                      , React.createElement('div', { className: "flex items-center justify-between gap-2 min-w-0"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2551}}
-                        , React.createElement('h1', { className: "text-xl sm:text-3xl md:text-4xl font-bold font-heading bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent truncate sm:whitespace-normal"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2552}}
-                          , titleText
-                        )
-                      )
-                    )
-                  );
-                }
+                // Title mimicking the exact branding of the First image
+                return (
+                  <div className="flex flex-col space-y-1">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#101828] leading-[1.1]">
+                      PHPD Progress
+                    </h1>
+                    <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#054332] leading-[1.1]">
+                      Dashboard
+                    </h2>
+                  </div>
+                );
+              })()}
+            </div>
 
-                return (() => {
-                  const overall =
-                    selectedItemName && singleItemData
-                      ? singleItemData.overall
-                      : viewType === "projects" &&
-                          !selectedItemName &&
-                          !selectedItemType
-                        ? allProjectsOverallFromGantt
-                        : viewType === "tehsils" &&
-                            !selectedItemName &&
-                            !selectedItemType
-                          ? allProjectsOverallFromGantt
-                          : viewType === "divisions" &&
-                              !selectedItemName &&
-                              !selectedItemType
-                            ? allDivisionsOverall
-                          : viewType === "districts" &&
-                              !selectedItemName &&
-                              !selectedItemType
-                            ? allDistrictsOverall
-                        : _optionalChain([aggregatedData, 'optionalAccess', _40 => _40.overall]) || 0;
-                  const meta = getProgressRangeMeta(overall);
-                  const overallLabel =
-                    viewType === "projects" && !selectedItemName && !selectedItemType
-                      ? `${overall.toFixed(2)}`
-                      : viewType === "tehsils" && !selectedItemName && !selectedItemType
-                        ? `${overall.toFixed(2)}`
-                        : viewType === "divisions" && !selectedItemName && !selectedItemType
-                          ? `${overall.toFixed(2)}`
-                        : viewType === "districts" && !selectedItemName && !selectedItemType
-                          ? `${overall.toFixed(2)}`
-                      : `${Math.round(overall)}`;
+            {/* Overall Progress Box */}
+            {(((selectedItemName && singleItemData) || aggregatedData)) && (() => {
+              if (isLoading) return <Skeleton className="h-28 w-72 rounded-2xl" />;
+              
+              const overall =
+                selectedItemName && singleItemData ? singleItemData.overall
+                 : viewType === "projects" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
+                 : viewType === "tehsils" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
+                 : viewType === "divisions" && !selectedItemName && !selectedItemType ? allDivisionsOverall
+                 : viewType === "districts" && !selectedItemName && !selectedItemType ? allDistrictsOverall
+                 : aggregatedData?.overall || 0;
+                            
+              const overallLabel =
+                (viewType === "projects" || viewType === "tehsils" || viewType === "divisions" || viewType === "districts") && !selectedItemName && !selectedItemType
+                  ? overall.toFixed(2)
+                  : Math.round(overall).toString();
 
-                  // Map color to Tailwind classes
-                  const getBadgeClasses = (color) => {
-                    if (color === "#ef4444") {
-                      // red - Low
-                      return "px-3 py-1 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-semibold bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors";
-                    } else if (color === "#f59e0b") {
-                      // orange/amber - Moderate
-                      return "px-3 py-1 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors";
-                    } else if (color === "#2F8F6C") {
-                      // blue - Good
-                      return "px-3 py-1 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors";
-                    } else if (color === "#8BC34A" || color === "#2E7D32") {
-                      // green/emerald - High/Fully Completed
-                      return "px-3 py-1 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-semibold bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-950/50 transition-colors";
+              return (
+                <div className="bg-white rounded-xl p-5 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] border border-gray-100 min-w-[280px] shrink-0 transform transition-all hover:-translate-y-1 hover:shadow-lg">
+                   <div className="flex justify-between items-center mb-1">
+                     <span className="text-xs text-[#475467] font-semibold">Overall Progress</span>
+                     <span className="text-[10px] text-[#054332] font-bold tracking-wide">+0.00% Today</span>
+                   </div>
+                   <div className="text-3xl sm:text-4xl font-extrabold text-[#054332] tracking-tight mb-3">{overallLabel}%</div>
+                   <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden mb-2 shadow-inner">
+                      <div className="h-full bg-[#e2e8f0] rounded-full w-full relative">
+                         <div className="absolute top-0 left-0 h-full bg-[#cbd5e1] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, overall))}%` }} />
+                      </div>
+                   </div>
+                   <div className="text-[9px] text-[#94a3b8] uppercase font-bold tracking-widest mt-1">
+                      Target: 100.00% Completion Phase 1
+                   </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* FILTER BAR ROW */}
+          <div className="w-full bg-[#f6faf7] rounded-[24px] p-2 flex flex-col md:flex-row items-center justify-between gap-4 mt-2">
+            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-1 scrollbar-hide">
+               <RadioGroup
+                  value={viewType}
+                  onValueChange={(value) => {
+                    setViewType(value);
+                    setSelectedItemName(null);
+                    setSelectedItemType(null);
+                    setExpandedDivisions(false);
+                    setExpandedDistricts(false);
+                    if (value === "tehsils") {
+                      const DEFAULT_DISTRICTS = ["Lahore", "Sheikhupura"];
+                      const defaultState = {};
+                      DEFAULT_DISTRICTS.forEach((districtName) => { defaultState[districtName] = true; });
+                      setExpandedTehsilGroups(defaultState);
+                      setAllTehsilGroupsExpanded(false);
+                    } else {
+                      setExpandedTehsilGroups({});
+                      setAllTehsilGroupsExpanded(false);
                     }
-                    return "px-3 py-1 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-semibold bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors";
-                  };
-
-                  const getIconClasses = (color) => {
-                    if (color === "#ef4444")
-                      return "h-3.5 w-3.5 mr-1.5 text-red-600 dark:text-red-400";
-                    else if (color === "#f59e0b")
-                      return "h-3.5 w-3.5 mr-1.5 text-amber-600 dark:text-amber-400";
-                    else if (color === "#2F8F6C")
-                      return "h-3.5 w-3.5 mr-1.5 text-emerald-700 dark:text-emerald-300";
-                    else if (color === "#8BC34A" || color === "#2E7D32")
-                      return "h-3.5 w-3.5 mr-1.5 text-green-600 dark:text-green-400";
-                    return "h-3.5 w-3.5 mr-1.5 text-red-600 dark:text-red-400";
-                  };
-
-                  return (
-                    React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2624}}
-                      , React.createElement('div', { className: "flex items-center justify-between gap-2 min-w-0"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2625}}
-                        , React.createElement('h1', { className: "text-2xl sm:text-3xl md:text-4xl font-extrabold font-heading bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent truncate sm:whitespace-normal"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2626}}
-                          , titleText
-                        )
-                        , React.createElement('div', { className: "flex items-center gap-1.5 shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2629}}
-                          , React.createElement(Badge, {
-                            className: cn(
-                              getBadgeClasses(meta.color),
-                              "flex items-center gap-1.5 pr-1",
-                            ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2630}}
-
-                            , React.createElement(TrendingUp, { className: getIconClasses(meta.color), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2636}} )
-                            , React.createElement('span', { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2637}}, "Overall: "
-                               , overallLabel, "%"
-                            )
-                            , React.createElement('button', {
-                              type: "button",
-                              className: cn(
-                                "ml-1 inline-flex h-6 w-6 items-center justify-center rounded-md",
-                                "bg-white/60 hover:bg-white/80 dark:bg-white/10 dark:hover:bg-white/15",
-                                "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                              ),
-                              'aria-expanded': progressLegendOpen,
-                              'aria-controls': "dashboard-progress-color-legend",
-                              'aria-label': 
-                                progressLegendOpen
-                                  ? "Hide progress color guide"
-                                  : "Show progress color guide"
-                              ,
-                              onClick: (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setProgressLegendOpen((open) => !open);
-                              }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2640}}
-
-                              , React.createElement(Info, {
-                                className: "h-3.5 w-3.5" ,
-                                style: { color: meta.color },
-                                'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2660}}
-                              )
-                            )
-                          )
-                          /* Mobile: icon-only export button in the same header row */
-                          , ((selectedItemName && singleItemData) || aggregatedData) &&
-                            viewType && (
-                              React.createElement(Button, {
-                                type: "button",
-                                variant: "outline",
-                                size: "icon",
-                                className: "sm:hidden h-8 w-8 rounded-lg border-emerald-600/60 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/30 shadow-sm"         ,
-                                'aria-label': "Export PPTX" ,
-                                onClick: async () => {
-                                  try {
-                                    const dataToExport =
-                                      selectedItemName && singleItemData
-                                        ? singleItemData
-                                        : aggregatedData;
-                                    const exportName =
-                                      selectedItemName &&
-                                      selectedItemType === "division"
-                                        ? `${selectedItemName} Division`
-                                        : selectedItemName &&
-                                            selectedItemType === "district"
-                                          ? `${selectedItemName} District`
-                                          : selectedItemName &&
-                                              selectedItemType === "tehsil"
-                                            ? `${selectedItemName} Tehsil`
-                                            : viewType === "divisions"
-                                              ? "All Punjab Divisions"
-                                              : viewType === "districts"
-                                                ? "All Punjab Districts"
-                                                : "All Punjab Tehsils";
-
-                                    if (!dataToExport) {
-                                      setShowErrorDialog(true);
-                                      return;
-                                    }
-
-                                    await exportDashboardToPPTX({
-                                      cityName: exportName,
-                                      cityData: dataToExport ,
-                                      installationPhases:
-                                        installationPhases.map((phase) => ({
-                                          key: phase.key,
-                                          title: phase.title,
-                                          percentage: getProgressValue(
-                                            dataToExport[phase.key],
-                                          ),
-                                        })),
-                                    });
-                                    setShowSuccessDialog(true);
-                                  } catch (error) {
-                                    console.error(
-                                      "Error exporting to PPTX:",
-                                      error,
-                                    );
-                                    setShowErrorDialog(true);
-                                  }
-                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2670}}
-
-                                , React.createElement(FileDown, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2725}} )
-                              )
-                            )
-                        )
-                      )
-                      , React.createElement(AnimatePresence, { initial: false, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2730}}
-                        , progressLegendOpen ? (
-                          React.createElement(motion.div, {
-                            id: "dashboard-progress-color-legend",
-                            key: "legend",
-                            initial: { opacity: 0, height: 0 },
-                            animate: { opacity: 1, height: "auto" },
-                            exit: { opacity: 0, height: 0 },
-                            transition: { duration: 0.2 },
-                            className: "overflow-hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2732}}
-
-                            , React.createElement('div', { className: "flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 pt-2 text-xs text-muted-foreground"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2741}}
-                              , [
-                                { label: "0–25% Low", color: "#ef4444" },
-                                { label: "25–50% Moderate", color: "#f59e0b" },
-                                { label: "50–75% Good", color: "#2F8F6C" },
-                                { label: "75–100% High", color: "#8BC34A" },
-                              ].map((it) => (
-                                React.createElement('div', {
-                                  key: it.label,
-                                  className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2748}}
-
-                                  , React.createElement('span', {
-                                    className: "inline-block h-2.5 w-2.5 shrink-0 rounded-full"    ,
-                                    style: { backgroundColor: it.color }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2752}}
-                                  )
-                                  , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2756}}, it.label)
-                                )
-                              ))
-                            )
-                          )
-                        ) : null
-                      )
-                    )
-                  );
-                })();
-              })()
-            )
-
-            , React.createElement('div', { className: "flex items-center gap-2 sm:gap-3 flex-shrink-0"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2769}}
-              , ((selectedItemName && singleItemData) || aggregatedData) &&
-                viewType && (
-                  React.createElement(Button, {
-                    className: "hidden sm:inline-flex rounded-xl h-11 bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-sm font-semibold"         ,
-                    onClick: async () => {
+                    setTehsilSearchQuery("");
+                  }}
+                  className="flex items-center gap-3 flex-nowrap"
+               >
+                 {[
+                   { val: "divisions", label: "All Divisions" },
+                   { val: "districts", label: "All Districts" },
+                   { val: "tehsils", label: "All Tehsils" },
+                   { val: "projects", label: "All Projects" }
+                 ].map(item => (
+                   <div key={item.val} className="relative shrink-0">
+                     <RadioGroupItem value={item.val} id={item.val} className="peer sr-only" />
+                     <Label
+                       htmlFor={item.val}
+                       className="flex items-center justify-between gap-4 px-4 py-3 bg-white text-[#344054] font-semibold text-xs sm:text-sm rounded-xl cursor-pointer peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-[#054332] transition-all whitespace-nowrap select-none min-w-[130px]"
+                     >
+                       <span>{item.label}</span>
+                       <ChevronDown className="h-4 w-4 text-[#98a2b3]" />
+                     </Label>
+                   </div>
+                 ))}
+               </RadioGroup>
+            </div>
+            
+            {/* Export Button */}
+            {((selectedItemName && singleItemData) || aggregatedData) && viewType && (
+              <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0 p-1">
+                 <Button
+                   className="w-full md:w-auto bg-[#054332] hover:bg-[#032d21] text-white rounded-[14px] px-6 py-6 sm:py-6 h-auto font-bold shadow-sm flex items-center justify-center gap-2 transition-all"
+                   onClick={async () => {
                       try {
-                        const dataToExport =
-                          selectedItemName && singleItemData
-                            ? singleItemData
-                            : aggregatedData;
+                        const dataToExport = selectedItemName && singleItemData ? singleItemData : aggregatedData;
                         const exportName =
-                          selectedItemName && selectedItemType === "division"
-                            ? `${selectedItemName} Division`
-                            : selectedItemName &&
-                                selectedItemType === "district"
-                              ? `${selectedItemName} District`
-                              : selectedItemName &&
-                                  selectedItemType === "tehsil"
-                                ? `${selectedItemName} Tehsil`
-                                : viewType === "divisions"
-                                  ? "All Punjab Divisions"
-                                  : viewType === "districts"
-                                    ? "All Punjab Districts"
-                                    : "All Punjab Tehsils";
+                          selectedItemName && selectedItemType === "division" ? `${selectedItemName} Division`
+                            : selectedItemName && selectedItemType === "district" ? `${selectedItemName} District`
+                            : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
+                            : viewType === "divisions" ? "All Punjab Divisions"
+                            : viewType === "districts" ? "All Punjab Districts"
+                            : "All Punjab Tehsils";
 
                         if (!dataToExport) {
                           setShowErrorDialog(true);
                           return;
                         }
 
-                        // Pass the full data structure including PhaseProgress objects with timeline
                         await exportDashboardToPPTX({
                           cityName: exportName,
-                          cityData: dataToExport , // Type assertion needed due to PhaseProgress union type
+                          cityData: dataToExport,
                           installationPhases: installationPhases.map(
                             (phase) => ({
                               key: phase.key,
@@ -2813,15 +2426,15 @@ export default function Dashboard() {
                         console.error("Error exporting to PPTX:", error);
                         setShowErrorDialog(true);
                       }
-                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2772}}
-
-                    , React.createElement(FileDown, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2821}} )
-                    , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2822}}, "Export Operation pptx"  )
-                  )
-                )
-            )
-          )
-        )
+                   }}
+                 >
+                   <FileDown className="h-5 w-5 opacity-90" />
+                   <span className="text-sm">Export Operation</span>
+                 </Button>
+              </div>
+            )}
+          </div>
+        </div>
 
         /* Division Selected - Show Districts */
         , selectedItemName &&
