@@ -192,74 +192,35 @@ export default function Finance() {
     }
   }, [selectedProject]);
 
-  const flowChartData = useMemo(() => {
+  const budgetTotals = useMemo(() => {
+    const toNum = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+
     if (selectedProject) {
-      return [
-        {
-          stage: "Allocation",
-          totalM: Number(_nullishCoalesce(selectedProject.allocation_total_cost, () => ( 0))),
-          capitalM: Number(_nullishCoalesce(selectedProject.allocation_capital_cost, () => ( 0))),
-          revenueM: Number(_nullishCoalesce(selectedProject.allocation_revenue_cost, () => ( 0))),
-        },
-        {
-          stage: "P&D Release",
-          totalM: Number(_nullishCoalesce(selectedProject.pd_release_total_cost, () => ( 0))),
-          capitalM: Number(_nullishCoalesce(selectedProject.pd_release_capital_cost, () => ( 0))),
-          revenueM: Number(_nullishCoalesce(selectedProject.pd_release_cost, () => ( 0))),
-        },
-        {
-          stage: "Spending Release",
-          totalM: Number(_nullishCoalesce(selectedProject.spending_release_total_cost, () => ( 0))),
-          capitalM: Number(_nullishCoalesce(selectedProject.spending_release_capital_cost, () => ( 0))),
-          revenueM: Number(_nullishCoalesce(selectedProject.spending_release_revenue_cost, () => ( 0))),
-        },
-        {
-          stage: "PIFRA Utilization",
-          totalM: Number(_nullishCoalesce(selectedProject.pifra_utilization_total_cost, () => ( 0))),
-          capitalM: Number(_nullishCoalesce(selectedProject.pifra_utilization_capital_cost, () => ( 0))),
-          revenueM: Number(_nullishCoalesce(selectedProject.pifra_utilization_revenue_cost, () => ( 0))),
-        },
-      ];
+      const budgetM = toNum(selectedProject.total_budget_allocated);
+      const consumeM = toNum(selectedProject.budget_utilized);
+      const remainingM =
+        selectedProject.budget_remaining != null
+          ? toNum(selectedProject.budget_remaining)
+          : Math.max(0, budgetM - consumeM);
+      return { budgetM, consumeM, remainingM };
     }
-    // If filtering by area (but not selecting a single project), aggregate from list-project.
-    if (!isAllFilters && selectedProjectId === "all") {
-      return [
-        {
-          stage: "Allocation",
-          totalM: aggregatedFinancials.allocation_total_cost,
-          capitalM: aggregatedFinancials.allocation_capital_cost,
-          revenueM: aggregatedFinancials.allocation_revenue_cost,
-        },
-        {
-          stage: "P&D Release",
-          totalM: aggregatedFinancials.pd_release_total_cost,
-          capitalM: aggregatedFinancials.pd_release_capital_cost,
-          revenueM: aggregatedFinancials.pd_release_cost,
-        },
-        {
-          stage: "Spending Release",
-          totalM: aggregatedFinancials.spending_release_total_cost,
-          capitalM: aggregatedFinancials.spending_release_capital_cost,
-          revenueM: aggregatedFinancials.spending_release_revenue_cost,
-        },
-        {
-          stage: "PIFRA Utilization",
-          totalM: aggregatedFinancials.pifra_utilization_total_cost,
-          capitalM: aggregatedFinancials.pifra_utilization_capital_cost,
-          revenueM: aggregatedFinancials.pifra_utilization_revenue_cost,
-        },
-      ];
-    }
-    if (projectSummary) {
-      return [
-        { stage: "Allocation", totalM: Number(_nullishCoalesce(projectSummary.total_allocation, () => ( 0))), capitalM: 0, revenueM: 0 },
-        { stage: "P&D Release", totalM: Number(_nullishCoalesce(projectSummary.total_pd_release, () => ( 0))), capitalM: 0, revenueM: 0 },
-        { stage: "Spending Release", totalM: Number(_nullishCoalesce(projectSummary.total_spending_release, () => ( 0))), capitalM: 0, revenueM: 0 },
-        { stage: "PIFRA Utilization", totalM: Number(_nullishCoalesce(projectSummary.total_pifra, () => ( 0))), capitalM: 0, revenueM: 0 },
-      ];
-    }
-    return [];
-  }, [selectedProject, projectSummary, aggregatedFinancials, isAllFilters, selectedProjectId]);
+
+    const budgetM = filteredProjects.reduce((sum, p) => sum + toNum(p.total_budget_allocated), 0);
+    const consumeM = filteredProjects.reduce((sum, p) => sum + toNum(p.budget_utilized), 0);
+    const remainingM = Math.max(0, budgetM - consumeM);
+    return { budgetM, consumeM, remainingM };
+  }, [selectedProject, filteredProjects]);
+
+  const flowChartData = useMemo(() => {
+    return [
+      { stage: "Total Budget", totalM: budgetTotals.budgetM },
+      { stage: "Total Consume", totalM: budgetTotals.consumeM },
+      { stage: "Total Remaining", totalM: budgetTotals.remainingM },
+    ];
+  }, [budgetTotals.budgetM, budgetTotals.consumeM, budgetTotals.remainingM]);
 
   const divisionComparisonData = useMemo(() => {
     const EPS = 1e-6;
@@ -267,8 +228,8 @@ export default function Finance() {
       const baseName = (_optionalChain([p, 'access', _26 => _26.project_name, 'optionalAccess', _27 => _27.trim, 'call', _28 => _28()]) || `#${p.id}`) ;
       return {
         division: baseName,
-        approvedM: Number(_nullishCoalesce(p.allocation_total_cost, () => ( 0))),
-        pifraM: Number(_nullishCoalesce(p.pifra_utilization_total_cost, () => ( 0))),
+        budgetM: Number(_nullishCoalesce(p.total_budget_allocated, () => ( 0))),
+        consumeM: Number(_nullishCoalesce(p.budget_utilized, () => ( 0))),
         id: p.id,
         color: STAGE_COLORS[i % STAGE_COLORS.length],
       };
@@ -284,7 +245,7 @@ export default function Finance() {
       }
       return r;
     });
-    return withUniqueLabels.filter((r) => r.approvedM > EPS || r.pifraM > EPS);
+    return withUniqueLabels.filter((r) => r.budgetM > EPS || r.consumeM > EPS);
   }, [filteredProjects]);
 
   const kpiDerived = useMemo(() => {
@@ -494,75 +455,16 @@ export default function Finance() {
   };
 
   const stageBreakdownItems = useMemo(() => {
-  const alloc = {
-    capital: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.allocation_capital_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _36 => _36.total_allocation_capital]), () => ( 0))),
-
-    revenue: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.allocation_revenue_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _37 => _37.total_allocation_revenue]), () => ( 0))),
-
-    total: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.allocation_total_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _38 => _38.total_allocation]), () => ( 0))),
-  };
-
-  const pd = {
-    capital: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.pd_release_capital_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _39 => _39.total_pd_release_capital]), () => ( 0))),
-
-    revenue: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.pd_release_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _40 => _40.total_pd_release_revenue]), () => ( 0))),
-
-    total: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.pd_release_total_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _41 => _41.total_pd_release]), () => ( 0))),
-  };
-
-  const spending = {
-    capital: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.spending_release_capital_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _42 => _42.total_spending_release_capital]), () => ( 0))),
-
-    revenue: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.spending_release_revenue_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _43 => _43.total_spending_release_revenue]), () => ( 0))),
-
-    total: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.spending_release_total_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _44 => _44.total_spending_release]), () => ( 0))),
-  };
-
-  const pifra = {
-    capital: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.pifra_utilization_capital_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _45 => _45.total_pifra_capital]), () => ( 0))),
-
-    revenue: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.pifra_utilization_revenue_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _46 => _46.total_pifra_revenue]), () => ( 0))),
-
-    total: selectedProject
-      ? Number(_nullishCoalesce(selectedProject.pifra_utilization_total_cost, () => ( 0)))
-      : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _47 => _47.total_pifra]), () => ( 0))),
-  };
-
-  const base = alloc.total || 1;
-
-  return [
-    { label: "Allocation", triple: alloc, color: STAGE_COLORS[1] },
-    { label: "P&D release", triple: pd, color: STAGE_COLORS[2] },
-    { label: "Spending release", triple: spending, color: STAGE_COLORS[3] },
-    { label: "PIFRA utilization", triple: pifra, color: STAGE_COLORS[4] },
-  ].map((item) => ({
-    ...item,
-    totalM: item.triple.total,
-    pctOfApproved: base > 0 ? (item.triple.total / base) * 100 : 0,
-  }));
-}, [selectedProject, projectSummary]);
+    const base = budgetTotals.budgetM || 1;
+    return [
+      { label: "Total Budget", triple: { total: budgetTotals.budgetM }, color: STAGE_COLORS[1] },
+      { label: "Total Consume", triple: { total: budgetTotals.consumeM }, color: STAGE_COLORS[3] },
+      { label: "Total Remaining", triple: { total: budgetTotals.remainingM }, color: STAGE_COLORS[4] },
+    ].map((item) => ({
+      ...item,
+      pctOfApproved: base > 0 ? (Number(_nullishCoalesce(item.triple.total, () => ( 0))) / base) * 100 : 0,
+    }));
+  }, [budgetTotals.budgetM, budgetTotals.consumeM, budgetTotals.remainingM]);
 
   const stageBreakdownWithBarScale = useMemo(() => {
     const maxPct = Math.max(
@@ -697,8 +599,8 @@ export default function Finance() {
         , (selectedProjectId !== "all" && !selectedProject) || (isAllFilters && !projectSummary) ? (
           React.createElement(React.Fragment, null
             /* Skeleton loader: keep layout stable while loading */
-            , React.createElement('div', { className: "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 698}}
-              , Array.from({ length: 5 }).map((_, i) => (
+            , React.createElement('div', { className: "grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 698}}
+              , Array.from({ length: 3 }).map((_, i) => (
                 React.createElement(Card, { key: i, className: "rounded-xl border border-border/50 shadow-sm overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 700}}
                   , React.createElement(CardHeader, { className: "space-y-0 px-3 pb-1 pt-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 701}}
                     , React.createElement('div', { className: "flex items-start justify-between gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 702}}
@@ -727,57 +629,39 @@ export default function Finance() {
 
         , (!isAllFilters || projectSummary) && (
           React.createElement(React.Fragment, null
-            /* KPI row: five compact cards incl. PIFRA vs allocation */
-            , React.createElement('div', { className: "grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 729}}
-              , Object.entries(kpiDataWithIcons).map(([key, kpi]) => {
+            /* KPI row: 3 cards (Budget / Consume / Remaining) */
+            , React.createElement('div', { className: "grid grid-cols-1 items-stretch gap-3 sm:grid-cols-3 sm:gap-3"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 729}}
+              , ([
+                {
+                  key: "totalBudget",
+                  label: "Total Budget",
+                  icon: Wallet,
+                  valueM: budgetTotals.budgetM,
+                  hint: "Approved / planned baseline",
+                  variantKey: "totalBudget",
+                },
+                {
+                  key: "totalConsume",
+                  label: "Total Consume",
+                  icon: TrendingUp,
+                  valueM: budgetTotals.consumeM,
+                  hint: "Utilized",
+                  variantKey: "ytdUtilization",
+                },
+                {
+                  key: "totalRemaining",
+                  label: "Total Remaining",
+                  icon: CheckCircle2,
+                  valueM: budgetTotals.remainingM,
+                  hint: "Remaining budget",
+                  variantKey: "remaining",
+                },
+              ]).map((kpi) => {
                 const Icon = kpi.icon;
-                const isPercentKpi = (kpi ).format === "percent";
-                const isPositive = kpi.trend >= 0;
-                const variant = getKpiVariant(key, Number(_nullishCoalesce((kpi ).valueM, () => ( 0))));
-
-                const footerTrend =
-                  key === "pifraVsAllocation" ? (
-                    React.createElement('div', { className: "w-full space-y-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 738}}
-                      , React.createElement('p', { className: "text-[10px] leading-tight text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 739}}, "Share of allocation in PIFRA"    )
-                      , React.createElement('div', { className: "h-1.5 w-full overflow-hidden rounded-full bg-muted"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 740}}
-                        , React.createElement('div', {
-                          className: "h-full rounded-full bg-primary transition-all"   ,
-                          style: { width: `${Math.min(100, utilizationRate)}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 741}}
-                        )
-                      )
-                      , React.createElement('div', { className: "flex justify-between gap-1 text-[10px] leading-tight text-muted-foreground"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 746}}
-                        , React.createElement('span', { className: "min-w-0 truncate" , title: formatPKRMillions(totalActualM), __self: this, __source: {fileName: _jsxFileName, lineNumber: 747}}
-                          , formatPKRMillions(totalActualM)
-                        )
-                        , React.createElement('span', { className: "min-w-0 truncate text-right"  , title: formatPKRMillions(totalPlannedM), __self: this, __source: {fileName: _jsxFileName, lineNumber: 750}}
-                          , formatPKRMillions(totalPlannedM)
-                        )
-                      )
-                    )
-                  ) : key === "pifra" ? (
-                    React.createElement('div', { className: "flex items-center gap-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 756}}
-                      , isPositive ? (
-                        React.createElement(TrendingUp, { className: cn("h-3 w-3 shrink-0", variant.trend), __self: this, __source: {fileName: _jsxFileName, lineNumber: 758}} )
-                      ) : (
-                        React.createElement(TrendingDown, { className: cn("h-3 w-3 shrink-0", variant.trend), __self: this, __source: {fileName: _jsxFileName, lineNumber: 760}} )
-                      )
-                      , React.createElement('p', { className: cn("text-[11px] leading-snug", variant.trend), __self: this, __source: {fileName: _jsxFileName, lineNumber: 762}}
-                        , `${kpiDerived.utilVsSpendingPct.toFixed(1)}% of spending release`
-                      )
-                    )
-                  ) : key === "pct" ? (
-                    React.createElement('p', { className: "text-[11px] leading-snug text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 767}}, "Share of approved allocation"   )
-                  ) : key === "pdRelease" ? (
-                    React.createElement('p', { className: "text-[11px] leading-snug text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 769}}, "Planning & development"  )
-                  ) : key === "allocation" ? (
-                    React.createElement('p', { className: "text-[11px] leading-snug text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 771}}, "Approved / planned baseline"   )
-                  ) : (
-                    React.createElement('p', { className: "text-[11px] leading-snug text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 773}}, "Released for expenditure"  )
-                  );
-
+                const variant = kpiCardVariants[kpi.variantKey] || kpiCardVariants.remaining;
                 return (
                   React.createElement(Card, {
-                    key: key,
+                    key: kpi.key,
                     className: cn(
                       "relative flex min-h-0 flex-col overflow-hidden rounded-xl border border-border/50 shadow-sm transition-all hover:shadow-md",
                       "border-l-4",
@@ -796,31 +680,28 @@ export default function Finance() {
                             "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/40 shadow-sm",
                             variant.iconWrap
                           ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 792}}
-
                           , React.createElement(Icon, { className: cn("h-4 w-4", variant.icon), __self: this, __source: {fileName: _jsxFileName, lineNumber: 798}} )
                         )
                       )
                     )
                     , React.createElement(CardContent, { className: "relative flex flex-col px-3 pb-3 pt-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 802}}
-                      , React.createElement('div', { className: "text-lg font-bold font-heading text-foreground xl:text-xl"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 803}}
-                        , isPercentKpi
-                          ? `${Number(_nullishCoalesce((kpi ).valueM, () => ( 0))).toFixed(1)}%`
-                          : key === "pct"
-                            ? `${Number(_nullishCoalesce((kpi ).valueM, () => ( 0))).toFixed(2)}%`
-                            : formatPKRMillions(Number(_nullishCoalesce((kpi ).valueM, () => ( 0))))
+                      , React.createElement('div', { className: cn("text-lg font-bold font-heading xl:text-xl", variant.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 803}}
+                        , formatPKRMillions(Number(_nullishCoalesce(kpi.valueM, () => ( 0))))
                       )
-                      , React.createElement('div', { className: "mt-2 min-h-[2.5rem]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 810}}, footerTrend)
+                      , React.createElement('p', { className: "mt-2 text-[11px] leading-snug text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 810}}
+                        , kpi.hint
+                      )
                     )
                   )
                 );
               })
             )
 
-            /* Scheme financial flow — full width */
+            /* Budget flow — full width */
             , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 818}}
               , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 819}}
-                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}, "Scheme financial flow"  )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 821}}, "Totals (PKR millions) by stage — Allocation → P&D → Spending release → PIFRA"
+                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}, "Budget overview"  )
+                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 821}}, "Totals (PKR millions) — Total Budget → Total Consume → Total Remaining"
 
                 )
               )
@@ -865,16 +746,6 @@ export default function Finance() {
                         name: "Total (M)" ,
                         barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}}
                       )
-                      , flowChartData.some((x) => Number((x ).revenueM) > 0) && (
-                        React.createElement(Line, {
-                          type: "monotone",
-                          dataKey: "revenueM",
-                          stroke: "#2E7D32",
-                          strokeWidth: 2,
-                          name: "Revenue (M)" ,
-                          dot: { fill: "#2E7D32", r: 3 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 867}}
-                        )
-                      )
                     )
                   )
                 )
@@ -884,11 +755,11 @@ export default function Finance() {
             , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 882}}
               , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 883}}
                 , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 884}}, "Project comparison" )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 885}}, "Allocation vs PIFRA utilization (PKR millions), projects with data only"         )
+                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 885}}, "Total Budget vs Total Consume (PKR millions), projects with data only"         )
               )
               , React.createElement(CardContent, { className: "h-[300px] sm:h-[330px] lg:h-[380px]"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 887}}
                 , divisionComparisonData.length === 0 ? (
-                  React.createElement('div', { className: "flex h-full items-center justify-center text-sm text-muted-foreground"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 889}}, "No projects with allocation or PIFRA totals in the current filter."
+                  React.createElement('div', { className: "flex h-full items-center justify-center text-sm text-muted-foreground"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 889}}, "No projects with budget/consume totals in the current filter."
 
                   )
                 ) : (
@@ -922,8 +793,8 @@ export default function Finance() {
                         formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 914}}
                       )
                       , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 922}} )
-                      , React.createElement(Bar, { dataKey: "approvedM", fill: "#2F8F6C", radius: [4, 4, 0, 0], name: "Approved (M)" , maxBarSize: 56, __self: this, __source: {fileName: _jsxFileName, lineNumber: 923}} )
-                      , React.createElement(Bar, { dataKey: "pifraM", fill: "#2E7D32", radius: [4, 4, 0, 0], name: "PIFRA (M)" , maxBarSize: 56, __self: this, __source: {fileName: _jsxFileName, lineNumber: 924}} )
+                      , React.createElement(Bar, { dataKey: "budgetM", fill: "#2F8F6C", radius: [4, 4, 0, 0], name: "Budget (M)" , maxBarSize: 56, __self: this, __source: {fileName: _jsxFileName, lineNumber: 923}} )
+                      , React.createElement(Bar, { dataKey: "consumeM", fill: "#F59E0B", radius: [4, 4, 0, 0], name: "Consume (M)" , maxBarSize: 56, __self: this, __source: {fileName: _jsxFileName, lineNumber: 924}} )
                     )
                   )
                 )
@@ -933,8 +804,8 @@ export default function Finance() {
             /* Stage breakdown */
             , React.createElement(Card, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
               , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 933}}
-                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "Stage breakdown (totals)"  )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Capital / revenue / total (PKR M). Bar length is relative across stages (longest = highest % vs approved); the percentage is vs approved allocation."
+                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "Budget breakdown (totals)"  )
+                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Total (PKR M). Bar length is relative across items; percentage is vs Total Budget."
 
 
                 )
@@ -945,10 +816,8 @@ export default function Finance() {
                     React.createElement('div', { key: item.label, className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 943}}
                       , React.createElement('div', { className: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 944}}
                         , React.createElement('span', { className: "font-bold text-primary" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 945}}, item.label)
-                        , React.createElement('div', { className: "text-xs font-mono text-muted-foreground flex items-center gap-3 sm:gap-0 sm:space-y-0.5 sm:block sm:text-right"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 946}}
-                          , React.createElement('span', { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 947}}, "C: " , item.triple.capital.toFixed(2), " M" )
-                          , React.createElement('span', { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 948}}, "R: " , item.triple.revenue.toFixed(2), " M" )
-                          , React.createElement('span', { className: "whitespace-nowrap font-bold text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 949}}, "T: " , item.triple.total.toFixed(2), " M" )
+                        , React.createElement('div', { className: "text-xs font-mono text-muted-foreground sm:text-right"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 946}}
+                          , React.createElement('span', { className: "whitespace-nowrap font-bold text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 949}}, "Total: " , item.triple.total.toFixed(2), " M" )
                         )
                       )
                       , React.createElement('div', { className: "w-full bg-muted h-3 rounded-full overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}}
@@ -961,7 +830,7 @@ export default function Finance() {
                         )
                       )
                       , React.createElement('div', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 961}}
-                        , item.pctOfApproved.toFixed(1), "% of approved total"
+                        , item.pctOfApproved.toFixed(1), "% of total budget"
                       )
                     )
                   ))
