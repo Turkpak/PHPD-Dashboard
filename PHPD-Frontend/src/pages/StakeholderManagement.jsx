@@ -135,7 +135,7 @@ export default function StakeholderManagement() {
 
   return (
     <Layout title="Stakeholder Management">
-      <div className="flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20 px-4 sm:px-8 text-[14px] sm:text-[14px]">
+      <div className="flex flex-col gap-6 w-full max-w-[1400px] mx-auto min-w-0 pb-16 px-4 sm:px-8 text-[14px] sm:text-[14px]">
 
         {/* Top Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -180,11 +180,11 @@ export default function StakeholderManagement() {
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-2">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-1">
           <div className="relative w-full max-w-[600px]">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              className="w-full bg-white border border-gray-100 shadow-[0_4px_16px_-8px_rgba(0,0,0,0.06)] rounded-full h-[52px] pl-[52px] pr-6 text-[14px] placeholder:text-gray-400 focus-visible:ring-[#054332]"
+              className="w-full bg-white border border-gray-100 shadow-[0_4px_16px_-8px_rgba(0,0,0,0.06)] rounded-full h-[46px] pl-[48px] pr-5 text-[14px] placeholder:text-gray-400 focus-visible:ring-[#054332]"
               placeholder="Search by name, role, or organization..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -192,15 +192,15 @@ export default function StakeholderManagement() {
           </div>
           
           <div className="flex w-full sm:w-auto items-center gap-3">
-             <Button variant="outline" className="h-[52px] px-8 rounded-full border border-gray-100 shadow-[0_4px_16px_-8px_rgba(0,0,0,0.06)] text-gray-600 bg-white font-semibold hover:bg-gray-50">
+             <Button variant="outline" className="h-[46px] px-6 rounded-full border border-gray-100 shadow-[0_4px_16px_-8px_rgba(0,0,0,0.06)] text-gray-600 bg-white font-semibold hover:bg-gray-50">
                <Filter className="w-4 h-4 mx-2" />
                <span className="mr-2">Filters</span>
              </Button>
              
              <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) closeDialog(); }}>
                <DialogTrigger asChild>
-                 <Button className="h-[52px] px-8 rounded-full bg-[#054332] hover:bg-[#032d21] text-white font-bold shadow-md whitespace-nowrap transition-all hover:shadow-lg hover:-translate-y-0.5">
-                   <Plus className="w-5 h-5 mr-2" />
+                 <Button className="h-[46px] px-6 rounded-full bg-[#054332] hover:bg-[#032d21] text-white font-bold shadow-sm whitespace-nowrap transition-all">
+                   <Plus className="w-4 h-4 mr-2" />
                    Add Stakeholder
                  </Button>
                </DialogTrigger>
@@ -258,7 +258,7 @@ export default function StakeholderManagement() {
         </div>
 
         {/* Data List */}
-        <div className="w-full mt-2">
+        <div className="w-full mt-1">
            {/* Table Header Row */}
            <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_100px] gap-4 px-8 py-4">
               <div className="text-[11px] font-bold tracking-widest text-[#64748b] uppercase">Stakeholder Entity</div>

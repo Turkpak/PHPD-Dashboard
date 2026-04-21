@@ -127,21 +127,25 @@ export function Sidebar() {
 
       {/* ── HEADER ─────────────────────────────────── */}
       <div className={cn(
-        "flex h-[72px] items-center border-b border-slate-100 transition-all duration-300",
-        collapsed ? "px-3 justify-center" : "px-5 justify-between"
+        "flex h-[96px] items-center border-b border-slate-100 transition-all duration-300",
+        collapsed ? "px-2 justify-center" : "px-3 justify-between"
       )}>
         {!collapsed && (
-          <Link href="/" className="flex items-center gap-3">
-            <img src="/Assets/PHPD.png" alt="PHPD Logo" className="h-14 w-14 object-contain drop-shadow-sm" />
-            <div className="flex flex-col leading-none">
-              <span className="text-base font-extrabold text-[#054332] tracking-wide">PHPD</span>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Health & Population</span>
-            </div>
+          <Link href="/" className="flex items-center h-full">
+            <img
+              src="/Assets/PHPD.png"
+              alt="PHPD Logo"
+              className="h-[84px] w-auto object-contain drop-shadow-sm"
+            />
           </Link>
         )}
         {collapsed && (
           <Link href="/" className="flex items-center justify-center">
-            <img src="/Assets/PHPD.png" alt="PHPD Logo" className="h-10 w-10 object-contain" />
+            <img
+              src="/Assets/PHPD.png"
+              alt="PHPD Logo"
+              className="h-[56px] w-auto object-contain"
+            />
           </Link>
         )}
 

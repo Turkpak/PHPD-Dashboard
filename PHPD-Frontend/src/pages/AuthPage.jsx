@@ -86,7 +86,7 @@ export default function AuthPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
-                    className="w-full max-w-[420px] bg-white rounded-[2rem] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] p-7 lg:p-8 relative z-10"
+                    className="w-full max-w-[420px] bg-white rounded-[2rem] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] p-7 lg:p-8 relative z-10 border border-[#024a35]/25"
                 >
                     <form onSubmit={handleSubmit} className="space-y-6">
                         

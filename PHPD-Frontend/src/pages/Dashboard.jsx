@@ -2325,7 +2325,7 @@ export default function Dashboard() {
                       <RadioGroupItem value={item.val} id={item.val} className="peer sr-only" />
                       <Label
                         htmlFor={item.val}
-                        className="flex items-center justify-center px-3 py-2 bg-white text-[#344054] font-semibold text-[12px] sm:text-[13px] rounded-lg cursor-pointer peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-[#054332] transition-all whitespace-nowrap select-none min-w-[120px]"
+                        className="flex items-center justify-center px-3 py-2 bg-white text-[#054332] font-semibold text-[12px] sm:text-[13px] rounded-lg cursor-pointer border border-[#e5efe9] hover:bg-[#054332] hover:text-white peer-data-[state=checked]:bg-[#054332] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#054332] transition-all whitespace-nowrap select-none min-w-[120px]"
                       >
                         <span>{item.label}</span>
                       </Label>
@@ -2338,7 +2338,7 @@ export default function Dashboard() {
               {((selectedItemName && singleItemData) || aggregatedData) && viewType && (
                 <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0 p-0.5">
                   <Button
-                    className="w-full md:w-auto bg-[#054332] hover:bg-[#032d21] text-white rounded-lg px-3 py-2 h-[40px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all whitespace-nowrap"
+                    className="w-full md:w-auto bg-white hover:bg-[#f0fdf4] text-[#054332] rounded-lg px-3 py-2 h-[40px] font-bold shadow-sm border border-[#e5efe9] flex items-center justify-center gap-2 transition-all whitespace-nowrap"
                     onClick={async () => {
                       try {
                         const dataToExport = selectedItemName && singleItemData ? singleItemData : aggregatedData;
@@ -2506,7 +2506,29 @@ export default function Dashboard() {
                       )
                     )
 
-                    /* Breadcrumb removed (keep header navigation only) */
+                    , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2870}}
+                      , React.createElement(Button, {
+                        type: "button",
+                        variant: "ghost",
+                        size: "sm",
+                        className: "h-8 px-2 text-[#054332] hover:text-[#032d21] hover:bg-[#eaf5ef] font-semibold",
+                        onClick: () => {
+                          setViewType("divisions");
+                          setSelectedItemType(null);
+                          setSelectedItemId(null);
+                          setSelectedItemName(null);
+                          setParentDivisionId(null);
+                          setParentDivisionName(null);
+                          setParentDistrictId(null);
+                          setParentDistrictName(null);
+                          setSelectedProjectForDetails(null);
+                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2871}}
+                      , "All Divisions")
+                      , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2886}}, "›")
+                      , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2887}}
+                        , selectedItemName, " Division"
+                      )
+                    )
                   )
 
                   /* District Cards */
@@ -2607,7 +2629,49 @@ export default function Dashboard() {
                       )
                     )
 
-                    /* Breadcrumb removed (keep header navigation only) */
+                    , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2971}}
+                      , React.createElement(Button, {
+                        type: "button",
+                        variant: "ghost",
+                        size: "sm",
+                        className: "h-8 px-2 text-[#054332] hover:text-[#032d21] hover:bg-[#eaf5ef] font-semibold",
+                        onClick: () => {
+                          setViewType("divisions");
+                          setSelectedItemType(null);
+                          setSelectedItemId(null);
+                          setSelectedItemName(null);
+                          setParentDivisionId(null);
+                          setParentDivisionName(null);
+                          setParentDistrictId(null);
+                          setParentDistrictName(null);
+                          setSelectedProjectForDetails(null);
+                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2972}}
+                      , "All Divisions")
+                      , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2987}}, "›")
+                      , React.createElement(Button, {
+                        type: "button",
+                        variant: "ghost",
+                        size: "sm",
+                        disabled: !parentDivisionId || !parentDivisionName,
+                        className: "h-8 px-2 text-[#054332] hover:text-[#032d21] hover:bg-[#eaf5ef] font-semibold disabled:opacity-50 disabled:hover:bg-transparent",
+                        onClick: () => {
+                          if (!parentDivisionId || !parentDivisionName) return;
+                          setViewType("divisions");
+                          setSelectedItemType("division");
+                          setSelectedItemId(parentDivisionId);
+                          setSelectedItemName(parentDivisionName);
+                          setParentDivisionId(null);
+                          setParentDivisionName(null);
+                          setParentDistrictId(null);
+                          setParentDistrictName(null);
+                          setSelectedProjectForDetails(null);
+                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2988}}
+                      , _nullishCoalesce(parentDivisionName, () => ("Division")))
+                      , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3010}}, "›")
+                      , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3011}}
+                        , selectedItemName, " District"
+                      )
+                    )
                   )
 
                   /* Tehsil Cards */
@@ -2683,7 +2747,68 @@ export default function Dashboard() {
                       /* Title removed per request (avoid duplicate tehsil text). */
                     )
 
-                    /* Breadcrumb removed (keep header navigation only) */
+                    , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end w-full sm:w-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3048}}
+                      , React.createElement(Button, {
+                        type: "button",
+                        variant: "ghost",
+                        size: "sm",
+                        className: "h-8 px-2 text-[#054332] hover:text-[#032d21] hover:bg-[#eaf5ef] font-semibold",
+                        onClick: () => {
+                          setViewType("divisions");
+                          setSelectedItemType(null);
+                          setSelectedItemId(null);
+                          setSelectedItemName(null);
+                          setParentDivisionId(null);
+                          setParentDivisionName(null);
+                          setParentDistrictId(null);
+                          setParentDistrictName(null);
+                          setSelectedProjectForDetails(null);
+                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3049}}
+                      , "All Divisions")
+                      , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3064}}, "›")
+                      , React.createElement(Button, {
+                        type: "button",
+                        variant: "ghost",
+                        size: "sm",
+                        disabled: !parentDivisionId || !parentDivisionName,
+                        className: "h-8 px-2 text-[#054332] hover:text-[#032d21] hover:bg-[#eaf5ef] font-semibold disabled:opacity-50 disabled:hover:bg-transparent",
+                        onClick: () => {
+                          if (!parentDivisionId || !parentDivisionName) return;
+                          setViewType("divisions");
+                          setSelectedItemType("division");
+                          setSelectedItemId(parentDivisionId);
+                          setSelectedItemName(parentDivisionName);
+                          setParentDivisionId(null);
+                          setParentDivisionName(null);
+                          setParentDistrictId(null);
+                          setParentDistrictName(null);
+                          setSelectedProjectForDetails(null);
+                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3065}}
+                      , _nullishCoalesce(parentDivisionName, () => ("Division")))
+                      , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3087}}, "›")
+                      , React.createElement(Button, {
+                        type: "button",
+                        variant: "ghost",
+                        size: "sm",
+                        disabled: !parentDistrictId || !parentDistrictName,
+                        className: "h-8 px-2 text-[#054332] hover:text-[#032d21] hover:bg-[#eaf5ef] font-semibold disabled:opacity-50 disabled:hover:bg-transparent",
+                        onClick: () => {
+                          if (!parentDistrictId || !parentDistrictName) return;
+                          setViewType("divisions");
+                          setSelectedItemType("district");
+                          setSelectedItemId(parentDistrictId);
+                          setSelectedItemName(parentDistrictName);
+                          // keep division parent so district header can show "(Division)"
+                          setParentDistrictId(null);
+                          setParentDistrictName(null);
+                          setSelectedProjectForDetails(null);
+                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3088}}
+                      , _nullishCoalesce(parentDistrictName, () => ("District")))
+                      , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3110}}, "›")
+                      , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3111}}
+                        , selectedItemName, " Tehsil"
+                      )
+                    )
                   )
 
                   /* Project Cards from API */
