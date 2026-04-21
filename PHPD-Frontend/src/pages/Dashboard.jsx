@@ -2276,21 +2276,21 @@ export default function Dashboard() {
         /* Top Header Section - Enhanced Design with Filter Bar */
         , <div className="flex flex-col gap-6 w-full mb-6 mt-2">
           {/* FILTER BAR ROW (placed above title/progress) */}
-          <div className="w-full bg-[#f6faf7] rounded-[18px] p-1.5 flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-0.5 scrollbar-hide">
-              {/* Expand/Collapse toggle (left) */}
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsFilterBarExpanded((v) => !v)}
-                aria-label={isFilterBarExpanded ? "Collapse filters" : "Expand filters"}
-                className="h-[40px] w-[40px] shrink-0 rounded-lg bg-white/70 hover:bg-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)]"
-              >
-                <Filter className="h-4 w-4" />
-              </Button>
+          {isFilterBarExpanded ? (
+            <div className="w-full bg-[#f6faf7] rounded-[18px] p-1.5 flex flex-col md:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-0.5 scrollbar-hide">
+                {/* Expand/Collapse toggle (left) */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsFilterBarExpanded(false)}
+                  aria-label="Collapse filters"
+                  className="h-[40px] w-[40px] shrink-0 rounded-lg bg-white/70 hover:bg-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)]"
+                >
+                  <Filter className="h-4 w-4" />
+                </Button>
 
-              {isFilterBarExpanded && (
                 <RadioGroup
                   value={viewType}
                   onValueChange={(value) => {
@@ -2332,15 +2332,14 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </RadioGroup>
-              )}
-            </div>
-            
-            {/* Export Button */}
-            {isFilterBarExpanded && ((selectedItemName && singleItemData) || aggregatedData) && viewType && (
-              <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0 p-0.5">
-                 <Button
-                   className="w-full md:w-auto bg-[#054332] hover:bg-[#032d21] text-white rounded-lg px-3 py-2 h-[40px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all whitespace-nowrap"
-                   onClick={async () => {
+              </div>
+
+              {/* Export Button */}
+              {((selectedItemName && singleItemData) || aggregatedData) && viewType && (
+                <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0 p-0.5">
+                  <Button
+                    className="w-full md:w-auto bg-[#054332] hover:bg-[#032d21] text-white rounded-lg px-3 py-2 h-[40px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all whitespace-nowrap"
+                    onClick={async () => {
                       try {
                         const dataToExport = selectedItemName && singleItemData ? singleItemData : aggregatedData;
                         const exportName =
@@ -2374,14 +2373,28 @@ export default function Dashboard() {
                         console.error("Error exporting to PPTX:", error);
                         setShowErrorDialog(true);
                       }
-                   }}
-                 >
-                   <FileDown className="h-4 w-4 opacity-90" />
-                   <span className="text-[12px] sm:text-[13px]">Export Operation</span>
-                 </Button>
-              </div>
-            )}
-          </div>
+                    }}
+                  >
+                    <FileDown className="h-4 w-4 opacity-90" />
+                    <span className="text-[12px] sm:text-[13px]">Export Operation</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="w-full flex items-center">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsFilterBarExpanded(true)}
+                aria-label="Expand filters"
+                className="h-[40px] w-[40px] rounded-lg bg-white/70 hover:bg-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)]"
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
           {/* TITLE & PROGRESS ROW */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
