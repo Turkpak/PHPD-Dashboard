@@ -1495,9 +1495,7 @@ export default function Dashboard() {
   };
 
   // Valid InstallationCard colors for project cards
-  const PROJECT_CARD_COLORS
-
- = ["blue", "green", "orange", "purple", "red", "yellow"];
+  const PROJECT_CARD_COLORS = ["blue", "orange", "purple", "red", "yellow"];
 
   // Only show this section on the main (no-filter) All Divisions view.
   const showBestPerformingSection =
@@ -1658,12 +1656,14 @@ export default function Dashboard() {
         /* Best Performing Projects (hide inside selected division/district/tehsil views) */
         , showBestPerformingSection && (
           React.createElement('div', { className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1662}}
-          , React.createElement('div', { className: "mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1663}}
-            , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1664}}
-              , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1665}}, "Best Performing Projects"
+          , React.createElement('div', { className: "mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 min-w-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1663}}
+            , React.createElement('div', { className: "min-w-0 flex-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1664}}
+              , React.createElement('h2', { className: "text-xl font-bold font-heading text-[#0f172a] dark:text-white"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1665}}, "Best Performing Projects"
 
               )
 
+            )
+            , React.createElement('button', { className: "text-[13px] font-bold text-[#054332] dark:text-emerald-400 hover:opacity-80 transition-opacity flex items-center shrink-0 pr-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1668}}, "View All Projects →"
             )
             , (selectedMilestoneKey || isSelectedProjectInThisScope) && (
               React.createElement('button', {

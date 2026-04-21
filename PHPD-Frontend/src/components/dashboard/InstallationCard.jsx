@@ -1,22 +1,7 @@
 const _jsxFileName = "";
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 export function InstallationCard({ 
   title, 
@@ -30,94 +15,70 @@ export function InstallationCard({
   selected = false,
   nonInteractive = false,
 }) {
-  const showDualProgress = actualProgress !== undefined && plannedProgress !== undefined;
   const clampedPct = Math.max(0, Math.min(100, Number.isFinite(percentage) ? percentage : 0));
   
-  // Calculate actual vs planned variance
-  const variance = showDualProgress ? actualProgress - plannedProgress : null;
   const getColorClasses = () => {
     switch (color) {
       case "blue": return { 
-        icon: "text-emerald-700", 
-        iconBg: "bg-emerald-50 dark:bg-emerald-950", 
-        border: "border-l-4 border-l-emerald-700", 
-        progress: "bg-emerald-600",
-        percentage: "text-emerald-700 dark:text-emerald-300",
-        selectedRing: "ring-2 ring-emerald-600 ring-offset-2 ring-offset-background"
+        stroke: "text-[#054332] dark:text-emerald-500", // Dark green mapping
+        selectedRing: "ring-2 ring-[#054332]"
       };
       case "green": return { 
-        icon: "text-emerald-600", 
-        iconBg: "bg-emerald-50 dark:bg-emerald-950", 
-        border: "border-l-4 border-l-emerald-500", 
-        progress: "bg-emerald-500",
-        percentage: "text-emerald-600 dark:text-emerald-400",
-        selectedRing: "ring-2 ring-emerald-500 ring-offset-2 ring-offset-background"
+        stroke: "text-[#10b981] dark:text-emerald-400", 
+        selectedRing: "ring-2 ring-[#10b981]"
       };
       case "orange": return { 
-        icon: "text-orange-600", 
-        iconBg: "bg-orange-50 dark:bg-orange-950", 
-        border: "border-l-4 border-l-orange-500", 
-        progress: "bg-orange-500",
-        percentage: "text-orange-600 dark:text-orange-400",
-        selectedRing: "ring-2 ring-orange-500 ring-offset-2 ring-offset-background"
+        stroke: "text-[#f97316] dark:text-orange-400", 
+        selectedRing: "ring-2 ring-[#f97316]"
       };
       case "purple": return { 
-        icon: "text-purple-600", 
-        iconBg: "bg-purple-50 dark:bg-purple-950", 
-        border: "border-l-4 border-l-purple-500", 
-        progress: "bg-purple-500",
-        percentage: "text-purple-600 dark:text-purple-400",
-        selectedRing: "ring-2 ring-purple-500 ring-offset-2 ring-offset-background"
+        stroke: "text-[#581c87] dark:text-purple-400", 
+        selectedRing: "ring-2 ring-[#581c87]"
       };
       case "red": return { 
-        icon: "text-red-600", 
-        iconBg: "bg-red-50 dark:bg-red-950", 
-        border: "border-l-4 border-l-red-500", 
-        progress: "bg-red-500",
-        percentage: "text-red-600 dark:text-red-400",
-        selectedRing: "ring-2 ring-red-500 ring-offset-2 ring-offset-background"
+        stroke: "text-[#b91c1c] dark:text-red-500", 
+        selectedRing: "ring-2 ring-[#b91c1c]"
       };
       case "yellow": return { 
-        icon: "text-yellow-600", 
-        iconBg: "bg-yellow-50 dark:bg-yellow-950", 
-        border: "border-l-4 border-l-yellow-500", 
-        progress: "bg-yellow-500",
-        percentage: "text-yellow-600 dark:text-yellow-400",
-        selectedRing: "ring-2 ring-yellow-500 ring-offset-2 ring-offset-background"
+        stroke: "text-[#eab308] dark:text-yellow-400", 
+        selectedRing: "ring-2 ring-[#eab308]"
       };
       default: return { 
-        icon: "text-primary", 
-        iconBg: "bg-primary/10", 
-        border: "border-l-4 border-l-primary", 
-        progress: "bg-primary",
-        percentage: "text-primary",
-        selectedRing: "ring-2 ring-primary ring-offset-2 ring-offset-background"
+        stroke: "text-[#054332]", 
+        selectedRing: "ring-2 ring-[#054332]"
       };
     }
   };
 
   const colors = getColorClasses();
-  const status =
-    clampedPct === 100
-      ? "Completed"
-      : clampedPct >= 80
-        ? "Near Complete"
-        : clampedPct >= 50
-          ? "In Progress"
-          : "Started";
+  
+  // Custom status text mappings
+  const getStatusText = (pct) => {
+    if (pct >= 40) return "Phase 1 Complete";
+    if (pct >= 25) return "Ground Testing";
+    if (pct >= 20) return "Resource Allocation";
+    if (pct >= 10) return "Critical Delay";
+    if (pct > 0) return "Initial Tender";
+    return "Not Started";
+  };
+  const status = getStatusText(clampedPct);
+
+  // SVG parameters for radial progress
+  const size = 95;
+  const strokeWidth = 8;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (clampedPct / 100) * circumference;
 
   return (
     React.createElement(Card, { className: cn(
-      "relative overflow-hidden transition-all duration-300 group",
-      // Modern premium feel: rounded corners, subtle lift, cohesive colors
-      "rounded-3xl border border-white/40 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.04)]",
-      !nonInteractive && "hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 active:translate-y-0",
-      colors.border,
-      !nonInteractive && "hover:border-primary/20",
-      "bg-white/80 backdrop-blur-sm",
+      "relative overflow-hidden transition-all duration-300 group flex flex-col items-center justify-center p-6",
+      "rounded-[24px] border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]",
+      !nonInteractive && "hover:shadow-xl hover:-translate-y-[2px] active:translate-y-0",
+      "bg-white",
       onClick && !nonInteractive && "cursor-pointer select-none",
       nonInteractive && "cursor-default",
-      selected && "ring-2 ring-primary ring-offset-4 shadow-xl",
+      selected && cn("shadow-xl", colors.selectedRing),
       className
     ),
       role: onClick && !nonInteractive ? "button" : undefined,
@@ -129,94 +90,52 @@ export function InstallationCard({
           e.preventDefault();
           onClick();
         }
-      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 108}}
+      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 100}}
 
-      /* Subtle background gradient */
-      , React.createElement('div', { className: cn(
-        "absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-15 -mr-12 -mt-12 transition-opacity group-hover:opacity-25",
-        colors.iconBg.replace("bg-", "bg-").replace("-50", "-200")
-      ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 134}})
-
-      , React.createElement(CardHeader, { className: "relative flex flex-row items-start justify-between space-y-0 pb-3 pt-4 px-3.5"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 139}}
-        , React.createElement('div', { className: "flex-1 min-w-0 pr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 140}}
-          , React.createElement(CardTitle, { className: "text-[10px] font-extrabold text-foreground/90 uppercase tracking-[0.16em] leading-tight line-clamp-2"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 141}}
-            , title
+      , React.createElement('div', { className: "relative w-[95px] h-[95px] mb-5 flex items-center justify-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 101}}
+        , React.createElement('svg', { 
+            width: size, 
+            height: size, 
+            viewBox: `0 0 ${size} ${size}`, 
+            className: "transform -rotate-90 overflow-visible",
+            __self: this, __source: {fileName: _jsxFileName, lineNumber: 102}}
+          , React.createElement('circle', {
+            cx: size / 2,
+            cy: size / 2,
+            r: radius,
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: strokeWidth,
+            className: "text-[#f3f4f6]" // Background ring
+            , __self: this, __source: {fileName: _jsxFileName, lineNumber: 103}}
+          )
+          , React.createElement('circle', {
+            cx: size / 2,
+            cy: size / 2,
+            r: radius,
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: strokeWidth,
+            strokeLinecap: "butt", // Keep flat for matching design
+            strokeDasharray: circumference,
+            strokeDashoffset: strokeDashoffset,
+            className: cn("transition-all duration-1000 ease-out", colors.stroke)
+            , __self: this, __source: {fileName: _jsxFileName, lineNumber: 104}}
           )
         )
-        , React.createElement('div', { className: cn(
-          "flex-shrink-0 p-1.5 rounded-md shadow-sm group-hover:shadow-md transition-all",
-          colors.iconBg
-        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 145}}
-          , React.createElement(Icon, { className: cn("h-3.5 w-3.5", colors.icon), __self: this, __source: {fileName: _jsxFileName, lineNumber: 149}} )
+        , React.createElement('div', { className: "absolute inset-0 flex items-center justify-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 106}}
+          , React.createElement('span', { className: "text-lg font-bold text-[#0f172a] tracking-tight", __self: this, __source: {fileName: _jsxFileName, lineNumber: 107}}
+            , Math.round(clampedPct), "%"
+          )
         )
       )
-      , React.createElement(CardContent, { className: "relative px-3.5 pb-4 pt-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 152}}
-        , React.createElement('div', { className: "space-y-2.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 153}}
-          , React.createElement('div', { className: "flex items-end justify-between gap-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 154}}
-            , React.createElement('span', { className: cn("text-2xl font-bold tabular-nums leading-none", colors.percentage), __self: this, __source: {fileName: _jsxFileName, lineNumber: 155}}
-              , Math.round(clampedPct)
-              , React.createElement('span', { className: "text-sm font-semibold ml-0.5"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 157}}, "%")
-            )
-            , React.createElement('span', { className: "text-[8px] font-semibold text-muted-foreground/80 uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-muted/50 border border-border/40 leading-tight"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 159}}
-              , status
-            )
-          )
 
-          /* Show dual progress bars if actual/planned provided */
-          , showDualProgress ? (
-            React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 166}}
-              /* Planned Progress - Above */
-              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 168}}
-                , React.createElement('div', { className: "flex justify-between text-[7px] mb-0.5 text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 169}}
-                  , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 170}}, "Planned")
-                  , React.createElement('span', { className: "font-semibold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 171}}, plannedProgress.toFixed(1), "%")
-                  , variance !== null && (
-                    React.createElement('span', { className: cn(
-                      "font-semibold ml-1",
-                      variance >= 0 ? "text-emerald-600" : "text-red-600"
-                    ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 173}}
-                      , variance >= 0 ? "+" : "", variance.toFixed(1), "%"
-                    )
-                  )
-                )
-                , React.createElement('div', { className: "relative h-1.5 w-full overflow-hidden rounded-full bg-muted/50 shadow-inner"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 181}}
-                  , React.createElement('div', { 
-                    className: cn("h-full rounded-full transition-all duration-1000 ease-out opacity-40", colors.progress),
-                    style: { width: `${Math.min(100, plannedProgress)}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 182}}
-                  )
-                )
-              )
-
-              /* Actual Progress - Below */
-              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 190}}
-                , React.createElement('div', { className: "flex justify-between text-[7px] mb-0.5 text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 191}}
-                  , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 192}}, "Actual")
-                  , React.createElement('span', { className: "font-semibold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 193}}, actualProgress.toFixed(1), "%")
-                )
-                , React.createElement('div', { className: "relative h-1.5 w-full overflow-hidden rounded-full bg-muted/50 shadow-inner"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 195}}
-                  , React.createElement('div', { 
-                    className: cn("h-full rounded-full transition-all duration-1000 ease-out", colors.progress),
-                    style: { width: `${Math.min(100, actualProgress)}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 196}}
-                  )
-                )
-              )
-            )
-          ) : (
-            /* Single progress bar (legacy) */
-            React.createElement('div', { className: "relative h-2 w-full overflow-hidden rounded-full bg-muted/40 shadow-inner"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 205}}
-              , React.createElement('div', { 
-                className: cn(
-                  "h-full rounded-full transition-all duration-1000 ease-out shadow-md relative overflow-hidden",
-                  colors.progress
-                ),
-                style: { width: `${clampedPct}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 206}}
-
-                , clampedPct > 0 && (
-                  React.createElement('div', { className: "absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 214}} )
-                )
-              )
-              )
-          )
+      , React.createElement('div', { className: "flex flex-col items-center text-center px-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 112}}
+        , React.createElement('h3', { className: "text-[#0f172a] dark:text-white font-bold text-base mb-1.5 line-clamp-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 113}}
+          , title
+        )
+        , React.createElement('p', { className: "text-[#64748b] dark:text-gray-400 text-[12px] leading-tight font-medium w-[120%]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 116}}
+          , status
         )
       )
     )
