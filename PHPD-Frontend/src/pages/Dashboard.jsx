@@ -2262,7 +2262,7 @@ export default function Dashboard() {
   ];
 
   return (
-    React.createElement(Layout, { title: "PHPD Progress Dashboard"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2267}}
+    React.createElement(Layout, { title: "PHPD Progress Dashboard", showHeader: false, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2267}}
       , React.createElement('div', {
         className: "flex flex-col gap-4"  ,
         style: {
@@ -2274,7 +2274,115 @@ export default function Dashboard() {
         }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2268}}
 
         /* Top Header Section - Enhanced Design with Filter Bar */
-        , <div className="flex flex-col gap-6 w-full mb-6 mt-4">
+        , <div className="flex flex-col gap-6 w-full mb-6 mt-2">
+          {/* FILTER BAR ROW (placed above title/progress) */}
+          <div className="w-full bg-[#f6faf7] rounded-[18px] p-1.5 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-0.5 scrollbar-hide">
+              {/* Expand/Collapse toggle (left) */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsFilterBarExpanded((v) => !v)}
+                aria-label={isFilterBarExpanded ? "Collapse filters" : "Expand filters"}
+                className="h-[40px] w-[40px] shrink-0 rounded-lg bg-white/70 hover:bg-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)]"
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
+
+              {isFilterBarExpanded && (
+                <RadioGroup
+                  value={viewType}
+                  onValueChange={(value) => {
+                    setViewType(value);
+                    setSelectedItemName(null);
+                    setSelectedItemType(null);
+                    setExpandedDivisions(false);
+                    setExpandedDistricts(false);
+                    if (value === "tehsils") {
+                      const DEFAULT_DISTRICTS = ["Lahore", "Sheikhupura"];
+                      const defaultState = {};
+                      DEFAULT_DISTRICTS.forEach((districtName) => {
+                        defaultState[districtName] = true;
+                      });
+                      setExpandedTehsilGroups(defaultState);
+                      setAllTehsilGroupsExpanded(false);
+                    } else {
+                      setExpandedTehsilGroups({});
+                      setAllTehsilGroupsExpanded(false);
+                    }
+                    setTehsilSearchQuery("");
+                  }}
+                  className="flex items-center gap-3 flex-nowrap"
+                >
+                  {[
+                    { val: "divisions", label: "All Divisions" },
+                    { val: "districts", label: "All Districts" },
+                    { val: "tehsils", label: "All Tehsils" },
+                    { val: "projects", label: "All Projects" },
+                  ].map((item) => (
+                    <div key={item.val} className="relative shrink-0">
+                      <RadioGroupItem value={item.val} id={item.val} className="peer sr-only" />
+                      <Label
+                        htmlFor={item.val}
+                        className="flex items-center justify-center px-3 py-2 bg-white text-[#344054] font-semibold text-[12px] sm:text-[13px] rounded-lg cursor-pointer peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-[#054332] transition-all whitespace-nowrap select-none min-w-[120px]"
+                      >
+                        <span>{item.label}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+            </div>
+            
+            {/* Export Button */}
+            {isFilterBarExpanded && ((selectedItemName && singleItemData) || aggregatedData) && viewType && (
+              <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0 p-0.5">
+                 <Button
+                   className="w-full md:w-auto bg-[#054332] hover:bg-[#032d21] text-white rounded-lg px-3 py-2 h-[40px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all whitespace-nowrap"
+                   onClick={async () => {
+                      try {
+                        const dataToExport = selectedItemName && singleItemData ? singleItemData : aggregatedData;
+                        const exportName =
+                          selectedItemName && selectedItemType === "division" ? `${selectedItemName} Division`
+                            : selectedItemName && selectedItemType === "district" ? `${selectedItemName} District`
+                            : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
+                            : viewType === "divisions" ? "All Punjab Divisions"
+                            : viewType === "districts" ? "All Punjab Districts"
+                            : "All Punjab Tehsils";
+
+                        if (!dataToExport) {
+                          setShowErrorDialog(true);
+                          return;
+                        }
+
+                        await exportDashboardToPPTX({
+                          cityName: exportName,
+                          cityData: dataToExport,
+                          installationPhases: installationPhases.map(
+                            (phase) => ({
+                              key: phase.key,
+                              title: phase.title,
+                              percentage: getProgressValue(
+                                dataToExport[phase.key],
+                              ),
+                            }),
+                          ),
+                        });
+                        setShowSuccessDialog(true);
+                      } catch (error) {
+                        console.error("Error exporting to PPTX:", error);
+                        setShowErrorDialog(true);
+                      }
+                   }}
+                 >
+                   <FileDown className="h-4 w-4 opacity-90" />
+                   <span className="text-[12px] sm:text-[13px]">Export Operation</span>
+                 </Button>
+              </div>
+            )}
+          </div>
+
           {/* TITLE & PROGRESS ROW */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
             <div className="flex flex-col">
@@ -2340,99 +2448,6 @@ export default function Dashboard() {
                 </div>
               );
             })()}
-          </div>
-
-          {/* FILTER BAR ROW */}
-          <div className="w-full bg-[#f6faf7] rounded-[24px] p-2 flex flex-col md:flex-row items-center justify-between gap-4 mt-2">
-            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-1 scrollbar-hide">
-               <RadioGroup
-                  value={viewType}
-                  onValueChange={(value) => {
-                    setViewType(value);
-                    setSelectedItemName(null);
-                    setSelectedItemType(null);
-                    setExpandedDivisions(false);
-                    setExpandedDistricts(false);
-                    if (value === "tehsils") {
-                      const DEFAULT_DISTRICTS = ["Lahore", "Sheikhupura"];
-                      const defaultState = {};
-                      DEFAULT_DISTRICTS.forEach((districtName) => { defaultState[districtName] = true; });
-                      setExpandedTehsilGroups(defaultState);
-                      setAllTehsilGroupsExpanded(false);
-                    } else {
-                      setExpandedTehsilGroups({});
-                      setAllTehsilGroupsExpanded(false);
-                    }
-                    setTehsilSearchQuery("");
-                  }}
-                  className="flex items-center gap-3 flex-nowrap"
-               >
-                 {[
-                   { val: "divisions", label: "All Divisions" },
-                   { val: "districts", label: "All Districts" },
-                   { val: "tehsils", label: "All Tehsils" },
-                   { val: "projects", label: "All Projects" }
-                 ].map(item => (
-                   <div key={item.val} className="relative shrink-0">
-                     <RadioGroupItem value={item.val} id={item.val} className="peer sr-only" />
-                     <Label
-                       htmlFor={item.val}
-                       className="flex items-center justify-between gap-4 px-4 py-3 bg-white text-[#344054] font-semibold text-xs sm:text-sm rounded-xl cursor-pointer peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-[#054332] transition-all whitespace-nowrap select-none min-w-[130px]"
-                     >
-                       <span>{item.label}</span>
-                       <ChevronDown className="h-4 w-4 text-[#98a2b3]" />
-                     </Label>
-                   </div>
-                 ))}
-               </RadioGroup>
-            </div>
-            
-            {/* Export Button */}
-            {((selectedItemName && singleItemData) || aggregatedData) && viewType && (
-              <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0 p-1">
-                 <Button
-                   className="w-full md:w-auto bg-[#054332] hover:bg-[#032d21] text-white rounded-[14px] px-6 py-6 sm:py-6 h-auto font-bold shadow-sm flex items-center justify-center gap-2 transition-all"
-                   onClick={async () => {
-                      try {
-                        const dataToExport = selectedItemName && singleItemData ? singleItemData : aggregatedData;
-                        const exportName =
-                          selectedItemName && selectedItemType === "division" ? `${selectedItemName} Division`
-                            : selectedItemName && selectedItemType === "district" ? `${selectedItemName} District`
-                            : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
-                            : viewType === "divisions" ? "All Punjab Divisions"
-                            : viewType === "districts" ? "All Punjab Districts"
-                            : "All Punjab Tehsils";
-
-                        if (!dataToExport) {
-                          setShowErrorDialog(true);
-                          return;
-                        }
-
-                        await exportDashboardToPPTX({
-                          cityName: exportName,
-                          cityData: dataToExport,
-                          installationPhases: installationPhases.map(
-                            (phase) => ({
-                              key: phase.key,
-                              title: phase.title,
-                              percentage: getProgressValue(
-                                dataToExport[phase.key],
-                              ),
-                            }),
-                          ),
-                        });
-                        setShowSuccessDialog(true);
-                      } catch (error) {
-                        console.error("Error exporting to PPTX:", error);
-                        setShowErrorDialog(true);
-                      }
-                   }}
-                 >
-                   <FileDown className="h-5 w-5 opacity-90" />
-                   <span className="text-sm">Export Operation</span>
-                 </Button>
-              </div>
-            )}
           </div>
         </div>
 

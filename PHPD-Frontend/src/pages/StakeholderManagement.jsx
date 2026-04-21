@@ -1,22 +1,11 @@
-import React from "react";
-const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+import React, { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Plus, Edit2, Trash2, Users, Save, Search, LayoutList } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Save, Search, Filter, ShieldCheck, UserX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -27,8 +16,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import {
   listStakeholders,
   createStakeholder,
@@ -36,17 +23,11 @@ import {
   deleteStakeholder,
 } from "@/api";
 
-
-function statusDisplay(s) {
-  return s === "active" ? "Active" : "Disabled";
-}
-
 export default function StakeholderManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingStakeholder, setEditingStakeholder] = useState(null);
-  const [formData, setFormData] = useState({ type: "", title: "", status: "active"  });
+  const [formData, setFormData] = useState({ type: "", title: "", status: "active" });
   const [searchQuery, setSearchQuery] = useState("");
-  const [pageSize, setPageSize] = useState("10");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -68,8 +49,7 @@ export default function StakeholderManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }) =>
-      updateStakeholder(id, payload),
+    mutationFn: ({ id, payload }) => updateStakeholder(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stakeholders"] });
       closeDialog();
@@ -92,22 +72,14 @@ export default function StakeholderManagement() {
   });
 
   const handleCreateOrUpdate = (e) => {
-    _optionalChain([e, 'optionalAccess', _2 => _2.preventDefault, 'call', _3 => _3()]);
+    e?.preventDefault();
     const typeTrimmed = formData.type.trim();
     const titleTrimmed = formData.title.trim();
 
-    if (!typeTrimmed) {
+    if (!typeTrimmed || !titleTrimmed) {
       toast({
         title: "Validation Error",
-        description: "Stakeholder Type is required. Please enter the type before adding.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!titleTrimmed) {
-      toast({
-        title: "Validation Error",
-        description: "Stakeholder Title is required. Please enter the title before adding.",
+        description: "Stakeholder Type and Title are required.",
         variant: "destructive",
       });
       return;
@@ -136,11 +108,6 @@ export default function StakeholderManagement() {
     }
   };
 
-  const toggleStatus = (s) => {
-    const next = s.status === "active" ? "disable" : "active";
-    updateMutation.mutate({ id: s.id, payload: { status: next } });
-  };
-
   const openEditDialog = (stakeholder) => {
     setEditingStakeholder(stakeholder);
     setFormData({
@@ -162,410 +129,212 @@ export default function StakeholderManagement() {
       s.stakeholder_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.stakeholder_title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const paginated = filteredStakeholders.slice(0, parseInt(pageSize, 10) || 10);
 
   const activeCount = stakeholders.filter((s) => s.status === "active").length;
   const disabledCount = stakeholders.filter((s) => s.status === "disable").length;
 
-  const emptyListMessage = (
-    React.createElement('div', { className: "flex flex-col items-center justify-center gap-3 py-6 px-4 text-center"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 169}}
-      , React.createElement('div', { className: "h-14 w-14 rounded-full bg-muted flex items-center justify-center shrink-0"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 170}}
-        , React.createElement(Users, { className: "h-7 w-7 text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 171}} )
-      )
-      , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 173}}
-        , React.createElement('p', { className: "font-medium text-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 174}}, "No stakeholders found"  )
-        , React.createElement('p', { className: "text-sm text-muted-foreground mt-0.5"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 175}}
-          , searchQuery ? "Try a different search." : "Add your first stakeholder to get started."
-        )
-      )
-      , !searchQuery && (
-        React.createElement(Button, { className: "mt-1 w-full max-w-xs"  , onClick: () => setIsAddDialogOpen(true), __self: this, __source: {fileName: _jsxFileName, lineNumber: 180}}
-          , React.createElement(Plus, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 181}} ), " Add stakeholder"
-        )
-      )
-    )
-  );
-
   return (
-    React.createElement(Layout, { title: "Stakeholder Management" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 188}}
-      , React.createElement('div', { className: "flex flex-col gap-3 sm:gap-6 w-full max-w-[1400px] mx-auto min-w-0 pb-12 sm:pb-20"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 189}}
-        , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 190}}
-          , React.createElement('h1', { className: "text-xl sm:text-2xl font-bold text-foreground tracking-tight"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 191}}, "Stakeholders")
-        )
+    <Layout title="Stakeholder Management">
+      <div className="flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20 px-4 sm:px-8 text-[14px] sm:text-[14px]">
 
-        /* Summary stats */
-        , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 195}}
-          , React.createElement(Card, { className: "border-l-4 border-l-primary/80 shadow-sm"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 196}}
-            , React.createElement(CardContent, { className: "pt-2 pb-2 sm:pt-5 sm:pb-5"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 197}}
-              , React.createElement('div', { className: "flex items-center justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 198}}
-                , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 199}}
-                  , React.createElement('p', { className: "text-xs font-medium uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}, "Total")
-                  , React.createElement('p', { className: "text-lg sm:text-2xl font-bold text-foreground mt-0.5 tabular-nums"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 201}}, stakeholders.length)
-                )
-                , React.createElement('div', { className: "h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 203}}
-                  , React.createElement(Users, { className: "h-4 w-4 sm:h-5 sm:w-5 text-primary"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 204}} )
-                )
-              )
-            )
-          )
-          , React.createElement(Card, { className: "border-l-4 border-l-emerald-500/80 shadow-sm"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 209}}
-            , React.createElement(CardContent, { className: "pt-2 pb-2 sm:pt-5 sm:pb-5"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 210}}
-              , React.createElement('div', { className: "flex items-center justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 211}}
-                , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 212}}
-                  , React.createElement('p', { className: "text-xs font-medium uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 213}}, "Active")
-                  , React.createElement('p', { className: "text-lg sm:text-2xl font-bold text-foreground mt-0.5 tabular-nums"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 214}}, activeCount)
-                )
-                , React.createElement('span', { className: "h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-sm shrink-0"     , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 216}} )
-              )
-            )
-          )
-          , React.createElement(Card, { className: "border-l-4 border-l-slate-400/80 shadow-sm"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 220}}
-            , React.createElement(CardContent, { className: "pt-2 pb-2 sm:pt-5 sm:pb-5"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 221}}
-              , React.createElement('div', { className: "flex items-center justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 222}}
-                , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 223}}
-                  , React.createElement('p', { className: "text-xs font-medium uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 224}}, "Disabled")
-                  , React.createElement('p', { className: "text-lg sm:text-2xl font-bold text-foreground mt-0.5 tabular-nums"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 225}}, disabledCount)
-                )
-                , React.createElement('span', { className: "h-2.5 w-2.5 rounded-full bg-slate-400 shadow-sm shrink-0"     , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 227}} )
-              )
-            )
-          )
-        )
+        {/* Top Metric Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col justify-between h-[150px]">
+            <div className="flex justify-between items-start w-full">
+              <div className="w-11 h-11 rounded-xl bg-[#f0fdf4] text-[#054332] flex items-center justify-center">
+                <Users className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold text-[#64748b] tracking-widest uppercase">Overview</span>
+            </div>
+            <div className="mt-4">
+              <div className="text-[28px] leading-none font-bold text-[#101828] mb-1">{stakeholders.length.toLocaleString()}</div>
+              <div className="text-[13px] font-semibold text-[#64748b]">Total Stakeholders</div>
+            </div>
+          </div>
 
-        /* Main list card */
-        , React.createElement(Card, { className: "shadow-md overflow-hidden rounded-xl border-border/80"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 234}}
-          , React.createElement(CardHeader, { className: "border-b bg-muted/30 pb-3 px-4 sm:px-6 pt-3 sm:pt-6"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 235}}
-            , React.createElement('div', { className: "flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between min-w-0"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 236}}
-              , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 237}}
-                , React.createElement(CardTitle, { className: "text-base sm:text-lg flex items-center gap-2 flex-wrap"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 238}}
-                  , React.createElement(LayoutList, { className: "h-5 w-5 text-primary shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 239}} )
-                  , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 240}}, "Stakeholder list" )
-                )
-                , React.createElement(CardDescription, { className: "mt-1 text-xs sm:text-sm"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 242}}, "Showing "
-                   , paginated.length, " of "  , filteredStakeholders.length, " stakeholders"
-                )
-              )
-              , React.createElement(Dialog, {
-                open: isAddDialogOpen,
-                onOpenChange: (open) => {
-                  setIsAddDialogOpen(open);
-                  if (!open) closeDialog();
-                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 246}}
+          <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col justify-between h-[150px]">
+             <div className="flex justify-between items-start w-full">
+              <div className="w-11 h-11 rounded-xl bg-[#f0f9ff] text-[#0284c7] flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold text-[#64748b] tracking-widest uppercase">Engagement</span>
+            </div>
+            <div className="mt-4">
+              <div className="text-[28px] leading-none font-bold text-[#101828] mb-1">{activeCount.toLocaleString()}</div>
+              <div className="text-[13px] font-semibold text-[#64748b]">Active Members</div>
+            </div>
+          </div>
 
-                , React.createElement(DialogTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 253}}
-                  , React.createElement(Button, { className: "bg-secondary hover:bg-secondary/90 text-white font-semibold shadow-sm w-full sm:w-auto"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 254}}
-                    , React.createElement(Plus, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 255}} ), " Add stakeholder"
-                  )
-                )
-                , React.createElement(DialogContent, { className: "w-[calc(100vw-1.5rem)] max-w-[520px] gap-0 p-0 overflow-hidden max-h-[90vh] flex flex-col sm:max-h-[85vh]"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 258}}
-                  , React.createElement(DialogHeader, { className: "px-4 sm:px-6 pt-5 sm:pt-6 pb-4 bg-muted/30 border-b shrink-0"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 259}}
-                    , React.createElement(DialogTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 260}}
-                      , editingStakeholder ? `Edit stakeholder` : `Add new stakeholder`
-                    )
-                    , _optionalChain([editingStakeholder, 'optionalAccess', _4 => _4.id]) && (
-                      React.createElement('p', { className: "text-sm text-muted-foreground font-normal"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 264}}, "ID: " , editingStakeholder.id)
-                    )
-                  )
-                  , React.createElement('form', { onSubmit: handleCreateOrUpdate, className: "p-4 sm:p-6 space-y-5 overflow-y-auto flex-1 min-h-0"     , noValidate: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 267}}
-                    , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 gap-5"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 268}}
-                      , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 269}}
-                        , React.createElement(Label, { htmlFor: "stakeholder-type", __self: this, __source: {fileName: _jsxFileName, lineNumber: 270}}, "Type " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 270}}, "*"))
-                        , React.createElement(Input, {
-                          id: "stakeholder-type",
-                          placeholder: "e.g. Client, Consultant"  ,
-                          value: formData.type,
-                          onChange: (e) => setFormData({ ...formData, type: e.target.value }),
-                          className: "h-10",
-                          required: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 271}}
-                        )
-                      )
-                      , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 280}}
-                        , React.createElement(Label, { htmlFor: "stakeholder-title", __self: this, __source: {fileName: _jsxFileName, lineNumber: 281}}, "Title " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 281}}, "*"))
-                        , React.createElement(Input, {
-                          id: "stakeholder-title",
-                          placeholder: "e.g. Punjab Health & Population Department"    ,
-                          value: formData.title,
-                          onChange: (e) => setFormData({ ...formData, title: e.target.value }),
-                          className: "h-10",
-                          required: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 282}}
-                        )
-                      )
-                    )
-                    , editingStakeholder && (
-                      React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 293}}
-                        , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 294}}, "Status")
-                        , React.createElement(Select, {
-                          value: formData.status,
-                          onValueChange: (v) => setFormData({ ...formData, status: v  }), __self: this, __source: {fileName: _jsxFileName, lineNumber: 295}}
+          <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col justify-between h-[150px]">
+             <div className="flex justify-between items-start w-full">
+              <div className="w-11 h-11 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center">
+                <UserX className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold text-[#64748b] tracking-widest uppercase">Archived</span>
+            </div>
+            <div className="mt-4">
+              <div className="text-[28px] leading-none font-bold text-[#101828] mb-1">{disabledCount.toLocaleString()}</div>
+              <div className="text-[13px] font-semibold text-[#64748b]">Inactive/Disabled</div>
+            </div>
+          </div>
+        </div>
 
-                          , React.createElement(SelectTrigger, { className: "h-10", __self: this, __source: {fileName: _jsxFileName, lineNumber: 299}}
-                            , React.createElement(SelectValue, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 300}} )
-                          )
-                          , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 302}}
-                            , React.createElement(SelectItem, { value: "active", __self: this, __source: {fileName: _jsxFileName, lineNumber: 303}}, "Active")
-                            , React.createElement(SelectItem, { value: "disable", __self: this, __source: {fileName: _jsxFileName, lineNumber: 304}}, "Disabled")
-                          )
-                        )
-                      )
-                    )
-                    , React.createElement(DialogFooter, { className: "flex flex-col-reverse gap-2 pt-4 pb-0 px-0 sm:flex-row sm:justify-end"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 309}}
-                      , React.createElement(Button, { type: "button", variant: "outline", onClick: closeDialog, className: "w-full sm:w-auto" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 310}}, "Cancel"
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-2">
+          <div className="relative w-full max-w-[600px]">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              className="w-full bg-white border border-gray-100 shadow-[0_4px_16px_-8px_rgba(0,0,0,0.06)] rounded-full h-[52px] pl-[52px] pr-6 text-[14px] placeholder:text-gray-400 focus-visible:ring-[#054332]"
+              placeholder="Search by name, role, or organization..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex w-full sm:w-auto items-center gap-3">
+             <Button variant="outline" className="h-[52px] px-8 rounded-full border border-gray-100 shadow-[0_4px_16px_-8px_rgba(0,0,0,0.06)] text-gray-600 bg-white font-semibold hover:bg-gray-50">
+               <Filter className="w-4 h-4 mx-2" />
+               <span className="mr-2">Filters</span>
+             </Button>
+             
+             <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) closeDialog(); }}>
+               <DialogTrigger asChild>
+                 <Button className="h-[52px] px-8 rounded-full bg-[#054332] hover:bg-[#032d21] text-white font-bold shadow-md whitespace-nowrap transition-all hover:shadow-lg hover:-translate-y-0.5">
+                   <Plus className="w-5 h-5 mr-2" />
+                   Add Stakeholder
+                 </Button>
+               </DialogTrigger>
+               <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl">{editingStakeholder ? "Edit Stakeholder" : "Add New Stakeholder"}</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateOrUpdate} className="space-y-6 py-4">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="font-semibold text-gray-700">Name (Title) <span className="text-red-500">*</span></Label>
+                        <Input
+                          placeholder="e.g. Julian Vane"
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                          required
+                          className="h-12 bg-gray-50/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="font-semibold text-gray-700">Role (Type) <span className="text-red-500">*</span></Label>
+                        <Input
+                          placeholder="e.g. Strategic Advisor"
+                          value={formData.type}
+                          onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                          required
+                          className="h-12 bg-gray-50/50"
+                        />
+                      </div>
+                      {editingStakeholder && (
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-gray-700">Status</Label>
+                          <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
+                            <SelectTrigger className="h-12 bg-gray-50/50">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="disable">Disabled</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button type="button" variant="outline" className="h-11 rounded-xl" onClick={closeDialog}>Cancel</Button>
+                      <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-[#054332] text-white h-11 rounded-xl font-bold">
+                        {editingStakeholder ? "Update Stakeholder" : "Add Stakeholder"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+               </DialogContent>
+             </Dialog>
+          </div>
+        </div>
 
-                      )
-                      , React.createElement(Button, {
-                        type: "submit",
-                        disabled: createMutation.isPending || updateMutation.isPending,
-                        className: "bg-secondary hover:bg-secondary/90 text-white w-full sm:w-auto"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 313}}
+        {/* Data List */}
+        <div className="w-full mt-2">
+           {/* Table Header Row */}
+           <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_100px] gap-4 px-8 py-4">
+              <div className="text-[11px] font-bold tracking-widest text-[#64748b] uppercase">Stakeholder Entity</div>
+              <div className="text-[11px] font-bold tracking-widest text-[#64748b] uppercase text-center pr-6">Assigned Role</div>
+              <div className="text-[11px] font-bold tracking-widest text-[#64748b] uppercase text-center pr-4">Current Status</div>
+              <div className="text-[11px] font-bold tracking-widest text-[#64748b] uppercase text-right pr-2">Actions</div>
+           </div>
 
-                        , React.createElement(Save, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 318}} )
-                        , editingStakeholder ? "Update" : "Add"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-          , React.createElement(CardContent, { className: "p-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 327}}
-            /* Toolbar: search + page size */
-            , React.createElement('div', { className: "flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-4 border-b bg-muted/20 min-w-0"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 329}}
-              , React.createElement('div', { className: "relative flex-1 min-w-0"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 330}}
-                , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 331}} )
-                , React.createElement(Input, {
-                  placeholder: "Search by type or title…"    ,
-                  className: "pl-9 h-10 min-h-10 bg-background border-muted-foreground/20 w-full"     ,
-                  value: searchQuery,
-                  onChange: (e) => setSearchQuery(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 332}}
-                )
-              )
-              , React.createElement('div', { className: "flex items-center gap-2 shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 339}}
-                , React.createElement('span', { className: "text-xs sm:text-sm text-muted-foreground whitespace-nowrap"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 340}}
-                  , React.createElement('span', { className: "hidden sm:inline" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 341}}, "Rows per page"  )
-                  , React.createElement('span', { className: "sm:hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 342}}, "Rows")
-                )
-                , React.createElement(Select, { value: pageSize, onValueChange: setPageSize, __self: this, __source: {fileName: _jsxFileName, lineNumber: 344}}
-                  , React.createElement(SelectTrigger, { className: "w-[76px] sm:w-[88px] h-10 min-h-10"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 345}}
-                    , React.createElement(SelectValue, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 346}} )
-                  )
-                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 348}}
-                    , React.createElement(SelectItem, { value: "5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 349}}, "5")
-                    , React.createElement(SelectItem, { value: "10", __self: this, __source: {fileName: _jsxFileName, lineNumber: 350}}, "10")
-                    , React.createElement(SelectItem, { value: "25", __self: this, __source: {fileName: _jsxFileName, lineNumber: 351}}, "25")
-                    , React.createElement(SelectItem, { value: "50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 352}}, "50")
-                  )
-                )
-              )
-            )
+           {/* List of Pill Cards */}
+           {isLoading ? (
+             <div className="space-y-3">
+                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="w-full h-[88px] rounded-[24px] bg-white border border-gray-100 opacity-60" />)}
+             </div>
+           ) : filteredStakeholders.length === 0 ? (
+             <div className="bg-white rounded-[24px] p-16 text-center border border-gray-100 text-gray-500 text-[15px] font-medium shadow-sm">
+                No stakeholders found matching your criteria.
+             </div>
+           ) : (
+             <div className="flex flex-col gap-3">
+               {filteredStakeholders.map(stakeholder => {
+                 const isActive = stakeholder.status === "active";
+                 // Generate a random avatar background color based on name length for visual interest
+                 const avatarColors = ["bg-blue-100 text-blue-700", "bg-emerald-100 text-emerald-700", "bg-amber-100 text-amber-700", "bg-purple-100 text-purple-700", "bg-rose-100 text-rose-700"];
+                 const colorClass = avatarColors[stakeholder.stakeholder_title.length % avatarColors.length];
+                 const initials = stakeholder.stakeholder_title.substring(0, 2).toUpperCase();
 
-            /* Mobile: card list */
-            , React.createElement('div', { className: "md:hidden border-t border-border/60"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 359}}
-              , isLoading ? (
-                React.createElement('div', { className: "p-2 space-y-2" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 361}}
-                  , Array.from({ length: 4 }).map((_, i) => (
-                    React.createElement('div', { key: i, className: "rounded-lg border bg-card p-2 space-y-2"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 363}}
-                      , React.createElement(Skeleton, { className: "h-4 w-20" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 364}} )
-                      , React.createElement(Skeleton, { className: "h-5 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 365}} )
-                      , React.createElement(Skeleton, { className: "h-5 w-3/4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 366}} )
-                      , React.createElement('div', { className: "flex justify-end gap-2 pt-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 367}}
-                        , React.createElement(Skeleton, { className: "h-10 w-10 rounded-md"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 368}} )
-                        , React.createElement(Skeleton, { className: "h-10 w-10 rounded-md"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 369}} )
-                      )
-                    )
-                  ))
-                )
-              ) : paginated.length === 0 ? (
-                emptyListMessage
-              ) : (
-                React.createElement('div', { className: "p-3 space-y-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 377}}
-                  , paginated.map((stakeholder, index) => {
-                    const isActive = stakeholder.status === "active";
-                    const accentBorder = isActive ? "border-l-emerald-500" : "border-l-slate-400";
-                    const statusClasses = isActive
-                      ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200"
-                      : "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-200";
+                 return (
+                   <div key={stakeholder.id} className="bg-white rounded-[24px] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.04)] border-0 py-4 px-6 grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_100px] gap-4 items-center transition-transform hover:-translate-y-0.5 duration-300 hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.08)]">
+                     
+                     {/* Entity Column */}
+                     <div className="flex items-center gap-4">
+                        <div className={`w-[48px] h-[48px] rounded-full flex items-center justify-center font-bold text-[16px] shrink-0 ${colorClass}`}>
+                           {initials}
+                        </div>
+                        <div>
+                          <div className="font-bold text-[#101828] text-[15px] leading-tight mb-0.5">{stakeholder.stakeholder_title}</div>
+                          <div className="text-[13px] font-medium text-[#64748b]">Organization Partner</div>
+                        </div>
+                     </div>
 
-                    return (
-                      React.createElement(Card, {
-                        key: stakeholder.id,
-                        className: cn(
-                          "rounded-xl border border-border/80 bg-gradient-to-b from-card to-muted/15 shadow-sm overflow-hidden border-l-4",
-                          accentBorder,
-                        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 386}}
+                     {/* Role Column */}
+                     <div className="font-semibold text-gray-700 text-[14px] text-left md:text-center">
+                        {stakeholder.stakeholder_type}
+                     </div>
 
-                        , React.createElement(CardHeader, { className: "pb-2 pt-3 px-4"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 393}}
-                          , React.createElement('div', { className: "flex items-start justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 394}}
-                            , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 395}}
-                              , React.createElement(CardTitle, { className: "text-sm font-semibold leading-tight break-words"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 396}}
-                                , stakeholder.stakeholder_title
-                              )
-                              , React.createElement(CardDescription, { className: "text-xs mt-1 text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 399}}, "Type: "
-                                 , React.createElement('span', { className: "font-medium text-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 400}}, stakeholder.stakeholder_type)
-                              )
-                            )
-                            , React.createElement('button', {
-                              type: "button",
-                              onClick: () => toggleStatus(stakeholder),
-                              disabled: updateMutation.isPending,
-                              className: cn(
-                                "shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold border-0",
-                                statusClasses,
-                              ),
-                              'aria-label': "Toggle stakeholder status"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 403}}
+                     {/* Status Column */}
+                     <div className="flex items-center md:justify-center">
+                       <span className={`inline-flex items-center px-4 py-1.5 rounded-[12px] text-[10.5px] font-bold uppercase tracking-wider ${
+                           isActive ? "bg-[#eaf5ef] text-[#054332]" : "bg-gray-100 text-gray-600"
+                       }`}>
+                         {isActive ? "Active" : "Disabled"}
+                       </span>
+                     </div>
 
-                              , React.createElement('span', {
-                                className: cn(
-                                  "h-1.5 w-1.5 rounded-full",
-                                  isActive ? "bg-emerald-600" : "bg-slate-500",
-                                ),
-                                'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 413}}
-                              )
-                              , statusDisplay(stakeholder.status)
-                            )
-                          )
-                        )
-
-                        , React.createElement(CardContent, { className: "px-4 pb-4 pt-0 space-y-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 425}}
-                          , React.createElement('div', { className: "flex items-center justify-between text-xs text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 426}}
-                            , React.createElement('span', { className: "tabular-nums", __self: this, __source: {fileName: _jsxFileName, lineNumber: 427}}, "#", index + 1)
-                          )
-
-                          , React.createElement('div', { className: "grid grid-cols-2 gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 430}}
-                            , React.createElement(Button, {
-                              type: "button",
-                              variant: "default",
-                              className: "w-full",
-                              onClick: () => openEditDialog(stakeholder),
-                              disabled: updateMutation.isPending, __self: this, __source: {fileName: _jsxFileName, lineNumber: 431}}
-
-                              , React.createElement(Edit2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 438}} ), "Edit"
-
-                            )
-                            , React.createElement(Button, {
-                              type: "button",
-                              variant: "outline",
-                              className: "w-full text-destructive border-destructive/20 hover:bg-destructive/10"   ,
-                              onClick: () => handleDelete(stakeholder.id),
-                              disabled: deleteMutation.isPending, __self: this, __source: {fileName: _jsxFileName, lineNumber: 441}}
-
-                              , React.createElement(Trash2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 448}} ), "Delete"
-
-                            )
-                          )
-                        )
-                      )
-                    );
-                  })
-                )
-              )
-            )
-
-            /* Desktop: table */
-            , React.createElement('div', { className: "hidden md:block overflow-x-auto overflow-x-touch scrollbar-hide"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 461}}
-              , React.createElement(Table, { className: "min-w-[640px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 462}}
-                , React.createElement(TableHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 463}}
-                  , React.createElement(TableRow, { className: "bg-muted/40 hover:bg-muted/40 border-b"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 464}}
-                    , React.createElement(TableHead, { className: "w-14 font-semibold text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 465}}, "#")
-                    , React.createElement(TableHead, { className: "font-semibold text-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 466}}, "Type")
-                    , React.createElement(TableHead, { className: "font-semibold text-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 467}}, "Title")
-                    , React.createElement(TableHead, { className: "font-semibold text-foreground text-center w-[120px]"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 468}}, "Status")
-                    , React.createElement(TableHead, { className: "font-semibold text-foreground text-right w-[120px]"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 469}}, "Actions")
-                  )
-                )
-                , React.createElement(TableBody, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 472}}
-                  , isLoading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      React.createElement(TableRow, { key: i, __self: this, __source: {fileName: _jsxFileName, lineNumber: 475}}
-                        , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 476}}, React.createElement(Skeleton, { className: "h-5 w-6" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 476}} ))
-                        , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 477}}, React.createElement(Skeleton, { className: "h-5 w-24" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 477}} ))
-                        , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 478}}, React.createElement(Skeleton, { className: "h-5 w-40" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 478}} ))
-                        , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 479}}, React.createElement(Skeleton, { className: "h-6 w-16 mx-auto"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 479}} ))
-                        , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 480}}, React.createElement(Skeleton, { className: "h-8 w-20 ml-auto"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 480}} ))
-                      )
-                    ))
-                  ) : paginated.length > 0 ? (
-                    paginated.map((stakeholder, index) => (
-                      React.createElement(TableRow, {
-                        key: stakeholder.id,
-                        className: "group hover:bg-muted/30 transition-colors"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 485}}
-
-                        , React.createElement(TableCell, { className: "font-medium text-muted-foreground tabular-nums"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 489}}
-                          , index + 1
-                        )
-                        , React.createElement(TableCell, { className: "font-medium text-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 492}}
-                          , stakeholder.stakeholder_type
-                        )
-                        , React.createElement(TableCell, { className: "text-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 495}}
-                          , stakeholder.stakeholder_title
-                        )
-                        , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 498}}
-                          , React.createElement('button', {
-                            type: "button",
-                            onClick: () => toggleStatus(stakeholder),
-                            disabled: updateMutation.isPending,
-                            className: cn(
-                              "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                              stakeholder.status === "active"
-                                ? "border-transparent bg-primary text-primary-foreground"
-                                : "border-slate-200 bg-slate-100 text-slate-700"
-                            ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 499}}
-
-                            , React.createElement('span', {
-                              className: cn(
-                                "h-1.5 w-1.5 rounded-full shrink-0",
-                                stakeholder.status === "active" ? "bg-primary-foreground/80" : "bg-slate-500"
-                              ),
-                              'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 510}}
-                            )
-                            , statusDisplay(stakeholder.status)
-                          )
-                        )
-                        , React.createElement(TableCell, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 520}}
-                          , React.createElement('div', { className: "flex justify-end gap-1.5"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 521}}
-                            , React.createElement(Tooltip, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 522}}
-                              , React.createElement(TooltipTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 523}}
-                                , React.createElement(Button, {
-                                  size: "icon",
-                                  variant: "ghost",
-                                  className: "h-8 w-8 text-primary hover:bg-primary/10"   ,
-                                  onClick: () => openEditDialog(stakeholder),
-                                  disabled: updateMutation.isPending, __self: this, __source: {fileName: _jsxFileName, lineNumber: 524}}
-
-                                  , React.createElement(Edit2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 531}} )
-                                )
-                              )
-                              , React.createElement(TooltipContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 534}}, "Edit")
-                            )
-                            , React.createElement(Tooltip, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 536}}
-                              , React.createElement(TooltipTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 537}}
-                                , React.createElement(Button, {
-                                  size: "icon",
-                                  variant: "ghost",
-                                  className: "h-8 w-8 text-destructive hover:bg-destructive/10"   ,
-                                  onClick: () => handleDelete(stakeholder.id),
-                                  disabled: deleteMutation.isPending, __self: this, __source: {fileName: _jsxFileName, lineNumber: 538}}
-
-                                  , React.createElement(Trash2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 545}} )
-                                )
-                              )
-                              , React.createElement(TooltipContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 548}}, "Delete")
-                            )
-                          )
-                        )
-                      )
-                    ))
-                  ) : (
-                    React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 555}}
-                      , React.createElement(TableCell, { colSpan: 5, className: "p-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 556}}
-                        , emptyListMessage
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
+                     {/* Actions Column */}
+                     <div className="flex items-center md:justify-end gap-1">
+                        <button 
+                          onClick={() => openEditDialog(stakeholder)}
+                          className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-gray-400 hover:text-[#054332] hover:bg-[#eaf5ef] transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(stakeholder.id)}
+                          className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                     </div>
+                   </div>
+                 );
+               })}
+             </div>
+           )}
+        </div>
+      </div>
+    </Layout>
   );
 }
