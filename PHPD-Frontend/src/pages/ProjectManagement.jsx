@@ -2,7 +2,7 @@ import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FolderKanban, Plus, Upload, FileText, MapPin, X, ChevronRight, ChevronLeft, CheckCircle2, Calendar, Eye, Pencil, ChevronDown, Building2, Wallet, Landmark, HandCoins, Percent, CalendarDays } from "lucide-react";
+import { FolderKanban, Plus, Upload, FileText, X, ChevronRight, ChevronLeft, CheckCircle2, Calendar, Eye, Pencil, ChevronDown, Building2, Wallet, Landmark, HandCoins, Percent, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,7 @@ import {
 } from "@/api";
 
 import { mediaUrl } from "@/api/config";
-import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
+import { MapContainer, TileLayer } from "react-leaflet";
 
 /** Format stakeholder for display using API stakeholder_details (names) instead of IDs */
 function formatProjectStakeholder(project) {
@@ -111,65 +111,7 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Component to fit map bounds to GeoJSON
-function GeoJSONFitBounds({ data }) {
-  const map = useMap();
-  useEffect(() => {
-    if (data) {
-      try {
-        const layer = L.geoJSON(data);
-        const bounds = layer.getBounds();
-        if (bounds.isValid()) {
-          map.fitBounds(bounds, {
-            padding: [50, 50],
-            maxZoom: 15,
-            animate: true,
-            duration: 1.5
-          });
-        }
-      } catch (err) {
-        console.error("Error fitting map to GeoJSON:", err);
-      }
-    }
-  }, [data, map]);
-  return null;
-}
-
-// Map component for displaying project area
-function ProjectAreaMap({ geoData }) {
-  const [isMounted, setIsMounted] = useState(false);
-  const center = [31.5204, 74.3587]; // Default to Lahore
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return React.createElement('div', { className: "h-[400px] w-full bg-muted animate-pulse rounded-lg"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 146}} );
-  }
-
-  return (
-    React.createElement('div', { className: "h-[400px] w-full rounded-lg overflow-hidden border"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 150}}
-      , React.createElement(MapContainer, {
-        center: center,
-        zoom: 10,
-        scrollWheelZoom: true,
-        style: { height: "100%", width: "100%" }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 151}}
-
-        , React.createElement(TileLayer, {
-          attribution: "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"   ,
-          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", __self: this, __source: {fileName: _jsxFileName, lineNumber: 157}}
-        )
-        , geoData && (
-          React.createElement(React.Fragment, null
-                      , React.createElement(GeoJSON, { data: geoData, style: { color: "#0F4B3A", weight: 3, fillColor: "#2F8F6C", fillOpacity: 0.18 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 163}} )
-            , React.createElement(GeoJSONFitBounds, { data: geoData, __self: this, __source: {fileName: _jsxFileName, lineNumber: 164}} )
-          )
-        )
-      )
-    )
-  );
-}
+// ProjectAreaMap removed (boundary/map upload removed)
 
 const XER_FILE_INPUT_ID = "xer-file-input-wizard";
 
@@ -340,13 +282,7 @@ export default function ProjectManagement() {
     prevDeepLinkModeRef.current = deepLinkMode;
 
     if (deepLinkMode === "create") {
-      // Ensure Create New Project is never "same as view":
-      // keep opening the full 3-step dialog whenever mode=create is present.
-      if (!showAddProjectDialog || editingProject) {
-        setEditingProject(null);
-        resetForm();
-        setShowAddProjectDialog(true);
-      }
+      // /project-management/create is rendered as a full page (no dialog needed).
       return;
     }
     if (deepLinkMode === "view") {
@@ -427,6 +363,8 @@ export default function ProjectManagement() {
   const [projectDescription, setProjectDescription] = useState("");
   const [startingDate, setStartingDate] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
+  const [latitudeCoordinates, setLatitudeCoordinates] = useState("");
+  const [longitudeCoordinates, setLongitudeCoordinates] = useState("");
   const [stakeholderIds, setStakeholderIds] = useState([]);
   const [selectedTehsilId, setSelectedTehsilId] = useState("");
   const [provinceComboboxOpen, setProvinceComboboxOpen] = useState(false);
@@ -436,9 +374,7 @@ export default function ProjectManagement() {
   const [totalBudgetAllocated, setTotalBudgetAllocated] = useState("");
   const [budgetUtilized, setBudgetUtilized] = useState("");
   const [xerFile, setXerFile] = useState(null);
-  const [areaFile, setAreaFile] = useState(null);
-  const [geoData, setGeoData] = useState(null);
-  const [isLoadingGeoData, setIsLoadingGeoData] = useState(false);
+  // NOTE: Boundary/map uploads removed from frontend.
   /** When true, geography useEffects should not clear children (we're loading from project) */
   const skipGeographyClearRef = useRef(false);
 
@@ -505,72 +441,7 @@ export default function ProjectManagement() {
     e.target.value = "";
   };
 
-  // Handle area file upload (GeoJSON, KML, KMZ, Shapefile)
-  const handleAreaFileChange = async (e) => {
-    const file = _optionalChain([e, 'access', _9 => _9.target, 'access', _10 => _10.files, 'optionalAccess', _11 => _11[0]]);
-    if (!file) return;
-
-    const fileName = file.name.toLowerCase();
-    const extension = fileName.split('.').pop();
-
-    setIsLoadingGeoData(true);
-
-    try {
-      if (extension === 'geojson' || extension === 'json') {
-        // Handle GeoJSON
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const jsonData = JSON.parse(_optionalChain([event, 'access', _12 => _12.target, 'optionalAccess', _13 => _13.result]) );
-            setGeoData(jsonData);
-            setAreaFile(file);
-            setIsLoadingGeoData(false);
-          } catch (err) {
-            console.error("Error parsing GeoJSON:", err);
-            toast({
-              title: "Error",
-              description: "Error parsing GeoJSON file. Please ensure it's a valid GeoJSON file.",
-              variant: "destructive",
-            });
-            setIsLoadingGeoData(false);
-          }
-        };
-        reader.readAsText(file);
-      } else if (extension === 'kml' || extension === 'kmz') {
-        // For KML/KMZ, we'll store the file but note that full parsing requires additional libraries
-        // For now, we'll show a message that KML/KMZ support is coming
-        setAreaFile(file);
-        toast({
-          title: "File Uploaded",
-          description: "KML/KMZ file uploaded. Full parsing support coming soon. For now, please use GeoJSON format.",
-        });
-        setIsLoadingGeoData(false);
-      } else if (extension === 'zip' || extension === 'shp') {
-        // For Shapefile, we'll store the file but note that parsing requires shapefile.js
-        setAreaFile(file);
-        toast({
-          title: "File Uploaded",
-          description: "Shapefile uploaded. Full parsing support coming soon. For now, please use GeoJSON format.",
-        });
-        setIsLoadingGeoData(false);
-      } else {
-        toast({
-          title: "Invalid File Format",
-          description: "Unsupported file format. Please upload GeoJSON, KML, KMZ, or Shapefile (ZIP).",
-          variant: "destructive",
-        });
-        setIsLoadingGeoData(false);
-      }
-    } catch (err) {
-      console.error("Error handling area file:", err);
-      toast({
-        title: "Error",
-        description: "Error processing file. Please try again.",
-        variant: "destructive",
-      });
-      setIsLoadingGeoData(false);
-    }
-  };
+  // handleAreaFileChange removed
 
   // Reset form
   const resetForm = () => {
@@ -578,6 +449,8 @@ export default function ProjectManagement() {
     setProjectDescription("");
     setStartingDate("");
     setReferenceNumber("");
+    setLatitudeCoordinates("");
+    setLongitudeCoordinates("");
     setStakeholderIds([]);
     setSelectedProvinceId("");
     setSelectedDivisionId("");
@@ -586,8 +459,6 @@ export default function ProjectManagement() {
     setTotalBudgetAllocated("");
     setBudgetUtilized("");
     setXerFile(null);
-    setAreaFile(null);
-    setGeoData(null);
     setCurrentStep(1);
   };
 
@@ -613,6 +484,20 @@ export default function ProjectManagement() {
     setProjectDescription(_nullishCoalesce(p.project_description, () => ( "")));
     setStartingDate(p.project_starting_date ? p.project_starting_date.slice(0, 10) : "");
     setReferenceNumber(_nullishCoalesce(p.project_reference_no, () => ( "")));
+    setLatitudeCoordinates(
+      String(
+        _nullishCoalesce(p.latitude_coordinates, () => (
+          _nullishCoalesce(p.latitude, () => ( ""))
+        ))
+      )
+    );
+    setLongitudeCoordinates(
+      String(
+        _nullishCoalesce(p.longitude_coordinates, () => (
+          _nullishCoalesce(p.longitude, () => ( ""))
+        ))
+      )
+    );
     setStakeholderIds(
       Array.isArray(p.stakeholder)
         ? p.stakeholder.map(String)
@@ -628,8 +513,6 @@ export default function ProjectManagement() {
     setBudgetUtilized(_nullishCoalesce(p.budget_utilized, () => ( "")));
 
     setXerFile(null);
-    setAreaFile(null);
-    setGeoData(p.geom && typeof p.geom === "object" ? (p.geom ) : null);
     setCurrentStep(1);
     setShowAddProjectDialog(true);
   };
@@ -647,14 +530,6 @@ export default function ProjectManagement() {
       toast({
         title: "XER file required",
         description: "Upload a Primavera P6 .xer file so the schedule can be stored and activities imported.",
-        variant: "destructive",
-      });
-      return false;
-    }
-    if (!areaFile) {
-      toast({
-        title: "Project area file required",
-        description: "Upload a boundary file (GeoJSON, KML, KMZ, or shapefile ZIP) for the project map.",
         variant: "destructive",
       });
       return false;
@@ -700,6 +575,8 @@ export default function ProjectManagement() {
             project_description: projectDescription.trim() || null,
             project_starting_date: startingDate || null,
             project_reference_no: referenceNumber.trim() || null,
+            latitude_coordinates: latitudeCoordinates.trim() || null,
+            longitude_coordinates: longitudeCoordinates.trim() || null,
             province: Number(selectedProvinceId),
             division: Number(selectedDivisionId),
             district: Number(selectedDistrictId),
@@ -717,6 +594,8 @@ export default function ProjectManagement() {
           project_description: projectDescription.trim() || null,
           project_starting_date: startingDate || null,
           project_reference_no: referenceNumber.trim() || null,
+          latitude_coordinates: latitudeCoordinates.trim() || null,
+          longitude_coordinates: longitudeCoordinates.trim() || null,
           province: Number(selectedProvinceId),
           division: Number(selectedDivisionId),
           district: Number(selectedDistrictId),
@@ -726,7 +605,6 @@ export default function ProjectManagement() {
           budget_variance: String(variance),
           budget_remaining: String(remaining),
           xer_file: _nullishCoalesce(xerFile, () => ( undefined)),
-          boundary_file: _nullishCoalesce(areaFile, () => ( undefined)),
         });
       }
     }
@@ -858,7 +736,7 @@ export default function ProjectManagement() {
                       }`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1109}}
                         , currentStep > 2 ? React.createElement(CheckCircle2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1112}} ) : React.createElement('span', { className: "text-sm font-semibold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1112}}, "2")
                       )
-                      , React.createElement('p', { className: `text-xs font-medium mt-2 text-center max-w-[5.5rem] leading-tight ${currentStep === 2 ? "text-primary" : "text-muted-foreground"}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1114}}, "XER + map"
+                      , React.createElement('p', { className: `text-xs font-medium mt-2 text-center max-w-[5.5rem] leading-tight ${currentStep === 2 ? "text-primary" : "text-muted-foreground"}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1114}}, "XER"
 
                       )
                     )
@@ -1234,130 +1112,39 @@ export default function ProjectManagement() {
                     )
                   )
 
-                  /* Step 2: Schedule (XER) + project area */
+                , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1481}}
+                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1482}}
+                    , React.createElement(Label, { htmlFor: "latitudeCoordinates", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1483}}, "Latitude Coordinates" )
+                    , React.createElement(Input, {
+                      id: "latitudeCoordinates",
+                      type: "number",
+                      step: "any",
+                      placeholder: "e.g. 31.5204",
+                      value: latitudeCoordinates,
+                      onChange: (e) => setLatitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1484}}
+                    )
+                  )
+                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1493}}
+                    , React.createElement(Label, { htmlFor: "longitudeCoordinates", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1494}}, "Longitude Coordinates" )
+                    , React.createElement(Input, {
+                      id: "longitudeCoordinates",
+                      type: "number",
+                      step: "any",
+                      placeholder: "e.g. 74.3587",
+                      value: longitudeCoordinates,
+                      onChange: (e) => setLongitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1495}}
+                    )
+                  )
+                )
+
+                  /* Step 2: Schedule (XER) */
                   , currentStep === 2 && (
                     React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1486}}
-                      /* When editing: show current boundary file name & format first, then map once */
-                      , editingProject && (editingProject.boundary_file || geoData) && (
-                        React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1489}}
-                          , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1490}}, "Current project boundary"  )
-                          , editingProject.boundary_file && (
-                            React.createElement('div', { className: "rounded-lg border bg-muted/50 p-3 flex items-center gap-3"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1492}}
-                              , React.createElement(MapPin, { className: "h-5 w-5 text-muted-foreground shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1493}} )
-                              , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1494}}
-                                , React.createElement('p', { className: "text-sm font-medium truncate"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1495}}, "File: "
-                                   , _nullishCoalesce(editingProject.boundary_file.split("/").pop(), () => ( editingProject.boundary_file))
-                                )
-                                , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1498}}, "Format: "
-                                   , (() => {
-                                    const name = (_nullishCoalesce(editingProject.boundary_file.split("/").pop(), () => ( ""))).toLowerCase();
-                                    if (name.endsWith(".geojson") || name.endsWith(".json")) return "GeoJSON";
-                                    if (name.endsWith(".kml")) return "KML";
-                                    if (name.endsWith(".kmz")) return "KMZ";
-                                    if (name.endsWith(".shp") || name.endsWith(".zip")) return "Shapefile";
-                                    return "GeoJSON";
-                                  })()
-                                )
-                              )
-                            )
-                          )
-                          , geoData && (
-                            React.createElement('div', { className: "rounded-md border overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1512}}
-                              , React.createElement(ProjectAreaMap, { geoData: geoData, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1513}} )
-                            )
-                          )
-                        )
-                      )
-
-                      , React.createElement('div', { className: "grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 items-start"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1519}}
-                        , React.createElement(WizardXerUploadSection, {
-                          editingProject: editingProject,
-                          xerFile: xerFile,
-                          onXerInputChange: handleXERFileChange,
-                          onClearXer: () => setXerFile(null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1520}}
-                        )
-                        , React.createElement('div', { className: "space-y-2 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1526}}
-                          , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1527}}, "Project area (GeoJSON, Shapefile, KMZ, KML)"
-                                 , " "
-                            , editingProject ? "(optional – upload to replace)" : "*"
-                          )
-                          , React.createElement('p', { className: "text-xs text-muted-foreground leading-relaxed"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1531}}, "Boundary is converted in the browser when needed, then sent with the XER in the same create request."
-
-                          )
-                          , React.createElement('div', {
-                            className: `relative border-2 border-dashed rounded-lg p-6 sm:p-8 flex flex-col items-center justify-center transition-all min-h-[10.5rem] touch-manipulation ${
-                              areaFile
-                                ? "border-primary bg-primary/5"
-                                : "border-muted-foreground/20 hover:border-primary/50 cursor-pointer"
-                            }`,
-                            onClick: () => _optionalChain([document, 'access', _32 => _32.getElementById, 'call', _33 => _33("area-file-input"), 'optionalAccess', _34 => _34.click, 'call', _35 => _35()]), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1534}}
-
-                            , areaFile ? (
-                              React.createElement('div', { className: "flex items-center gap-3 w-full"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1543}}
-                                , React.createElement(MapPin, { className: "h-8 w-8 text-primary shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1544}} )
-                                , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1545}}
-                                  , React.createElement('p', { className: "font-medium break-all" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1546}}, areaFile.name)
-                                  , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1547}}
-                                    , (areaFile.size / 1024).toFixed(2), " KB"
-                                  )
-                                )
-                                , React.createElement(Button, {
-                                  type: "button",
-                                  variant: "ghost",
-                                  size: "icon",
-                                  className: "h-11 w-11 shrink-0"  ,
-                                  onClick: (e) => {
-                                    e.stopPropagation();
-                                    setAreaFile(null);
-                                    setGeoData(null);
-                                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1551}}
-
-                                  , React.createElement(X, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1562}} )
-                                )
-                              )
-                            ) : (
-                              React.createElement(React.Fragment, null
-                                , React.createElement(Upload, { className: "h-8 w-8 text-muted-foreground mb-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1567}} )
-                                , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1568}}, "Tap to upload area file"    )
-                                , React.createElement('p', { className: "text-xs text-muted-foreground text-center px-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1569}}, "GeoJSON, Shapefile, KMZ, or KML"
-
-                                )
-                              )
-                            )
-                            , React.createElement(Input, {
-                              id: "area-file-input",
-                              type: "file",
-                              accept: ".geojson,.json,.kml,.kmz,.zip,.shp",
-                              onChange: handleAreaFileChange,
-                              className: "hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1574}}
-                            )
-                          )
-                          , React.createElement(Button, {
-                            type: "button",
-                            variant: "secondary",
-                            className: "w-full sm:w-auto min-h-11"  ,
-                            onClick: () => _optionalChain([document, 'access', _36 => _36.getElementById, 'call', _37 => _37("area-file-input"), 'optionalAccess', _38 => _38.click, 'call', _39 => _39()]), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1582}}
-, "Choose area file…"
-
-                          )
-                        )
-                      )
-
-                      , isLoadingGeoData && (
-                        React.createElement('div', { className: "text-center py-8" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1594}}
-                          , React.createElement('div', { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1595}})
-                          , React.createElement('p', { className: "text-sm text-muted-foreground mt-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1596}}, "Loading geographic data..."  )
-                        )
-                      )
-
-                      /* Map preview only when NOT editing (new upload) – avoid showing boundary twice */
-                      , !editingProject && geoData && (
-                        React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1602}}
-                          , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1603}}, "Map Preview" )
-                          , React.createElement('div', { className: "rounded-md border overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1604}}
-                            , React.createElement(ProjectAreaMap, { geoData: geoData, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1605}} )
-                          )
-                        )
+                      , React.createElement(WizardXerUploadSection, {
+                        editingProject: editingProject,
+                        xerFile: xerFile,
+                        onXerInputChange: handleXERFileChange,
+                        onClearXer: () => setXerFile(null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1520}}
                       )
                     )
                   )
@@ -1722,14 +1509,7 @@ export default function ProjectManagement() {
                     )
                   )
 
-                  , !!selectedProjectForView.geom && typeof selectedProjectForView.geom === "object" && (
-                    React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2112}}
-                      , React.createElement('h4', { className: "text-sm font-medium mb-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2113}}, "Project Area (Map)"  )
-                      , React.createElement('div', { className: "rounded-md border overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2114}}
-                        , React.createElement(ProjectAreaMap, { geoData: selectedProjectForView.geom, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2115}} )
-                      )
-                    )
-                  )
+                  /* Project area map removed */
                 )
 
                 , React.createElement(TabsContent, { value: "financial", className: "mt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2121}}
@@ -2340,130 +2120,39 @@ export default function ProjectManagement() {
               )
             )
 
-            /* Step 2: Schedule (XER) + project area */
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2728}}
+              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2729}}
+                , React.createElement(Label, { htmlFor: "latitudeCoordinates_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2730}}, "Latitude Coordinates" )
+                , React.createElement(Input, {
+                  id: "latitudeCoordinates_modal",
+                  type: "number",
+                  step: "any",
+                  placeholder: "e.g. 31.5204",
+                  value: latitudeCoordinates,
+                  onChange: (e) => setLatitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2731}}
+                )
+              )
+              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2740}}
+                , React.createElement(Label, { htmlFor: "longitudeCoordinates_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2741}}, "Longitude Coordinates" )
+                , React.createElement(Input, {
+                  id: "longitudeCoordinates_modal",
+                  type: "number",
+                  step: "any",
+                  placeholder: "e.g. 74.3587",
+                  value: longitudeCoordinates,
+                  onChange: (e) => setLongitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2742}}
+                )
+              )
+            )
+
+            /* Step 2: Schedule (XER) */
             , currentStep === 2 && (
               React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2730}}
-                /* When editing: show current boundary file name & format first, then map once */
-                , editingProject && (editingProject.boundary_file || geoData) && (
-                  React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2733}}
-                    , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2734}}, "Current project boundary"  )
-                    , editingProject.boundary_file && (
-                      React.createElement('div', { className: "rounded-lg border bg-muted/50 p-3 flex items-center gap-3"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2736}}
-                        , React.createElement(MapPin, { className: "h-5 w-5 text-muted-foreground shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2737}} )
-                        , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2738}}
-                          , React.createElement('p', { className: "text-sm font-medium truncate"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2739}}, "File: "
-                             , _nullishCoalesce(editingProject.boundary_file.split("/").pop(), () => ( editingProject.boundary_file))
-                          )
-                          , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2742}}, "Format: "
-                             , (() => {
-                              const name = (_nullishCoalesce(editingProject.boundary_file.split("/").pop(), () => ( ""))).toLowerCase();
-                              if (name.endsWith(".geojson") || name.endsWith(".json")) return "GeoJSON";
-                              if (name.endsWith(".kml")) return "KML";
-                              if (name.endsWith(".kmz")) return "KMZ";
-                              if (name.endsWith(".shp") || name.endsWith(".zip")) return "Shapefile";
-                              return "GeoJSON";
-                            })()
-                          )
-                        )
-                      )
-                    )
-                    , geoData && (
-                      React.createElement('div', { className: "rounded-md border overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2756}}
-                        , React.createElement(ProjectAreaMap, { geoData: geoData, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2757}} )
-                      )
-                    )
-                  )
-                )
-
-                , React.createElement('div', { className: "grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8 items-start"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2763}}
-                  , React.createElement(WizardXerUploadSection, {
-                    editingProject: editingProject,
-                    xerFile: xerFile,
-                    onXerInputChange: handleXERFileChange,
-                    onClearXer: () => setXerFile(null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2764}}
-                  )
-                  , React.createElement('div', { className: "space-y-2 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2770}}
-                    , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2771}}, "Project area (GeoJSON, Shapefile, KMZ, KML)"
-                           , " "
-                      , editingProject ? "(optional – upload to replace)" : "*"
-                    )
-                    , React.createElement('p', { className: "text-xs text-muted-foreground leading-relaxed"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2775}}, "Sent together with the XER when you create the project (multipart request)."
-
-                    )
-                    , React.createElement('div', {
-                      className: `relative border-2 border-dashed rounded-lg p-6 sm:p-8 flex flex-col items-center justify-center transition-all min-h-[10.5rem] touch-manipulation ${
-                        areaFile
-                          ? "border-primary bg-primary/5"
-                          : "border-muted-foreground/20 hover:border-primary/50 cursor-pointer"
-                      }`,
-                      onClick: () => _optionalChain([document, 'access', _53 => _53.getElementById, 'call', _54 => _54("area-file-input"), 'optionalAccess', _55 => _55.click, 'call', _56 => _56()]), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2778}}
-
-                      , areaFile ? (
-                        React.createElement('div', { className: "flex items-center gap-3 w-full"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2787}}
-                          , React.createElement(MapPin, { className: "h-8 w-8 text-primary shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2788}} )
-                          , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2789}}
-                            , React.createElement('p', { className: "font-medium break-all" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2790}}, areaFile.name)
-                            , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2791}}
-                              , (areaFile.size / 1024).toFixed(2), " KB"
-                            )
-                          )
-                          , React.createElement(Button, {
-                            type: "button",
-                            variant: "ghost",
-                            size: "icon",
-                            className: "h-11 w-11 shrink-0"  ,
-                            onClick: (e) => {
-                              e.stopPropagation();
-                              setAreaFile(null);
-                              setGeoData(null);
-                            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2795}}
-
-                            , React.createElement(X, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2806}} )
-                          )
-                        )
-                      ) : (
-                        React.createElement(React.Fragment, null
-                          , React.createElement(Upload, { className: "h-8 w-8 text-muted-foreground mb-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2811}} )
-                          , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2812}}, "Tap to upload area file"    )
-                          , React.createElement('p', { className: "text-xs text-muted-foreground text-center px-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2813}}, "GeoJSON, Shapefile, KMZ, or KML"
-
-                          )
-                        )
-                      )
-                      , React.createElement(Input, {
-                        id: "area-file-input",
-                        type: "file",
-                        accept: ".geojson,.json,.kml,.kmz,.zip,.shp",
-                        onChange: handleAreaFileChange,
-                        className: "hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2818}}
-                      )
-                    )
-                    , React.createElement(Button, {
-                      type: "button",
-                      variant: "secondary",
-                      className: "w-full sm:w-auto min-h-11"  ,
-                      onClick: () => _optionalChain([document, 'access', _57 => _57.getElementById, 'call', _58 => _58("area-file-input"), 'optionalAccess', _59 => _59.click, 'call', _60 => _60()]), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2826}}
-, "Choose area file…"
-
-                    )
-                  )
-                )
-
-                , isLoadingGeoData && (
-                  React.createElement('div', { className: "text-center py-8" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2838}}
-                    , React.createElement('div', { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2839}})
-                    , React.createElement('p', { className: "text-sm text-muted-foreground mt-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2840}}, "Loading geographic data..."  )
-                  )
-                )
-
-                /* Map preview only when NOT editing (new upload) – avoid showing boundary twice */
-                , !editingProject && geoData && (
-                  React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2846}}
-                    , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2847}}, "Map Preview" )
-                    , React.createElement('div', { className: "rounded-md border overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2848}}
-                      , React.createElement(ProjectAreaMap, { geoData: geoData, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2849}} )
-                    )
-                  )
+                , React.createElement(WizardXerUploadSection, {
+                  editingProject: editingProject,
+                  xerFile: xerFile,
+                  onXerInputChange: handleXERFileChange,
+                  onClearXer: () => setXerFile(null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2764}}
                 )
               )
             )
