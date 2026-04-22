@@ -10,7 +10,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 import {
   getProjectById,
   getProjectSummary,
@@ -18,6 +20,7 @@ import {
   listDivisions,
   listDistricts,
   listTehsils,
+  updateProject,
 } from "@/api";
 
 
@@ -31,11 +34,16 @@ const formatPKRMillions = (m) => {
 const STAGE_COLORS = ["#2F8F6C", "#0F4B3A", "#2E7D32", "#f59e0b", "#8BC34A"];
 
 export default function Finance() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { width } = useWindowSize();
   const [selectedDivisionId, setSelectedDivisionId] = useState("all");
   const [selectedDistrictId, setSelectedDistrictId] = useState("all");
   const [selectedTehsilId, setSelectedTehsilId] = useState("all");
   const [selectedProjectId, setSelectedProjectId] = useState("all");
+  const [isBudgetEditOpen, setIsBudgetEditOpen] = useState(false);
+  const [budgetAllocatedInput, setBudgetAllocatedInput] = useState("");
+  const [budgetUtilizedInput, setBudgetUtilizedInput] = useState("");
 
   const isMobile = width < 640;
 
@@ -177,6 +185,24 @@ export default function Finance() {
     enabled: selectedProjectNumericId != null && Number.isFinite(selectedProjectNumericId),
     staleTime: 30 * 1000,
   });
+
+  // Prefill budget edit inputs from selected project
+  useEffect(() => {
+    if (!selectedProject) {
+      setIsBudgetEditOpen(false);
+      setBudgetAllocatedInput("");
+      setBudgetUtilizedInput("");
+      return;
+    }
+    setBudgetAllocatedInput(
+      selectedProject.total_budget_allocated != null
+        ? String(selectedProject.total_budget_allocated)
+        : "",
+    );
+    setBudgetUtilizedInput(
+      selectedProject.budget_utilized != null ? String(selectedProject.budget_utilized) : "",
+    );
+  }, [selectedProject]);
 
   // When a project is selected first, list-project/?id=… fills division/district/tehsil (ids + names).
   useEffect(() => {
@@ -477,6 +503,54 @@ export default function Finance() {
     }));
   }, [stageBreakdownItems]);
 
+  const updateBudgetMutation = useMutation({
+    mutationFn: async ({ projectId, allocatedM, utilizedM }) => {
+      const variance = allocatedM - utilizedM;
+      const remaining = Math.max(0, allocatedM - utilizedM);
+      return await updateProject(projectId, {
+        total_budget_allocated: allocatedM,
+        budget_utilized: utilizedM,
+        budget_variance: String(variance),
+        budget_remaining: String(remaining),
+      });
+    },
+    onSuccess: () => {
+      // Refresh data so Finance KPIs/charts update immediately.
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (selectedProjectNumericId != null) {
+        queryClient.invalidateQueries({ queryKey: ["project-by-id", selectedProjectNumericId] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["project-summary"] });
+
+      toast({ title: "Success", description: "Budget updated successfully." });
+      setIsBudgetEditOpen(false);
+    },
+    onError: (e) => {
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to update budget.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveBudget = () => {
+    if (!selectedProjectNumericId || !selectedProject) return;
+    const aRaw = String(budgetAllocatedInput || "").trim();
+    const uRaw = String(budgetUtilizedInput || "").trim();
+    const allocatedM = aRaw === "" ? 0 : Number(aRaw);
+    const utilizedM = uRaw === "" ? 0 : Number(uRaw);
+    if (!Number.isFinite(allocatedM) || !Number.isFinite(utilizedM)) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter valid numeric values for budget fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    updateBudgetMutation.mutate({ projectId: selectedProjectNumericId, allocatedM, utilizedM });
+  };
+
   return (
     React.createElement(Layout, { title: isMobile ? "FINANCIAL ANALYTICS" : "Financial & Budget Analytics", __self: this, __source: {fileName: _jsxFileName, lineNumber: 577}}
       , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 578}}
@@ -575,6 +649,17 @@ export default function Finance() {
                 )
               )
             )
+
+            , selectedProjectId !== "all" && (
+              React.createElement(Button, {
+                variant: "outline",
+                size: "sm",
+                onClick: () => setIsBudgetEditOpen(true),
+                className: "h-9 px-3 text-xs font-semibold border-border/60 bg-background hover:bg-muted/40 shrink-0",
+                disabled: !selectedProject,
+                __self: this, __source: {fileName: _jsxFileName, lineNumber: 670}}
+              , "Update Budget")
+            )
           )
           , (selectedDivisionId !== "all" ||
             selectedDistrictId !== "all" ||
@@ -592,6 +677,55 @@ export default function Finance() {
               className: "h-8 px-3 text-xs font-medium text-white bg-red-600 hover:bg-red-700 border-0 shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 679}}
 , "Clear"
 
+            )
+          )
+        )
+
+        , isBudgetEditOpen && selectedProjectId !== "all" && selectedProject && (
+          React.createElement(Card, { className: "border border-border/60 shadow-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 690}}
+            , React.createElement(CardHeader, { className: "pb-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 691}}
+              , React.createElement(CardTitle, { className: "text-base", __self: this, __source: {fileName: _jsxFileName, lineNumber: 692}}, "Update Budget")
+              , React.createElement(CardDescription, { className: "text-xs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 693}}
+                , "Project details are locked. Only budget values can be updated."
+              )
+            )
+            , React.createElement(CardContent, { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 697}}
+              , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-3 gap-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 698}}
+                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 699}}
+                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 700}}, "Project")
+                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 701}}, selectedProject.project_name || `#${selectedProject.id}`)
+                )
+                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 702}}
+                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 703}}, "Reference No")
+                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 704}}, _nullishCoalesce(selectedProject.project_reference_no, () => ( "—")))
+                )
+                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 705}}
+                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 706}}, "Location")
+                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 707}}
+                    , (_nullishCoalesce(selectedProject.division_name, () => ( "")) || "—"), " / "
+                    , (_nullishCoalesce(selectedProject.district_name, () => ( "")) || "—"), " / "
+                    , (_nullishCoalesce(selectedProject.tehsil_name, () => ( "")) || "—")
+                  )
+                )
+              )
+
+              , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 710}}
+                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 711}}
+                  , React.createElement('label', { className: "text-sm font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 712}}, "Total Budget Allocated (M)")
+                  , React.createElement(Input, { value: budgetAllocatedInput, onChange: (e) => setBudgetAllocatedInput(e.target.value), placeholder: "e.g. 120.50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 713}} )
+                )
+                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 714}}
+                  , React.createElement('label', { className: "text-sm font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 715}}, "Budget Utilized (M)")
+                  , React.createElement(Input, { value: budgetUtilizedInput, onChange: (e) => setBudgetUtilizedInput(e.target.value), placeholder: "e.g. 40.25", __self: this, __source: {fileName: _jsxFileName, lineNumber: 716}} )
+                )
+              )
+
+              , React.createElement('div', { className: "flex items-center justify-end gap-2 pt-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 720}}
+                , React.createElement(Button, { variant: "outline", size: "sm", onClick: () => setIsBudgetEditOpen(false), className: "h-8", disabled: updateBudgetMutation.isPending, __self: this, __source: {fileName: _jsxFileName, lineNumber: 721}}, "Cancel")
+                , React.createElement(Button, { variant: "default", size: "sm", onClick: handleSaveBudget, className: "h-8 bg-primary text-primary-foreground", disabled: updateBudgetMutation.isPending, __self: this, __source: {fileName: _jsxFileName, lineNumber: 722}}
+                  , updateBudgetMutation.isPending ? "Saving…" : "Save"
+                )
+              )
             )
           )
         )
