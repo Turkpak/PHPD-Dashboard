@@ -20,7 +20,6 @@ import {
     Layers,
     Navigation2
 } from "lucide-react";
-import { CityMap } from "@/components/dashboard/CityMap";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -314,55 +313,30 @@ export default function AreaManagement() {
                         )
                     )
 
-                    /* Map Component */
+                    /* Map removed: available only on Dashboard (divisions) and /gis */
                     , React.createElement(motion.div, {
                         initial: { opacity: 0, x: 20 },
                         animate: { opacity: 1, x: 0 },
-                        className: "w-full h-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 316}}
-
-                        , React.createElement(Card, { className: "border-none shadow-[0_8px_40px_rgb(0,0,0,0.06)] overflow-hidden flex flex-col h-full min-h-[420px] sm:min-h-[520px] lg:min-h-[600px]"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 321}}
-                            , React.createElement(CardHeader, { className: "bg-white/80 backdrop-blur-md border-b z-10 py-4"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 322}}
-                                , React.createElement('div', { className: "flex items-center justify-between"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 323}}
-                                    , React.createElement('div', { className: "flex items-center gap-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 324}}
-                                        , React.createElement('div', { className: "h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 325}}
-                                            , React.createElement(MapPin, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 326}} )
-                                        )
-                                        , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 328}}
-                                            , React.createElement(CardTitle, { className: "text-sm font-black uppercase tracking-widest text-primary"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 329}}, "Integration Preview" )
-                                            , React.createElement('p', { className: "text-[10px] text-muted-foreground font-bold italic"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 330}}
-                                                , step === 1 ? "Administrative Context Mapping" : `Live Spatial Validation: ${formData.tehsil || 'Pending'}`
-                                            )
-                                        )
+                        className: "w-full h-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 316}}
+                        , React.createElement(Card, { className: "border-none shadow-[0_8px_40px_rgb(0,0,0,0.06)] overflow-hidden flex flex-col h-full min-h-[420px] sm:min-h-[520px] lg:min-h-[600px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 321}}
+                            , React.createElement(CardHeader, { className: "bg-white/80 backdrop-blur-md border-b z-10 py-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 322}}
+                                , React.createElement('div', { className: "flex items-center gap-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 323}}
+                                    , React.createElement('div', { className: "h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20", __self: this, __source: {fileName: _jsxFileName, lineNumber: 325}}
+                                        , React.createElement(MapPin, { className: "h-5 w-5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 326}} )
                                     )
-                                    , uploadedFile && (
-                                        React.createElement('div', { className: "flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 336}}
-                                            , React.createElement('div', { className: "h-2 w-2 bg-emerald-600 rounded-full animate-pulse"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 337}} )
-                                            , React.createElement('span', { className: "text-[10px] font-black text-emerald-700 uppercase tracking-widest"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 338}}, "Active " , _optionalChain([uploadedFile, 'access', _15 => _15.name, 'access', _16 => _16.split, 'call', _17 => _17('.'), 'access', _18 => _18.pop, 'call', _19 => _19(), 'optionalAccess', _20 => _20.toUpperCase, 'call', _21 => _21()]))
+                                    , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 328}}
+                                        , React.createElement(CardTitle, { className: "text-sm font-black uppercase tracking-widest text-primary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 329}}, "Map Preview Disabled")
+                                        , React.createElement('p', { className: "text-[11px] text-muted-foreground font-medium", __self: this, __source: {fileName: _jsxFileName, lineNumber: 330}}
+                                            , "Maps are available on Dashboard (Divisions) and GIS Layers only."
                                         )
                                     )
                                 )
                             )
-                            , React.createElement(CardContent, { className: "p-0 flex-1 relative bg-muted"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 343}}
-                                , React.createElement(CityMap, {
-                                    city: formData.division || "lahore",
-                                    activeLayers: new Set(),
-                                    geoData: uploadedGeoData,
-                                    showStats: false, __self: this, __source: {fileName: _jsxFileName, lineNumber: 344}}
-                                )
-
-                                , React.createElement(AnimatePresence, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 351}}
-                                    , step === 2 && !uploadedFile && (
-                                        React.createElement(motion.div, {
-                                            initial: { opacity: 0 },
-                                            animate: { opacity: 1 },
-                                            exit: { opacity: 0 },
-                                            className: "absolute inset-0 z-20 bg-primary/20 backdrop-blur-[2px] flex items-center justify-center pointer-events-none"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 353}}
-
-                                            , React.createElement('div', { className: "bg-white/90 px-6 py-4 rounded-2xl shadow-2xl border border-white flex items-center gap-4"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 359}}
-                                                , React.createElement(Upload, { className: "h-6 w-6 text-primary animate-bounce"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 360}} )
-                                                , React.createElement('p', { className: "text-sm font-black text-primary uppercase tracking-widest"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 361}}, "Waiting for Spatial Asset"   )
-                                            )
-                                        )
+                            , React.createElement(CardContent, { className: "p-6 flex-1 bg-muted/30 flex items-center justify-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 343}}
+                                , React.createElement('div', { className: "text-center max-w-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 343}}
+                                    , React.createElement('p', { className: "text-sm font-semibold text-primary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 343}}, "Need the map?")
+                                    , React.createElement('p', { className: "text-xs text-muted-foreground mt-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 343}}
+                                        , "Open the GIS page to view layers and project locations."
                                     )
                                 )
                             )

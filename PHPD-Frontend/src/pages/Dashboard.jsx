@@ -2252,8 +2252,8 @@ export default function Dashboard() {
           )
         )
 
-        /* Table + Map side-by-side (Table left, Map right) */
-        , (viewType === "divisions" || viewType === "projects") && !selectedItemName && !selectedItemType ? (
+        /* Table + Map side-by-side (Table left, Map right) — ONLY for /?view=divisions */
+        , viewType === "divisions" && !selectedItemName && !selectedItemType ? (
           (() => {
             const total = projectsForTable.length;
             const totalPages = Math.max(1, Math.ceil(total / PROJECTS_TABLE_PAGE_SIZE));
@@ -2272,38 +2272,93 @@ export default function Dashboard() {
                       , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Sorted by highest overall progress")
                     )
                     , React.createElement('div', { className: "flex items-center gap-2 justify-end", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
-                      , React.createElement('span', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Page ", safePage, " / ", totalPages)
-                      , React.createElement(Button, { variant: "outline", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-8", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Prev")
-                      , React.createElement(Button, { variant: "outline", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-8", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Next")
+                      , React.createElement('span', { className: "text-[11px] text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Page ", safePage, " / ", totalPages)
+                      , React.createElement(Button, { variant: "outline", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-7 px-2 text-[11px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Prev")
+                      , React.createElement(Button, { variant: "outline", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-7 px-2 text-[11px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Next")
                     )
                   )
                   , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
                     , React.createElement('div', { className: "w-full h-full overflow-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
                       , React.createElement('table', { className: "w-full text-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
-                        , React.createElement('thead', { className: "bg-muted/40", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                        , React.createElement('thead', { className: "bg-background/95 supports-[backdrop-filter]:bg-background/70 sticky top-0 z-10 backdrop-blur border-b border-border/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
                           , React.createElement('tr', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
-                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Project")
-                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3 w-[220px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Overall Progress")
-                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3 min-w-[260px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Division / District / Tehsil")
+                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                , "Project"
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}} )
+                              )
+                            )
+                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3 w-[220px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                , "Overall Progress"
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}} )
+                              )
+                            )
+                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3 min-w-[260px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                , "Division / District / Tehsil"
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}} )
+                              )
+                            )
                           )
                         )
                         , React.createElement('tbody', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
                           , pageRows.map((row) => {
                             const pct = Math.max(0, Math.min(100, Number(row.progressPct) || 0));
+                            const iconSet = [
+                              FolderKanban,
+                              Building2,
+                              Zap,
+                              Camera,
+                              Radio,
+                              ClipboardCheck,
+                              TrendingUp,
+                              Home,
+                            ];
+                            const colorSet = [
+                              "bg-fuchsia-500/10 text-fuchsia-700 border-fuchsia-500/25",
+                              "bg-emerald-500/10 text-emerald-700 border-emerald-500/25",
+                              "bg-sky-500/10 text-sky-700 border-sky-500/25",
+                              "bg-amber-500/10 text-amber-800 border-amber-500/25",
+                              "bg-rose-500/10 text-rose-700 border-rose-500/25",
+                              "bg-violet-500/10 text-violet-700 border-violet-500/25",
+                              "bg-cyan-500/10 text-cyan-700 border-cyan-500/25",
+                              "bg-lime-500/10 text-lime-800 border-lime-500/25",
+                            ];
+                            const rowKey = Number(row.id) || 0;
+                            const iconIdx = Math.abs(rowKey) % iconSet.length;
+                            const colorIdx = Math.abs(rowKey) % colorSet.length;
+                            const RowIcon = iconSet[iconIdx];
+                            const colorClass = colorSet[colorIdx];
                             return (
                               React.createElement('tr', {
                                 key: row.id,
-                                className: "border-t border-border/60 hover:bg-muted/30 cursor-pointer",
+                                className: "border-t border-border/60 hover:bg-muted/30 cursor-pointer transition-colors odd:bg-muted/10",
                                 onClick: () => {
                                   const p = apiProjects.find((x) => Number(x.id) === Number(row.id));
                                   if (p) setSelectedProjectForDetails(p);
                                 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
-                                , React.createElement('td', { className: "px-4 py-3 font-semibold text-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, row.name)
+                                , React.createElement('td', { className: "px-4 py-3 font-semibold text-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                  , React.createElement('div', { className: "flex items-center gap-3 min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                    , React.createElement('div', {
+                                      className: `h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${colorClass}`,
+                                      __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                      , React.createElement(RowIcon, { className: "h-4 w-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}} )
+                                    )
+                                    , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                      , React.createElement('div', { className: "truncate font-semibold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, row.name)
+                                      , React.createElement('div', { className: "text-[11px] text-muted-foreground truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "ID: ", row.id)
+                                    )
+                                  )
+                                )
                                 , React.createElement('td', { className: "px-4 py-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
                                   , React.createElement('div', { className: "flex items-center gap-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
-                                    , React.createElement('span', { className: "text-xs font-bold tabular-nums text-primary w-14", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, pct.toFixed(2), "%")
-                                    , React.createElement('div', { className: "flex-1 h-2 rounded-full bg-muted overflow-hidden border border-border/50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
-                                      , React.createElement('div', { className: "h-full bg-primary", style: { width: `${pct}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}} )
+                                    , React.createElement('span', { className: "inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold tabular-nums text-primary border border-border/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                      , React.createElement('span', { className: "h-1.5 w-1.5 rounded-full bg-emerald-500", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}} )
+                                      , pct.toFixed(2), "%"
+                                    )
+                                    , React.createElement('div', { className: "flex-1 h-2.5 rounded-full bg-muted overflow-hidden border border-border/50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                      , React.createElement('div', { className: "h-full bg-gradient-to-r from-secondary to-primary", style: { width: `${pct}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}} )
                                     )
                                   )
                                 )
@@ -2327,7 +2382,7 @@ export default function Dashboard() {
                     searchQuery: "",
                     showStats: false,
                     showSurveillanceLayers: false,
-                    showLegend: true,
+                    showLegend: false,
                     legendProjects: mapScopeProjects,
                     geoData: dashboardMapGeoData,
                     showGeoBoundary: false,
@@ -2341,27 +2396,7 @@ export default function Dashboard() {
               )
             );
           })()
-        ) : (
-          /* Map only (for drill-down views) */
-          React.createElement('div', { className: "w-full min-h-[420px] h-[55vh] max-h-[720px] rounded-xl overflow-hidden border border-border/60 shadow-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
-            , React.createElement(CityMap, {
-              city: "lahore",
-              activeLayers: new Set(),
-              searchQuery: "",
-              showStats: false,
-              showSurveillanceLayers: false,
-              showLegend: true,
-              legendProjects: mapScopeProjects,
-              geoData: dashboardMapGeoData,
-              showGeoBoundary: false,
-              projectMarkerVariant: "green",
-              onProjectSelect: (projectId) => {
-                const p = apiProjects.find((x) => Number(x.id) === Number(projectId));
-                if (p) setSelectedProjectForDetails(p);
-              }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
-            )
-          )
-        )
+        ) : null
 
         /* Milestone details should appear beneath Overall Progress (and replace the old charts when selected) */
         , selectedMilestoneKey &&

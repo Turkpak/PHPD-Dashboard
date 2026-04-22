@@ -44,8 +44,8 @@ const NAV_ITEMS = [
     icon: Navigation2,
     label: "Area Management",
     subItems: [
-      { icon: MapPin, label: "Province", href: "/province-management" },
-      { icon: MapPin, label: "Division", href: "/division-management" },
+      { icon: MapPin, label: "Zone", href: "/province-management" },
+      { icon: MapPin, label: "Circle", href: "/division-management" },
       { icon: MapPin, label: "District", href: "/district-management" },
       { icon: MapPin, label: "Tehsil", href: "/tehsil-management" },
     ],

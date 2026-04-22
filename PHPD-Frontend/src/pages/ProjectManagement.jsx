@@ -30,8 +30,6 @@ import {
   listProjects,
   getProjectById,
   listStakeholders,
-  listProvinces,
-  listDivisions,
   listDistricts,
   listTehsils,
   createProject,
@@ -295,23 +293,10 @@ export default function ProjectManagement() {
     queryKey: ["stakeholders"],
     queryFn: listStakeholders,
   });
-  const { data: provincesList = [] } = useQuery({
-    queryKey: ["provinces"],
-    queryFn: listProvinces,
-  });
-  const [selectedProvinceId, setSelectedProvinceId] = useState("");
-  const provinceIdNum = selectedProvinceId ? Number(selectedProvinceId) : undefined;
-  const { data: divisionsList = [] } = useQuery({
-    queryKey: ["divisions", provinceIdNum],
-    queryFn: () => listDivisions(provinceIdNum),
-    enabled: !!provinceIdNum,
-  });
-  const [selectedDivisionId, setSelectedDivisionId] = useState("");
-  const divisionIdNum = selectedDivisionId ? Number(selectedDivisionId) : undefined;
+  // Province/Division removed from create/edit form; keep only District/Tehsil selectors.
   const { data: districtsList = [] } = useQuery({
-    queryKey: ["districts", divisionIdNum],
-    queryFn: () => listDistricts(divisionIdNum),
-    enabled: !!divisionIdNum,
+    queryKey: ["districts"],
+    queryFn: () => listDistricts(undefined),
   });
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
   const districtIdNum = selectedDistrictId ? Number(selectedDistrictId) : undefined;
@@ -371,8 +356,6 @@ export default function ProjectManagement() {
   const [circle, setCircle] = useState("");
   const [stakeholderIds, setStakeholderIds] = useState([]);
   const [selectedTehsilId, setSelectedTehsilId] = useState("");
-  const [provinceComboboxOpen, setProvinceComboboxOpen] = useState(false);
-  const [divisionComboboxOpen, setDivisionComboboxOpen] = useState(false);
   const [districtComboboxOpen, setDistrictComboboxOpen] = useState(false);
   const [tehsilComboboxOpen, setTehsilComboboxOpen] = useState(false);
   const [totalBudgetAllocated, setTotalBudgetAllocated] = useState("");
@@ -417,17 +400,6 @@ export default function ProjectManagement() {
 
   useEffect(() => {
     if (skipGeographyClearRef.current) return;
-    setSelectedDivisionId("");
-    setSelectedDistrictId("");
-    setSelectedTehsilId("");
-  }, [selectedProvinceId]);
-  useEffect(() => {
-    if (skipGeographyClearRef.current) return;
-    setSelectedDistrictId("");
-    setSelectedTehsilId("");
-  }, [selectedDivisionId]);
-  useEffect(() => {
-    if (skipGeographyClearRef.current) return;
     setSelectedTehsilId("");
   }, [selectedDistrictId]);
 
@@ -436,15 +408,11 @@ export default function ProjectManagement() {
     if (!skipGeographyClearRef.current) return;
     if (!editingProject) return;
     const allSet =
-      selectedProvinceId === String(editingProject.province) &&
-      selectedDivisionId === String(editingProject.division) &&
       selectedDistrictId === String(editingProject.district) &&
       selectedTehsilId === String(editingProject.tehsil);
     if (allSet) skipGeographyClearRef.current = false;
   }, [
     editingProject,
-    selectedProvinceId,
-    selectedDivisionId,
     selectedDistrictId,
     selectedTehsilId,
   ]);
@@ -481,8 +449,6 @@ export default function ProjectManagement() {
     setZone("");
     setCircle("");
     setStakeholderIds([]);
-    setSelectedProvinceId("");
-    setSelectedDivisionId("");
     setSelectedDistrictId("");
     setSelectedTehsilId("");
     setTotalBudgetAllocated("");
@@ -504,8 +470,7 @@ export default function ProjectManagement() {
     }
     skipGeographyClearRef.current = true;
     await Promise.all([
-      queryClient.prefetchQuery({ queryKey: ["divisions", p.province], queryFn: () => listDivisions(p.province) }),
-      queryClient.prefetchQuery({ queryKey: ["districts", p.division], queryFn: () => listDistricts(p.division) }),
+      queryClient.prefetchQuery({ queryKey: ["districts"], queryFn: () => listDistricts(undefined) }),
       queryClient.prefetchQuery({ queryKey: ["tehsils", p.district], queryFn: () => listTehsils(p.district) }),
     ]);
     setEditingProject(p);
@@ -537,8 +502,6 @@ export default function ProjectManagement() {
           ? [String(p.stakeholder)]
           : []
     );
-    setSelectedProvinceId(String(p.province));
-    setSelectedDivisionId(String(p.division));
     setSelectedDistrictId(String(p.district));
     setSelectedTehsilId(String(p.tehsil));
     setTotalBudgetAllocated(_nullishCoalesce(p.total_budget_allocated, () => ( "")));
@@ -612,8 +575,6 @@ export default function ProjectManagement() {
             longitude_coordinates: longitudeCoordinates.trim() || null,
             zone: zone.trim() || null,
             circle: circle.trim() || null,
-            province: Number(selectedProvinceId),
-            division: Number(selectedDivisionId),
             district: Number(selectedDistrictId),
             tehsil: Number(selectedTehsilId),
             total_budget_allocated: totalBudgetAllocated.trim() || null,
@@ -634,8 +595,6 @@ export default function ProjectManagement() {
           longitude_coordinates: longitudeCoordinates.trim() || null,
           zone: zone.trim() || null,
           circle: circle.trim() || null,
-          province: Number(selectedProvinceId),
-          division: Number(selectedDivisionId),
           district: Number(selectedDistrictId),
           tehsil: Number(selectedTehsilId),
           total_budget_allocated: totalBudget,
@@ -962,118 +921,8 @@ export default function ProjectManagement() {
                         )
                       )
 
-                      /* Province / Division / District / Tehsil (Area Management) */
+                      /* District / Tehsil (Area Management) */
                       , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1255}}
-                        /* Province — searchable */
-                        , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1257}}
-                          , React.createElement(Label, { htmlFor: "province", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1258}}, "Province *" )
-                          , React.createElement(Popover, { open: provinceComboboxOpen, onOpenChange: setProvinceComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1259}}
-                            , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1260}}
-                              , React.createElement(Button, {
-                                id: "province",
-                                variant: "outline",
-                                role: "combobox",
-                                'aria-expanded': provinceComboboxOpen,
-                                className: "w-full justify-between font-normal h-9 px-3 text-sm"     ,
-                                type: "button", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1261}}
-
-                                , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1269}}
-                                  , selectedProvinceId
-                                    ? (_nullishCoalesce(_optionalChain([provincesList, 'access', _20 => _20.find, 'call', _21 => _21((p) => String(p.id) === selectedProvinceId), 'optionalAccess', _22 => _22.province_name]), () => (
-                                      "Select province")))
-                                    : "Select province"
-                                )
-                                , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1275}} )
-                              )
-                            )
-                            , React.createElement(PopoverContent, { className: "w-[var(--radix-popover-trigger-width)] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1278}}
-                              , React.createElement(Command, {
-                                filter: (value, search) => {
-                                  const q = (search || "").toLowerCase();
-                                  if (!q) return 1;
-                                  return (value || "").toLowerCase().includes(q) ? 1 : 0;
-                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1279}}
-
-                                , React.createElement(CommandInput, { placeholder: "Type to search province…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1286}} )
-                                , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1287}}
-                                  , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1288}}, "No province found."  )
-                                  , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1289}}
-                                    , provincesList.map((p) => (
-                                      React.createElement(CommandItem, {
-                                        key: p.id,
-                                        value: p.province_name,
-                                        onSelect: () => {
-                                          skipGeographyClearRef.current = false;
-                                          setSelectedProvinceId(String(p.id));
-                                          setProvinceComboboxOpen(false);
-                                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1291}}
-
-                                        , p.province_name
-                                      )
-                                    ))
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-
-                        /* Division — searchable */
-                        , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1311}}
-                          , React.createElement(Label, { htmlFor: "division", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1312}}, "Division *" )
-                          , React.createElement(Popover, { open: divisionComboboxOpen, onOpenChange: setDivisionComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1313}}
-                            , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1314}}
-                              , React.createElement(Button, {
-                                id: "division",
-                                variant: "outline",
-                                role: "combobox",
-                                'aria-expanded': divisionComboboxOpen,
-                                disabled: !selectedProvinceId,
-                                className: "w-full justify-between font-normal h-9 px-3 text-sm"     ,
-                                type: "button", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1315}}
-
-                                , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1324}}
-                                  , selectedDivisionId
-                                    ? (_nullishCoalesce(_optionalChain([divisionsList, 'access', _23 => _23.find, 'call', _24 => _24((d) => String(d.id) === selectedDivisionId), 'optionalAccess', _25 => _25.division_name]), () => (
-                                      "Select division")))
-                                    : selectedProvinceId
-                                      ? "Select division"
-                                      : "Select province first"
-                                )
-                                , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1332}} )
-                              )
-                            )
-                            , React.createElement(PopoverContent, { className: "w-[var(--radix-popover-trigger-width)] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1335}}
-                              , React.createElement(Command, {
-                                filter: (value, search) => {
-                                  const q = (search || "").toLowerCase();
-                                  if (!q) return 1;
-                                  return (value || "").toLowerCase().includes(q) ? 1 : 0;
-                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1336}}
-
-                                , React.createElement(CommandInput, { placeholder: "Type to search division…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1343}} )
-                                , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1344}}
-                                  , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1345}}, "No division found."  )
-                                  , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1346}}
-                                    , divisionsList.map((d) => (
-                                      React.createElement(CommandItem, {
-                                        key: d.id,
-                                        value: d.division_name,
-                                        onSelect: () => {
-                                          skipGeographyClearRef.current = false;
-                                          setSelectedDivisionId(String(d.id));
-                                          setDivisionComboboxOpen(false);
-                                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1348}}
-
-                                        , d.division_name
-                                      )
-                                    ))
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
 
                         /* District — searchable */
                         , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1368}}
@@ -1085,7 +934,6 @@ export default function ProjectManagement() {
                                 variant: "outline",
                                 role: "combobox",
                                 'aria-expanded': districtComboboxOpen,
-                                disabled: !selectedDivisionId,
                                 className: "w-full justify-between font-normal h-9 px-3 text-sm"     ,
                                 type: "button", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1372}}
 
@@ -1093,9 +941,7 @@ export default function ProjectManagement() {
                                   , selectedDistrictId
                                     ? (_nullishCoalesce(_optionalChain([districtsList, 'access', _26 => _26.find, 'call', _27 => _27((d) => String(d.id) === selectedDistrictId), 'optionalAccess', _28 => _28.district_name]), () => (
                                       "Select district")))
-                                    : selectedDivisionId
-                                      ? "Select district"
-                                      : "Select division first"
+                                    : "Select district"
                                 )
                                 , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1389}} )
                               )
@@ -2025,112 +1871,7 @@ export default function ProjectManagement() {
                   )
                 )
 
-                /* Province — searchable */
-                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2510}}
-                  , React.createElement(Label, { htmlFor: "province", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2511}}, "Province *" )
-                  , React.createElement(Popover, { open: provinceComboboxOpen, onOpenChange: setProvinceComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2512}}
-                    , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2513}}
-                      , React.createElement(Button, {
-                        id: "province",
-                        variant: "outline",
-                        role: "combobox",
-                        'aria-expanded': provinceComboboxOpen,
-                        className: "w-full justify-between font-normal h-9 px-3 text-sm"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2514}}
-
-                        , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2521}}
-                          , selectedProvinceId
-                            ? (_nullishCoalesce(_optionalChain([provincesList, 'access', _41 => _41.find, 'call', _42 => _42((p) => String(p.id) === selectedProvinceId), 'optionalAccess', _43 => _43.province_name]), () => ( "Select province")))
-                            : "Select province"
-                        )
-                        , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2526}} )
-                      )
-                    )
-                    , React.createElement(PopoverContent, { className: "w-[var(--radix-popover-trigger-width)] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2529}}
-                      , React.createElement(Command, {
-                        filter: (value, search) => {
-                          const q = (search || "").toLowerCase();
-                          if (!q) return 1;
-                          return (value || "").toLowerCase().includes(q) ? 1 : 0;
-                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2530}}
-
-                        , React.createElement(CommandInput, { placeholder: "Type to search province…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2537}} )
-                        , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2538}}
-                          , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2539}}, "No province found."  )
-                          , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2540}}
-                            , provincesList.map((p) => (
-                              React.createElement(CommandItem, {
-                                key: p.id,
-                                value: p.province_name,
-                                onSelect: () => {
-                                  skipGeographyClearRef.current = false;
-                                  setSelectedProvinceId(String(p.id));
-                                  setProvinceComboboxOpen(false);
-                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2542}}
-
-                                , p.province_name
-                              )
-                            ))
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-
-                /* Division — searchable; show current name from list or editingProject */
-                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2562}}
-                  , React.createElement(Label, { htmlFor: "division", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2563}}, "Division *" )
-                  , React.createElement(Popover, { open: divisionComboboxOpen, onOpenChange: setDivisionComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2564}}
-                    , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2565}}
-                      , React.createElement(Button, {
-                        id: "division",
-                        variant: "outline",
-                        role: "combobox",
-                        'aria-expanded': divisionComboboxOpen,
-                        disabled: !selectedProvinceId,
-                        className: "w-full justify-between font-normal h-9 px-3 text-sm"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2566}}
-
-                        , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2574}}
-                          , selectedDivisionId
-                            ? (_nullishCoalesce(_nullishCoalesce(_optionalChain([divisionsList, 'access', _44 => _44.find, 'call', _45 => _45((d) => String(d.id) === selectedDivisionId), 'optionalAccess', _46 => _46.division_name]), () => (
-                              (editingProject && Number(selectedDivisionId) === editingProject.division ? editingProject.division_name : null))), () => (
-                              "Select division")))
-                            : selectedProvinceId ? "Select division" : "Select province first"
-                        )
-                        , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2581}} )
-                      )
-                    )
-                    , React.createElement(PopoverContent, { className: "w-[var(--radix-popover-trigger-width)] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2584}}
-                      , React.createElement(Command, {
-                        filter: (value, search) => {
-                          const q = (search || "").toLowerCase();
-                          if (!q) return 1;
-                          return (value || "").toLowerCase().includes(q) ? 1 : 0;
-                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2585}}
-
-                        , React.createElement(CommandInput, { placeholder: "Type to search division…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2592}} )
-                        , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2593}}
-                          , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2594}}, "No division found."  )
-                          , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2595}}
-                            , divisionsList.map((d) => (
-                              React.createElement(CommandItem, {
-                                key: d.id,
-                                value: d.division_name,
-                                onSelect: () => {
-                                  skipGeographyClearRef.current = false;
-                                  setSelectedDivisionId(String(d.id));
-                                  setDivisionComboboxOpen(false);
-                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2597}}
-
-                                , d.division_name
-                              )
-                            ))
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
+                /* Province/Division removed */
 
                 /* District — searchable */
                 , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2617}}
@@ -2142,7 +1883,6 @@ export default function ProjectManagement() {
                         variant: "outline",
                         role: "combobox",
                         'aria-expanded': districtComboboxOpen,
-                        disabled: !selectedDivisionId,
                         className: "w-full justify-between font-normal h-9 px-3 text-sm"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2621}}
 
                         , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2629}}
@@ -2150,7 +1890,7 @@ export default function ProjectManagement() {
                             ? (_nullishCoalesce(_nullishCoalesce(_optionalChain([districtsList, 'access', _47 => _47.find, 'call', _48 => _48((d) => String(d.id) === selectedDistrictId), 'optionalAccess', _49 => _49.district_name]), () => (
                               (editingProject && Number(selectedDistrictId) === editingProject.district ? editingProject.district_name : null))), () => (
                               "Select district")))
-                            : selectedDivisionId ? "Select district" : "Select division first"
+                            : "Select district"
                         )
                         , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2636}} )
                       )
