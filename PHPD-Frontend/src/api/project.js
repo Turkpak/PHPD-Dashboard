@@ -120,6 +120,7 @@ export async function createProject(payload) {
     const form = new FormData();
     appendFormValue(form, "stakeholder", payload.stakeholder);
     appendFormValue(form, "project_name", _nullishCoalesce(payload.project_name, () => ( "")));
+    appendFormValue(form, "category", _nullishCoalesce(payload.category, () => ( "")));
     appendFormValue(form, "project_description", _nullishCoalesce(payload.project_description, () => ( "")));
     appendFormValue(
       form,
@@ -127,6 +128,10 @@ export async function createProject(payload) {
       _nullishCoalesce(normalizeDateFieldForApi(payload.project_starting_date), () => ( undefined)),
     );
     appendFormValue(form, "project_reference_no", _nullishCoalesce(payload.project_reference_no, () => ( "")));
+    appendFormValue(form, "latitude_coordinates", _nullishCoalesce(payload.latitude_coordinates, () => ( "")));
+    appendFormValue(form, "longitude_coordinates", _nullishCoalesce(payload.longitude_coordinates, () => ( "")));
+    appendFormValue(form, "zone", _nullishCoalesce(payload.zone, () => ( "")));
+    appendFormValue(form, "circle", _nullishCoalesce(payload.circle, () => ( "")));
     appendFormValue(form, "province", payload.province);
     appendFormValue(form, "division", payload.division);
     appendFormValue(form, "district", payload.district);
@@ -170,9 +175,14 @@ export async function createProject(payload) {
     sanitizeProjectDates({
     stakeholder: payload.stakeholder,
     project_name: _nullishCoalesce(payload.project_name, () => ( null)),
+    category: _nullishCoalesce(payload.category, () => ( null)),
     project_description: _nullishCoalesce(payload.project_description, () => ( null)),
     project_starting_date: _nullishCoalesce(payload.project_starting_date, () => ( null)),
     project_reference_no: _nullishCoalesce(payload.project_reference_no, () => ( null)),
+    latitude_coordinates: _nullishCoalesce(payload.latitude_coordinates, () => ( null)),
+    longitude_coordinates: _nullishCoalesce(payload.longitude_coordinates, () => ( null)),
+    zone: _nullishCoalesce(payload.zone, () => ( null)),
+    circle: _nullishCoalesce(payload.circle, () => ( null)),
     province: payload.province,
     division: payload.division,
     district: payload.district,
@@ -212,9 +222,14 @@ export async function updateProject(id, payload) {
       appendFormValue(form, "stakeholder", p.stakeholder);
     }
     appendFormValue(form, "project_name", p.project_name);
+    appendFormValue(form, "category", p.category);
     appendFormValue(form, "project_description", p.project_description);
     appendFormValue(form, "project_starting_date", _nullishCoalesce(normalizeDateFieldForApi(p.project_starting_date), () => ( undefined)));
     appendFormValue(form, "project_reference_no", p.project_reference_no);
+    appendFormValue(form, "latitude_coordinates", p.latitude_coordinates);
+    appendFormValue(form, "longitude_coordinates", p.longitude_coordinates);
+    appendFormValue(form, "zone", p.zone);
+    appendFormValue(form, "circle", p.circle);
     appendFormValue(form, "province", p.province);
     appendFormValue(form, "division", p.division);
     appendFormValue(form, "district", p.district);

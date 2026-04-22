@@ -2,12 +2,13 @@ import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FolderKanban, Plus, Upload, FileText, X, ChevronRight, ChevronLeft, CheckCircle2, Calendar, Eye, Pencil, ChevronDown, Building2, Wallet, Landmark, HandCoins, Percent, CalendarDays } from "lucide-react";
+import { FolderKanban, Plus, Upload, FileText, X, ChevronRight, ChevronLeft, CheckCircle2, Calendar, Eye, Pencil, ChevronDown, Building2, Wallet, Landmark, HandCoins, Percent, CalendarDays, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -363,8 +364,11 @@ export default function ProjectManagement() {
   const [projectDescription, setProjectDescription] = useState("");
   const [startingDate, setStartingDate] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
+  const [category, setCategory] = useState("");
   const [latitudeCoordinates, setLatitudeCoordinates] = useState("");
   const [longitudeCoordinates, setLongitudeCoordinates] = useState("");
+  const [zone, setZone] = useState("");
+  const [circle, setCircle] = useState("");
   const [stakeholderIds, setStakeholderIds] = useState([]);
   const [selectedTehsilId, setSelectedTehsilId] = useState("");
   const [provinceComboboxOpen, setProvinceComboboxOpen] = useState(false);
@@ -388,6 +392,28 @@ export default function ProjectManagement() {
     if (!Number.isFinite(u)) return "";
     return String(Math.max(0, t - u));
   }, [totalBudgetAllocated, budgetUtilized]);
+
+  const zoneOptions = useMemo(() => {
+    const options = new Set();
+    for (const p of projectsData) {
+      const z = String(_nullishCoalesce(p.zone, () => ( ""))).trim();
+      if (z) options.add(z);
+    }
+    const current = String(zone || "").trim();
+    if (current) options.add(current);
+    return Array.from(options).sort((a, b) => a.localeCompare(b));
+  }, [projectsData, zone]);
+
+  const circleOptions = useMemo(() => {
+    const options = new Set();
+    for (const p of projectsData) {
+      const c = String(_nullishCoalesce(p.circle, () => ( ""))).trim();
+      if (c) options.add(c);
+    }
+    const current = String(circle || "").trim();
+    if (current) options.add(current);
+    return Array.from(options).sort((a, b) => a.localeCompare(b));
+  }, [projectsData, circle]);
 
   useEffect(() => {
     if (skipGeographyClearRef.current) return;
@@ -446,11 +472,14 @@ export default function ProjectManagement() {
   // Reset form
   const resetForm = () => {
     setProjectName("");
+    setCategory("");
     setProjectDescription("");
     setStartingDate("");
     setReferenceNumber("");
     setLatitudeCoordinates("");
     setLongitudeCoordinates("");
+    setZone("");
+    setCircle("");
     setStakeholderIds([]);
     setSelectedProvinceId("");
     setSelectedDivisionId("");
@@ -481,6 +510,7 @@ export default function ProjectManagement() {
     ]);
     setEditingProject(p);
     setProjectName(_nullishCoalesce(p.project_name, () => ( "")));
+    setCategory(String(_nullishCoalesce(p.category, () => ( ""))));
     setProjectDescription(_nullishCoalesce(p.project_description, () => ( "")));
     setStartingDate(p.project_starting_date ? p.project_starting_date.slice(0, 10) : "");
     setReferenceNumber(_nullishCoalesce(p.project_reference_no, () => ( "")));
@@ -498,6 +528,8 @@ export default function ProjectManagement() {
         ))
       )
     );
+    setZone(String(_nullishCoalesce(p.zone, () => ( ""))));
+    setCircle(String(_nullishCoalesce(p.circle, () => ( ""))));
     setStakeholderIds(
       Array.isArray(p.stakeholder)
         ? p.stakeholder.map(String)
@@ -572,11 +604,14 @@ export default function ProjectManagement() {
           payload: {
             stakeholder: stakeholderIds.map(Number),
             project_name: projectName.trim() || null,
+            category: category.trim() || null,
             project_description: projectDescription.trim() || null,
             project_starting_date: startingDate || null,
             project_reference_no: referenceNumber.trim() || null,
             latitude_coordinates: latitudeCoordinates.trim() || null,
             longitude_coordinates: longitudeCoordinates.trim() || null,
+            zone: zone.trim() || null,
+            circle: circle.trim() || null,
             province: Number(selectedProvinceId),
             division: Number(selectedDivisionId),
             district: Number(selectedDistrictId),
@@ -591,11 +626,14 @@ export default function ProjectManagement() {
         createProjectMutation.mutate({
           stakeholder: stakeholderIds.map(Number),
           project_name: projectName.trim() || null,
+          category: category.trim() || null,
           project_description: projectDescription.trim() || null,
           project_starting_date: startingDate || null,
           project_reference_no: referenceNumber.trim() || null,
           latitude_coordinates: latitudeCoordinates.trim() || null,
           longitude_coordinates: longitudeCoordinates.trim() || null,
+          zone: zone.trim() || null,
+          circle: circle.trim() || null,
           province: Number(selectedProvinceId),
           division: Number(selectedDivisionId),
           district: Number(selectedDistrictId),
@@ -770,6 +808,19 @@ export default function ProjectManagement() {
                           onChange: (e) => setProjectName(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1171}}
                         )
                       )
+                      , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1177}}
+                        , React.createElement(Label, { htmlFor: "category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1178}}, "Category" )
+                        , React.createElement(Select, { value: category || "", onValueChange: setCategory, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1179}}
+                          , React.createElement(SelectTrigger, { id: "category", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1180}}
+                            , React.createElement(SelectValue, { placeholder: "Select category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1181}} )
+                          )
+                          , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1183}}
+                            , React.createElement(SelectItem, { value: "Basic Health Unit", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1184}}, "Basic Health Unit" )
+                            , React.createElement(SelectItem, { value: "Dispensary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1185}}, "Dispensary" )
+                            , React.createElement(SelectItem, { value: "Dispilated", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1186}}, "Dispilated" )
+                          )
+                        )
+                      )
                       , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1178}}
                         , React.createElement(Label, { htmlFor: "projectDescription", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1179}}, "Project Description *"  )
                         , React.createElement(Textarea, {
@@ -877,6 +928,35 @@ export default function ProjectManagement() {
                                   })
                                 )
                               )
+                            )
+                          )
+                        )
+                      )
+
+                      , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1252}}
+                        , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1253}}
+                          , React.createElement(Label, { htmlFor: "zone", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1254}}, "Zone" )
+                          , React.createElement(Select, { value: zone || "", onValueChange: setZone, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1255}}
+                            , React.createElement(SelectTrigger, { id: "zone", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1256}}
+                              , React.createElement(SelectValue, { placeholder: zoneOptions.length ? "Select zone" : "No zone options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1257}} )
+                            )
+                            , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1259}}
+                              , zoneOptions.map((z) => (
+                                React.createElement(SelectItem, { key: z, value: z, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1261}}, z )
+                              ))
+                            )
+                          )
+                        )
+                        , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1263}}
+                          , React.createElement(Label, { htmlFor: "circle", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1264}}, "Circle" )
+                          , React.createElement(Select, { value: circle || "", onValueChange: setCircle, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1265}}
+                            , React.createElement(SelectTrigger, { id: "circle", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1266}}
+                              , React.createElement(SelectValue, { placeholder: circleOptions.length ? "Select circle" : "No circle options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1267}} )
+                            )
+                            , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1269}}
+                              , circleOptions.map((c) => (
+                                React.createElement(SelectItem, { key: c, value: c, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1271}}, c )
+                              ))
                             )
                           )
                         )
@@ -1112,27 +1192,29 @@ export default function ProjectManagement() {
                     )
                   )
 
-                , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1481}}
-                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1482}}
-                    , React.createElement(Label, { htmlFor: "latitudeCoordinates", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1483}}, "Latitude Coordinates" )
-                    , React.createElement(Input, {
-                      id: "latitudeCoordinates",
-                      type: "number",
-                      step: "any",
-                      placeholder: "e.g. 31.5204",
-                      value: latitudeCoordinates,
-                      onChange: (e) => setLatitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1484}}
+                , currentStep === 1 && (
+                  React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1481}}
+                    , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1482}}
+                      , React.createElement(Label, { htmlFor: "latitudeCoordinates", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1483}}, "Latitude Coordinates" )
+                      , React.createElement(Input, {
+                        id: "latitudeCoordinates",
+                        type: "number",
+                        step: "any",
+                        placeholder: "e.g. 31.5204",
+                        value: latitudeCoordinates,
+                        onChange: (e) => setLatitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1484}}
+                      )
                     )
-                  )
-                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1493}}
-                    , React.createElement(Label, { htmlFor: "longitudeCoordinates", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1494}}, "Longitude Coordinates" )
-                    , React.createElement(Input, {
-                      id: "longitudeCoordinates",
-                      type: "number",
-                      step: "any",
-                      placeholder: "e.g. 74.3587",
-                      value: longitudeCoordinates,
-                      onChange: (e) => setLongitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1495}}
+                    , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1493}}
+                      , React.createElement(Label, { htmlFor: "longitudeCoordinates", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1494}}, "Longitude Coordinates" )
+                      , React.createElement(Input, {
+                        id: "longitudeCoordinates",
+                        type: "number",
+                        step: "any",
+                        placeholder: "e.g. 74.3587",
+                        value: longitudeCoordinates,
+                        onChange: (e) => setLongitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1495}}
+                      )
                     )
                   )
                 )
@@ -1779,6 +1861,19 @@ export default function ProjectManagement() {
                     onChange: (e) => setProjectName(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2417}}
                   )
                 )
+                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2424}}
+                  , React.createElement(Label, { htmlFor: "category_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2425}}, "Category" )
+                  , React.createElement(Select, { value: category || "", onValueChange: setCategory, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2426}}
+                    , React.createElement(SelectTrigger, { id: "category_modal", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2427}}
+                      , React.createElement(SelectValue, { placeholder: "Select category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2428}} )
+                    )
+                    , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2430}}
+                      , React.createElement(SelectItem, { value: "Basic Health Unit", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2431}}, "Basic Health Unit" )
+                      , React.createElement(SelectItem, { value: "Dispensary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2432}}, "Dispensary" )
+                      , React.createElement(SelectItem, { value: "Dispilated", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2433}}, "Dispilated" )
+                    )
+                  )
+                )
 
                 /* Project Description */
                 , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2426}}
@@ -1895,6 +1990,35 @@ export default function ProjectManagement() {
                               , s.stakeholder_title, " (" , s.stakeholder_type, ")"
                             )
                           )
+                        ))
+                      )
+                    )
+                  )
+                )
+
+                , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2506}}
+                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2507}}
+                    , React.createElement(Label, { htmlFor: "zone_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2508}}, "Zone" )
+                    , React.createElement(Select, { value: zone || "", onValueChange: setZone, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2509}}
+                      , React.createElement(SelectTrigger, { id: "zone_modal", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2510}}
+                        , React.createElement(SelectValue, { placeholder: zoneOptions.length ? "Select zone" : "No zone options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2511}} )
+                      )
+                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2513}}
+                        , zoneOptions.map((z) => (
+                          React.createElement(SelectItem, { key: z, value: z, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2515}}, z )
+                        ))
+                      )
+                    )
+                  )
+                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2517}}
+                    , React.createElement(Label, { htmlFor: "circle_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2518}}, "Circle" )
+                    , React.createElement(Select, { value: circle || "", onValueChange: setCircle, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2519}}
+                      , React.createElement(SelectTrigger, { id: "circle_modal", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2520}}
+                        , React.createElement(SelectValue, { placeholder: circleOptions.length ? "Select circle" : "No circle options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2521}} )
+                      )
+                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2523}}
+                        , circleOptions.map((c) => (
+                          React.createElement(SelectItem, { key: c, value: c, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2525}}, c )
                         ))
                       )
                     )
@@ -2120,27 +2244,29 @@ export default function ProjectManagement() {
               )
             )
 
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2728}}
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2729}}
-                , React.createElement(Label, { htmlFor: "latitudeCoordinates_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2730}}, "Latitude Coordinates" )
-                , React.createElement(Input, {
-                  id: "latitudeCoordinates_modal",
-                  type: "number",
-                  step: "any",
-                  placeholder: "e.g. 31.5204",
-                  value: latitudeCoordinates,
-                  onChange: (e) => setLatitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2731}}
+            , currentStep === 1 && (
+              React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2728}}
+                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2729}}
+                  , React.createElement(Label, { htmlFor: "latitudeCoordinates_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2730}}, "Latitude Coordinates" )
+                  , React.createElement(Input, {
+                    id: "latitudeCoordinates_modal",
+                    type: "number",
+                    step: "any",
+                    placeholder: "e.g. 31.5204",
+                    value: latitudeCoordinates,
+                    onChange: (e) => setLatitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2731}}
+                  )
                 )
-              )
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2740}}
-                , React.createElement(Label, { htmlFor: "longitudeCoordinates_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2741}}, "Longitude Coordinates" )
-                , React.createElement(Input, {
-                  id: "longitudeCoordinates_modal",
-                  type: "number",
-                  step: "any",
-                  placeholder: "e.g. 74.3587",
-                  value: longitudeCoordinates,
-                  onChange: (e) => setLongitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2742}}
+                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2740}}
+                  , React.createElement(Label, { htmlFor: "longitudeCoordinates_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2741}}, "Longitude Coordinates" )
+                  , React.createElement(Input, {
+                    id: "longitudeCoordinates_modal",
+                    type: "number",
+                    step: "any",
+                    placeholder: "e.g. 74.3587",
+                    value: longitudeCoordinates,
+                    onChange: (e) => setLongitudeCoordinates(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2742}}
+                  )
                 )
               )
             )
