@@ -113,10 +113,9 @@ export function HierarchyCard({ title, overallProgress, onClick, className, colo
   return (
     React.createElement(Card, { 
       className: cn(
-        "relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer group",
-        "border-l-4",
-        colors.border,
-        "border-r border-t border-b border-border/40 hover:border-opacity-100",
+        "relative overflow-hidden transition-all duration-300 cursor-pointer group",
+        "hover:-translate-y-0.5 hover:shadow-lg",
+        "border border-border/60",
         className
       ),
       onClick: onClick, __self: this, __source: {fileName: _jsxFileName, lineNumber: 110}}
@@ -124,55 +123,47 @@ export function HierarchyCard({ title, overallProgress, onClick, className, colo
       /* Image Background Layer with Overlay */
       , React.createElement('div', { 
         className: "absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105", 
-        style: { backgroundImage: bgImage, opacity: 0.15 },
+        style: { backgroundImage: bgImage, opacity: 0.10 },
         __self: this, __source: {fileName: _jsxFileName, lineNumber: 120}
       })
-      , React.createElement('div', { className: cn("absolute inset-0 z-0 backdrop-blur-sm", colors.bg), __self: this, __source: {fileName: _jsxFileName, lineNumber: 124}})
+      , React.createElement('div', { className: cn("absolute inset-0 z-0", colors.bg), __self: this, __source: {fileName: _jsxFileName, lineNumber: 124}})
       
       /* Subtle light blow effect */
-      , React.createElement('div', { className: cn("absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -mr-16 -mt-16 opacity-30 group-hover:opacity-50 transition-opacity z-0 bg-white/40"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 125}})
+      , React.createElement('div', { className: cn("absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -mr-16 -mt-16 opacity-20 group-hover:opacity-35 transition-opacity z-0 bg-white/50"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 125}})
 
       , React.createElement(CardContent, { className: "relative z-10 p-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 127}}
-        , React.createElement('div', { className: "flex flex-col space-y-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 128}}
-          /* Header */
-          , React.createElement('div', { className: "flex items-start justify-between backdrop-blur-md bg-white/30 rounded-lg p-2 shadow-sm border border-white/20"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 130}}
-            , React.createElement('div', { className: "flex-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 131}}
-              , React.createElement('h3', { className: "text-base font-bold font-heading text-slate-800 dark:text-white mb-0.5 drop-shadow-sm"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 132}}
+        , React.createElement('div', { className: "flex flex-col gap-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 128}}
+          /* Title row (simple, no inner panel) */
+          , React.createElement('div', { className: "flex items-start justify-between gap-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 130}}
+            , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 131}}
+              , React.createElement('h3', { className: "truncate text-[13px] sm:text-sm font-bold font-heading text-slate-800 dark:text-white", __self: this, __source: {fileName: _jsxFileName, lineNumber: 132}}
                 , title
               )
-              , React.createElement('p', { className: "text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-widest drop-shadow-sm"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 135}}
+              , React.createElement('div', { className: "mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-700/80 dark:text-slate-200 border border-white/40 bg-white/35", __self: this, __source: {fileName: _jsxFileName, lineNumber: 135}}
                 , status
               )
             )
-            , React.createElement('div', { className: cn(
-              "p-2 rounded-lg transition-colors shadow-sm",
-              colors.iconBg
-            ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 139}}
+            , React.createElement('div', { className: cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/40 shadow-sm bg-white/50", colors.iconBg), __self: this, __source: {fileName: _jsxFileName, lineNumber: 139}}
               , React.createElement(TrendingUp, { className: cn("h-4 w-4", colors.text), __self: this, __source: {fileName: _jsxFileName, lineNumber: 143}} )
             )
           )
 
-          /* Progress Section */
-          , React.createElement('div', { className: "space-y-2 pt-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 148}}
-            , React.createElement('div', { className: "flex items-baseline justify-between"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 149}}
-              , React.createElement('span', { className: cn("text-[28px] font-extrabold font-heading tabular-nums tracking-tight leading-none drop-shadow-sm", colors.text), __self: this, __source: {fileName: _jsxFileName, lineNumber: 150}}
+          /* Value row */
+          , React.createElement('div', { className: "flex items-end justify-between", __self: this, __source: {fileName: _jsxFileName, lineNumber: 148}}
+            , React.createElement('div', { className: "flex items-baseline gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 149}}
+              , React.createElement('span', { className: cn("text-[22px] sm:text-[24px] font-extrabold font-heading tabular-nums tracking-tight leading-none", colors.text), __self: this, __source: {fileName: _jsxFileName, lineNumber: 150}}
                 , progressLabel
-                , React.createElement('span', { className: "text-sm font-bold ml-1 opacity-80" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 152}}, "%")
               )
-              , React.createElement(ArrowRight, { className: cn("h-5 w-5 text-slate-600/70 group-hover:translate-x-1 group-hover:text-slate-900 transition-all"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 154}} )
+              , React.createElement('span', { className: cn("text-[11px] font-bold opacity-80", colors.text), __self: this, __source: {fileName: _jsxFileName, lineNumber: 152}}, "%")
             )
+            , React.createElement(ArrowRight, { className: cn("h-5 w-5 text-slate-600/60 group-hover:translate-x-1 group-hover:text-slate-900 transition-all"), __self: this, __source: {fileName: _jsxFileName, lineNumber: 154}} )
+          )
 
-            /* Progress Bar */
-            , React.createElement('div', { className: "relative h-[10px] w-full overflow-hidden rounded-full bg-slate-200/50 dark:bg-slate-800/50 shadow-inner backdrop-blur-sm"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 158}}
-              , React.createElement('div', { 
-                className: cn(
-                  "h-full transition-all duration-1000 ease-out rounded-full shadow-md relative overflow-hidden",
-                  colors.progress
-                ),
-                style: { width: `${progress}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 159}}
-
-                , React.createElement('div', { className: "absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 166}})
-              )
+          /* Progress bar (slimmer, cleaner like your 3rd example) */
+          , React.createElement('div', { className: "relative h-2 w-full overflow-hidden rounded-full bg-white/50 border border-white/40 shadow-inner", __self: this, __source: {fileName: _jsxFileName, lineNumber: 158}}
+            , React.createElement('div', {
+              className: cn("h-full rounded-full transition-all duration-700 ease-out", colors.progress),
+              style: { width: `${progress}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 159}}
             )
           )
         )

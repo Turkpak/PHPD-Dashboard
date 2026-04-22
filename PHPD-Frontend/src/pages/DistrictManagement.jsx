@@ -109,7 +109,7 @@ export default function DistrictManagement() {
       return;
     }
     if (!formData.provinceId || !formData.divisionId) {
-      toast({ title: "Error", description: "Please select province and division", variant: "destructive" });
+      toast({ title: "Error", description: "Please select zone and circle", variant: "destructive" });
       return;
     }
     const provinceId = Number(formData.provinceId);
@@ -161,7 +161,7 @@ export default function DistrictManagement() {
       , React.createElement('div', { className: "flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 159}}
         , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 160}}
           , React.createElement('h1', { className: "text-2xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 161}}, "District — Add / Edit"    )
-          , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 162}}, "Select Province → Division, then add the district against that hierarchy."          )
+          , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 162}}, "Select Zone → Circle, then add the district against that hierarchy."          )
         )
 
         , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 165}}
@@ -174,7 +174,7 @@ export default function DistrictManagement() {
           , React.createElement(CardContent, { className: "pt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 172}}
             , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 173}}
               , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 174}}
-                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 175}}, "Province "
+                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 175}}, "Zone "
                    , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 176}}, "*")
                 )
                 , React.createElement(Select, {
@@ -183,7 +183,7 @@ export default function DistrictManagement() {
                   disabled: provincesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 178}}
 
                   , React.createElement(SelectTrigger, { className: "h-10", __self: this, __source: {fileName: _jsxFileName, lineNumber: 183}}
-                    , React.createElement(SelectValue, { placeholder: provinces.length === 0 ? "Add provinces first" : "Select province", __self: this, __source: {fileName: _jsxFileName, lineNumber: 184}} )
+                    , React.createElement(SelectValue, { placeholder: provinces.length === 0 ? "Add zones first" : "Select zone", __self: this, __source: {fileName: _jsxFileName, lineNumber: 184}} )
                   )
                   , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 186}}
                     , provinces.map((p) => (
@@ -195,7 +195,7 @@ export default function DistrictManagement() {
                 )
               )
               , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 195}}
-                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 196}}, "Division "
+                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 196}}, "Circle "
                    , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 197}}, "*")
                 )
                 , React.createElement(Select, {
@@ -204,7 +204,7 @@ export default function DistrictManagement() {
                   disabled: !formData.provinceId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 199}}
 
                   , React.createElement(SelectTrigger, { className: "h-10", __self: this, __source: {fileName: _jsxFileName, lineNumber: 204}}
-                    , React.createElement(SelectValue, { placeholder: !formData.provinceId ? "Select province first" : "Select division", __self: this, __source: {fileName: _jsxFileName, lineNumber: 205}} )
+                    , React.createElement(SelectValue, { placeholder: !formData.provinceId ? "Select zone first" : "Select circle", __self: this, __source: {fileName: _jsxFileName, lineNumber: 205}} )
                   )
                   , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 207}}
                     , divisionsByProvince.map((d) => (
@@ -267,8 +267,8 @@ export default function DistrictManagement() {
                 , React.createElement(TableHeader, { className: "bg-muted/50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 265}}
                   , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 266}}
                     , React.createElement(TableHead, { className: "w-16", __self: this, __source: {fileName: _jsxFileName, lineNumber: 267}}, "#")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 268}}, "Province")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 269}}, "Division")
+                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 268}}, "Zone")
+                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 269}}, "Circle")
                     , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 270}}, "District")
                     , React.createElement(TableHead, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 271}}, "Action")
                   )

@@ -7,6 +7,7 @@ import { PhaseDistributionChart } from "@/components/dashboard/PhaseDistribution
 import { PhaseTimelineChart } from "@/components/dashboard/PhaseTimelineChart";
 import { PlannedVsActualChart } from "@/components/dashboard/PlannedVsActualChart";
 import { HierarchyCard } from "@/components/dashboard/HierarchyCard";
+import { CityMap } from "@/components/dashboard/CityMap";
 
 import { MilestoneDetailsPanel } from "@/components/dashboard/MilestoneDetailsPanel";
 import { exportDashboardToPPTX } from "@/utils/exportToPPTX";
@@ -640,6 +641,142 @@ const getProgressRangeMeta = (overall) => {
   return { label: "Low Progress", color: "#ef4444", min: 0, max: 25 }; // Rose
 };
 
+// --- GIS helpers (mirrors /gis behavior; kept local to dashboard) ---
+function normalizeProjectGeom(geom) {
+  if (geom == null) return null;
+  const g = geom;
+  if (g.type === "FeatureCollection" && Array.isArray(g.features)) return geom;
+  if (g.type === "Feature" && g.geometry) return geom;
+  if (
+    g.type === "Polygon" ||
+    g.type === "MultiPolygon" ||
+    g.type === "Point" ||
+    g.type === "LineString"
+  ) {
+    return { type: "Feature", geometry: g, properties: {} };
+  }
+  return null;
+}
+
+function walkNestedTasks(tasks, visit) {
+  if (!Array.isArray(tasks) || tasks.length === 0) return;
+  for (const t of tasks) {
+    visit(t);
+    if (Array.isArray(t.subtasks) && t.subtasks.length > 0) {
+      walkNestedTasks(t.subtasks, visit);
+    }
+  }
+}
+
+function deriveProjectStatusFromNestedGantt(tasks) {
+  if (!Array.isArray(tasks) || tasks.length === 0) return "pending";
+  let anyDelay = false;
+  let anyProgress = false;
+  let allNotStarted = true;
+
+  walkNestedTasks(tasks, (t) => {
+    if (t?.has_delay === true) anyDelay = true;
+    const p = Number(t?.progress ?? 0);
+    if (Number.isFinite(p) && p > 0) anyProgress = true;
+    const ps = String(t?.progress_status ?? "").trim();
+    if (ps !== "Not Started") allNotStarted = false;
+  });
+
+  if (anyDelay) return "in_delay";
+  if (anyProgress) return "in_progress";
+  if (allNotStarted) return "pending";
+  return "pending";
+}
+
+function geometryBboxCenter(geometry) {
+  const coords = geometry?.coordinates;
+  if (!coords) return null;
+  let minLng = Number.POSITIVE_INFINITY;
+  let minLat = Number.POSITIVE_INFINITY;
+  let maxLng = Number.NEGATIVE_INFINITY;
+  let maxLat = Number.NEGATIVE_INFINITY;
+
+  const walk = (v) => {
+    if (!v) return;
+    if (
+      Array.isArray(v) &&
+      v.length === 2 &&
+      typeof v[0] === "number" &&
+      typeof v[1] === "number"
+    ) {
+      const lng = v[0];
+      const lat = v[1];
+      if (Number.isFinite(lng) && Number.isFinite(lat)) {
+        minLng = Math.min(minLng, lng);
+        minLat = Math.min(minLat, lat);
+        maxLng = Math.max(maxLng, lng);
+        maxLat = Math.max(maxLat, lat);
+      }
+      return;
+    }
+    if (Array.isArray(v)) {
+      for (const x of v) walk(x);
+    }
+  };
+  walk(coords);
+
+  if (
+    !Number.isFinite(minLng) ||
+    !Number.isFinite(minLat) ||
+    !Number.isFinite(maxLng) ||
+    !Number.isFinite(maxLat)
+  ) {
+    return null;
+  }
+  return [(minLat + maxLat) / 2, (minLng + maxLng) / 2];
+}
+
+function buildProjectsFeatureCollection(projects, statusByProjectId) {
+  const features = [];
+  for (const p of projects) {
+    const normalized = normalizeProjectGeom(p.geom);
+    if (!normalized) continue;
+    const n = normalized;
+    const baseProps = {
+      id: p.id,
+      project_name: p.project_name ?? `Project #${p.id}`,
+      status: statusByProjectId.get(p.id) ?? "pending",
+    };
+    let markerAdded = false;
+    if (n.type === "FeatureCollection" && Array.isArray(n.features)) {
+      for (const f of n.features) {
+        if (!f.geometry) continue;
+        const center = geometryBboxCenter(f.geometry);
+        features.push({
+          type: "Feature",
+          geometry: f.geometry,
+          properties: {
+            ...(f.properties || {}),
+            ...baseProps,
+            __center: center ?? undefined,
+            __marker: !markerAdded,
+          },
+        });
+        markerAdded = true;
+      }
+    } else if (n.type === "Feature" && n.geometry) {
+      const center = geometryBboxCenter(n.geometry);
+      features.push({
+        type: "Feature",
+        geometry: n.geometry,
+        properties: {
+          ...(n.properties || {}),
+          ...baseProps,
+          __center: center ?? undefined,
+          __marker: true,
+        },
+      });
+    }
+  }
+  if (features.length === 0) return null;
+  return { type: "FeatureCollection", features };
+}
+
 export default function Dashboard() {
   const { isCollapsed, setCollapsed } = useSidebar();
   const sidebarPrevCollapsedRef = useRef(null);
@@ -668,6 +805,8 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const PROJECTS_PAGE_SIZE = 20;
   const [projectsPage, setProjectsPage] = useState(1);
+  const PROJECTS_TABLE_PAGE_SIZE = 10;
+  const [projectsTablePage, setProjectsTablePage] = useState(1);
   const [progressType, setProgressType] = useState(
     "physical",
   );
@@ -753,6 +892,18 @@ export default function Dashboard() {
     return map;
   }, [apiProjectGanttAll]);
 
+  // Map status (delay / in progress / pending) derived from nested gantt, for GIS boundary coloring + markers.
+  const projectStatusById = useMemo(() => {
+    const statusByProjectId = new Map();
+    for (const s of apiProjectGanttAll) {
+      const pid = Number(_optionalChain([s, 'optionalAccess', _12 => _12._id]));
+      if (!Number.isFinite(pid)) continue;
+      const tasks = _optionalChain([s, 'optionalAccess', _13 => _13.tasks]);
+      statusByProjectId.set(pid, deriveProjectStatusFromNestedGantt(tasks));
+    }
+    return statusByProjectId;
+  }, [apiProjectGanttAll]);
+
   // All Projects overall % (average of root task `_id:"1"` progress across projects)
   const allProjectsOverallFromGantt = useMemo(() => {
     if (apiProjects.length === 0) return 0;
@@ -766,6 +917,46 @@ export default function Dashboard() {
     }
     return count > 0 ? sum / count : 0;
   }, [apiProjects, ganttProgressByProjectId]);
+
+  const divisionNameById = useMemo(() => {
+    const map = new Map();
+    for (const d of apiDivisions) map.set(Number(d.id), d.division_name);
+    return map;
+  }, [apiDivisions]);
+
+  const districtNameById = useMemo(() => {
+    const map = new Map();
+    for (const d of apiDistricts) map.set(Number(d.id), d.district_name);
+    return map;
+  }, [apiDistricts]);
+
+  const tehsilNameById = useMemo(() => {
+    const map = new Map();
+    for (const t of apiTehsils) map.set(Number(t.id), t.tehsil_name);
+    return map;
+  }, [apiTehsils]);
+
+  const projectsForTable = useMemo(() => {
+    const rows = apiProjects.map((p) => {
+      const pid = Number(p.id);
+      const progressPct = _nullishCoalesce(ganttProgressByProjectId.get(pid), () => ( 0));
+      const divName = divisionNameById.get(Number(p.division)) || "—";
+      const distName = districtNameById.get(Number(p.district)) || "—";
+      const tehName = tehsilNameById.get(Number(p.tehsil)) || "—";
+      return {
+        id: pid,
+        name: _nullishCoalesce(p.project_name, () => ( `Project #${pid}`)),
+        progressPct,
+        locationLabel: `${divName} / ${distName} / ${tehName}`,
+      };
+    });
+
+    rows.sort((a, b) => {
+      if (b.progressPct !== a.progressPct) return b.progressPct - a.progressPct;
+      return a.name.localeCompare(b.name);
+    });
+    return rows;
+  }, [apiProjects, ganttProgressByProjectId, divisionNameById, districtNameById, tehsilNameById]);
 
   const toSlug = (value) =>
     value
@@ -922,6 +1113,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (viewType === "projects") setProjectsPage(1);
   }, [viewType, apiProjects.length]);
+
+  useEffect(() => {
+    if (viewType === "projects") setProjectsTablePage(1);
+  }, [viewType]);
 
   // clear project selection when leaving tehsil view or projects view
   useEffect(() => {
@@ -1219,6 +1414,16 @@ export default function Dashboard() {
     }
     return apiProjects.filter((p) => p.tehsil === selectedItemId);
   }, [selectedItemId, selectedItemType, apiProjects]);
+
+  // Projects to show on the embedded GIS map (matches current dashboard scope).
+  const mapScopeProjects = useMemo(() => {
+    if (selectedItemId && selectedItemType) return projectsInSelectedGeography;
+    return apiProjects;
+  }, [selectedItemId, selectedItemType, projectsInSelectedGeography, apiProjects]);
+
+  const dashboardMapGeoData = useMemo(() => {
+    return buildProjectsFeatureCollection(mapScopeProjects, projectStatusById) || undefined;
+  }, [mapScopeProjects, projectStatusById]);
 
   // Get aggregated data based on view type (all projects)
   const aggregatedData = useMemo(() => {
@@ -1760,7 +1965,7 @@ export default function Dashboard() {
           )
         )
 
-        /* Financial Progress Pie Charts (hide when a milestone KPI or a single project is selected) */
+        /* Donut charts: hide when a milestone KPI or a single project is selected */
         , !selectedMilestoneKey && !isSelectedProjectInThisScope && (
           React.createElement('div', { className: "grid gap-4 md:grid-cols-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1767}}
             /* Financial Progress Donut Chart */
@@ -2043,6 +2248,117 @@ export default function Dashboard() {
                   )
                 )
               )
+            )
+          )
+        )
+
+        /* Table + Map side-by-side (Table left, Map right) */
+        , (viewType === "divisions" || viewType === "projects") && !selectedItemName && !selectedItemType ? (
+          (() => {
+            const total = projectsForTable.length;
+            const totalPages = Math.max(1, Math.ceil(total / PROJECTS_TABLE_PAGE_SIZE));
+            const safePage = Math.min(totalPages, Math.max(1, projectsTablePage));
+            const start = (safePage - 1) * PROJECTS_TABLE_PAGE_SIZE;
+            const pageRows = projectsForTable.slice(start, start + PROJECTS_TABLE_PAGE_SIZE);
+            const canPrev = safePage > 1;
+            const canNext = safePage < totalPages;
+
+            return (
+              React.createElement('div', { className: "grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                , React.createElement(Card, { className: "border border-border/60 shadow-sm overflow-hidden min-h-[420px] h-[55vh] max-h-[720px] flex flex-col", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                  , React.createElement(CardHeader, { className: "py-3 px-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                    , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                      , React.createElement(CardTitle, { className: "text-base font-heading", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Latest Projects")
+                      , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Sorted by highest overall progress")
+                    )
+                    , React.createElement('div', { className: "flex items-center gap-2 justify-end", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                      , React.createElement('span', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Page ", safePage, " / ", totalPages)
+                      , React.createElement(Button, { variant: "outline", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-8", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Prev")
+                      , React.createElement(Button, { variant: "outline", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-8", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Next")
+                    )
+                  )
+                  , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                    , React.createElement('div', { className: "w-full h-full overflow-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                      , React.createElement('table', { className: "w-full text-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                        , React.createElement('thead', { className: "bg-muted/40", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                          , React.createElement('tr', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Project")
+                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3 w-[220px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Overall Progress")
+                            , React.createElement('th', { className: "text-left text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-4 py-3 min-w-[260px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "Division / District / Tehsil")
+                          )
+                        )
+                        , React.createElement('tbody', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                          , pageRows.map((row) => {
+                            const pct = Math.max(0, Math.min(100, Number(row.progressPct) || 0));
+                            return (
+                              React.createElement('tr', {
+                                key: row.id,
+                                className: "border-t border-border/60 hover:bg-muted/30 cursor-pointer",
+                                onClick: () => {
+                                  const p = apiProjects.find((x) => Number(x.id) === Number(row.id));
+                                  if (p) setSelectedProjectForDetails(p);
+                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                , React.createElement('td', { className: "px-4 py-3 font-semibold text-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, row.name)
+                                , React.createElement('td', { className: "px-4 py-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                  , React.createElement('div', { className: "flex items-center gap-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                    , React.createElement('span', { className: "text-xs font-bold tabular-nums text-primary w-14", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, pct.toFixed(2), "%")
+                                    , React.createElement('div', { className: "flex-1 h-2 rounded-full bg-muted overflow-hidden border border-border/50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                                      , React.createElement('div', { className: "h-full bg-primary", style: { width: `${pct}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}} )
+                                    )
+                                  )
+                                )
+                                , React.createElement('td', { className: "px-4 py-3 text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, row.locationLabel)
+                              )
+                            );
+                          })
+                        )
+                      )
+                    )
+                    , total === 0 && (
+                      React.createElement('div', { className: "p-6 text-center text-sm text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}, "No projects found.")
+                    )
+                  )
+                )
+
+                , React.createElement('div', { className: "w-full min-h-[420px] h-[55vh] max-h-[720px] rounded-xl overflow-hidden border border-border/60 shadow-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                  , React.createElement(CityMap, {
+                    city: "lahore",
+                    activeLayers: new Set(),
+                    searchQuery: "",
+                    showStats: false,
+                    showSurveillanceLayers: false,
+                    showLegend: true,
+                    legendProjects: mapScopeProjects,
+                    geoData: dashboardMapGeoData,
+                    showGeoBoundary: false,
+                    projectMarkerVariant: "green",
+                    onProjectSelect: (projectId) => {
+                      const p = apiProjects.find((x) => Number(x.id) === Number(projectId));
+                      if (p) setSelectedProjectForDetails(p);
+                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+                  )
+                )
+              )
+            );
+          })()
+        ) : (
+          /* Map only (for drill-down views) */
+          React.createElement('div', { className: "w-full min-h-[420px] h-[55vh] max-h-[720px] rounded-xl overflow-hidden border border-border/60 shadow-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
+            , React.createElement(CityMap, {
+              city: "lahore",
+              activeLayers: new Set(),
+              searchQuery: "",
+              showStats: false,
+              showSurveillanceLayers: false,
+              showLegend: true,
+              legendProjects: mapScopeProjects,
+              geoData: dashboardMapGeoData,
+              showGeoBoundary: false,
+              projectMarkerVariant: "green",
+              onProjectSelect: (projectId) => {
+                const p = apiProjects.find((x) => Number(x.id) === Number(projectId));
+                if (p) setSelectedProjectForDetails(p);
+              }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 0}}
             )
           )
         )
@@ -2415,10 +2731,10 @@ export default function Dashboard() {
                 // Title mimicking the exact branding of the First image
                 return (
                   <div className="flex flex-col space-y-1">
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#101828] leading-[1.1]">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#101828] leading-[1.08]">
                       PHPD Progress
                     </h1>
-                    <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#054332] leading-[1.1]">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#054332] leading-[1.08]">
                       Dashboard
                     </h2>
                   </div>
@@ -2426,10 +2742,17 @@ export default function Dashboard() {
               })()}
             </div>
 
-            {/* Overall Progress Box */}
+            {/* Summary Cards (Physical + Financial) */}
             {(((selectedItemName && singleItemData) || aggregatedData)) && (() => {
-              if (isLoading) return <Skeleton className="h-28 w-72 rounded-2xl" />;
-              
+              if (isLoading) {
+                return (
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Skeleton className="h-28 w-72 rounded-2xl" />
+                    <Skeleton className="h-28 w-72 rounded-2xl" />
+                  </div>
+                );
+              }
+
               const overall =
                 selectedItemName && singleItemData ? singleItemData.overall
                  : viewType === "projects" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
@@ -2443,26 +2766,51 @@ export default function Dashboard() {
                   ? overall.toFixed(2)
                   : Math.round(overall).toString();
 
+              const financialScopeProjects =
+                selectedItemName && selectedItemType ? projectsInSelectedGeography : apiProjects;
+              const financialPct = calcOverallProgress(financialScopeProjects);
+              const financialLabel =
+                !selectedItemName && !selectedItemType ? financialPct.toFixed(2) : financialPct.toFixed(1);
+
               return (
-                <div className="bg-white rounded-xl p-5 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] border border-gray-100 min-w-[280px] shrink-0 transform transition-all hover:-translate-y-1 hover:shadow-lg">
-                   <div className="flex justify-between items-center mb-1">
-                     <span className="text-xs text-[#475467] font-semibold">Overall Progress</span>
-                     <span className="text-[10px] text-[#054332] font-bold tracking-wide">+0.00% Today</span>
-                   </div>
-                   <div className="text-3xl sm:text-4xl font-extrabold text-[#054332] tracking-tight mb-3">{overallLabel}%</div>
-                   <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden mb-2 shadow-inner">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="bg-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.10)] border border-gray-200/70 min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[11px] text-[#475467] font-semibold">Overall Progress</span>
+                      <span className="text-[10px] text-[#054332] font-bold tracking-wide">+0.00% Today</span>
+                    </div>
+                    <div className="text-[24px] sm:text-[28px] font-extrabold text-[#054332] tracking-tight mb-2.5">{overallLabel}%</div>
+                    <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden mb-2 shadow-inner">
                       <div className="h-full bg-[#e2e8f0] rounded-full w-full relative">
-                         <div className="absolute top-0 left-0 h-full bg-[#cbd5e1] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, overall))}%` }} />
+                        <div className="absolute top-0 left-0 h-full bg-[#cbd5e1] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, overall))}%` }} />
                       </div>
-                   </div>
-                   <div className="text-[9px] text-[#94a3b8] uppercase font-bold tracking-widest mt-1">
+                    </div>
+                    <div className="text-[9px] text-[#94a3b8] uppercase font-bold tracking-widest mt-1">
                       Target: 100.00% Completion Phase 1
-                   </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.10)] border border-gray-200/70 min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[11px] text-[#475467] font-semibold">Financial Progress</span>
+                      <span className="text-[10px] text-[#0f766e] font-bold tracking-wide">Budget Utilization</span>
+                    </div>
+                    <div className="text-[24px] sm:text-[28px] font-extrabold text-[#0f766e] tracking-tight mb-2.5">{financialLabel}%</div>
+                    <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden mb-2 shadow-inner">
+                      <div className="h-full bg-[#e2e8f0] rounded-full w-full relative">
+                        <div className="absolute top-0 left-0 h-full bg-[#14b8a6] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, financialPct))}%` }} />
+                      </div>
+                    </div>
+                    <div className="text-[9px] text-[#94a3b8] uppercase font-bold tracking-widest mt-1">
+                      Utilized vs Allocated (PKR)
+                    </div>
+                  </div>
                 </div>
               );
             })()}
           </div>
         </div>
+        /* Map moved beneath donut charts */
 
         /* Division Selected - Show Districts */
         , selectedItemName &&
@@ -2919,7 +3267,7 @@ export default function Dashboard() {
             React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3156}}
               , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3157}}
                 , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3158}}
-                  , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3159}}, "All Punjab Divisions"
+                  , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3159}}, "All Punjab Divisions"
 
                   )
                 )
@@ -2929,7 +3277,7 @@ export default function Dashboard() {
                   React.createElement(Button, {
                     variant: "default",
                     onClick: () => setExpandedDivisions(!expandedDivisions),
-                    className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3166}}
+                    className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer text-[12px]"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3166}}
 
                     , expandedDivisions ? (
                       React.createElement(React.Fragment, null
@@ -3003,7 +3351,7 @@ export default function Dashboard() {
             React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3240}}
               , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3241}}
                 , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3242}}
-                  , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3243}}, "All Punjab Districts"
+                  , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3243}}, "All Punjab Districts"
 
                   )
                 )
@@ -3013,7 +3361,7 @@ export default function Dashboard() {
                   React.createElement(Button, {
                     variant: "default",
                     onClick: () => setExpandedDistricts(!expandedDistricts),
-                    className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3250}}
+                    className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer text-[12px]"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3250}}
 
                     , expandedDistricts ? (
                       React.createElement(React.Fragment, null

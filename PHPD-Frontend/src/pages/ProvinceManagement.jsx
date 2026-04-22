@@ -40,10 +40,10 @@ export default function ProvinceManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["provinces"] });
       setProvinceName("");
-      toast({ title: "Success", description: "Province created successfully" });
+      toast({ title: "Success", description: "Zone created successfully" });
     },
     onError: (e) => {
-      toast({ title: "Error", description: e.message || "Failed to create province", variant: "destructive" });
+      toast({ title: "Error", description: e.message || "Failed to create Zone", variant: "destructive" });
     },
   });
 
@@ -54,7 +54,7 @@ export default function ProvinceManagement() {
       queryClient.invalidateQueries({ queryKey: ["provinces"] });
       setProvinceName("");
       setEditingId(null);
-      toast({ title: "Success", description: "Province updated successfully" });
+      toast({ title: "Success", description: "Zone updated successfully" });
     },
     onError: (e) => {
       toast({ title: "Error", description: e.message || "Failed to update province", variant: "destructive" });
@@ -65,10 +65,10 @@ export default function ProvinceManagement() {
     mutationFn: deleteProvince,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["provinces"] });
-      toast({ title: "Deleted", description: "Province removed successfully" });
+      toast({ title: "Deleted", description: "Zone removed successfully" });
     },
     onError: (e) => {
-      toast({ title: "Error", description: e.message || "Failed to delete province", variant: "destructive" });
+      toast({ title: "Error", description: e.message || "Failed to delete Zone", variant: "destructive" });
     },
   });
 
@@ -79,7 +79,7 @@ export default function ProvinceManagement() {
 
   const handleSubmit = () => {
     if (!provinceName.trim()) {
-      toast({ title: "Error", description: "Province name is required", variant: "destructive" });
+      toast({ title: "Error", description: "Zone name is required", variant: "destructive" });
       return;
     }
     if (editingId !== null) {
@@ -95,7 +95,7 @@ export default function ProvinceManagement() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this province?")) {
+    if (window.confirm("Are you sure you want to delete this Zone?")) {
       deleteMutation.mutate(id);
     }
   };
@@ -108,8 +108,8 @@ export default function ProvinceManagement() {
     React.createElement(Layout, { title: "Area Hierarchy Management"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 106}}
       , React.createElement('div', { className: "flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 107}}
         , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 108}}
-          , React.createElement('h1', { className: "text-2xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 109}}, "Province — Add / Edit"    )
-          , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 110}}, "Create a new province or edit an existing one."        )
+          , React.createElement('h1', { className: "text-2xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 109}}, "Zone — Add / Edit"    )
+          , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 110}}, "Create a new Zone or edit an existing one."        )
         )
 
         , (canCreate || (canUpdate && editingId !== null)) && (
@@ -123,12 +123,12 @@ export default function ProvinceManagement() {
             , React.createElement(CardContent, { className: "pt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 121}}
               , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-6 items-end"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 122}}
                 , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 123}}
-                  , React.createElement(Label, { htmlFor: "province-name", className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 124}}, "Province Name "
+                  , React.createElement(Label, { htmlFor: "Zone-name", className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 124}}, "Zone Name "
                       , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 125}}, "*")
                   )
                   , React.createElement(Input, {
-                    id: "province-name",
-                    placeholder: "e.g. Punjab" ,
+                    id: "Zone-name",
+                    placeholder: "e.g. Punjab Zone" ,
                     value: provinceName,
                     onChange: (e) => setProvinceName(e.target.value),
                     className: "h-10", __self: this, __source: {fileName: _jsxFileName, lineNumber: 127}}
@@ -141,7 +141,7 @@ export default function ProvinceManagement() {
                       disabled: createMutation.isPending,
                       className: "bg-secondary hover:bg-secondary/90 text-white flex-1 h-10 min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 137}}
 
-                      , React.createElement(Plus, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 142}} ), " Create Province"
+                      , React.createElement(Plus, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 142}} ), " Create Zone"
                     )
                   )
                   , canUpdate && editingId !== null && (
@@ -150,7 +150,7 @@ export default function ProvinceManagement() {
                         onClick: handleSubmit,
                         disabled: updateMutation.isPending,
                         className: "bg-secondary hover:bg-secondary/90 text-white flex-1 h-10 min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 147}}
-, "Update Province"
+, "Update Zone"
 
                       )
                       , React.createElement(Button, { variant: "outline", onClick: handleCancel, className: "flex-1 h-10 min-w-0"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 154}}, "Cancel"
@@ -175,7 +175,7 @@ export default function ProvinceManagement() {
 
         , React.createElement('div', { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 174}}
           , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 175}}
-            , React.createElement('h2', { className: "text-xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 176}}, "Province List" )
+            , React.createElement('h2', { className: "text-xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 176}}, "Zone List" )
             , React.createElement('div', { className: "relative w-full sm:w-72"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 177}}
               , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 178}} )
               , React.createElement(Input, {
@@ -194,7 +194,7 @@ export default function ProvinceManagement() {
                   , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 192}}
                     , React.createElement(TableHead, { className: "w-16", __self: this, __source: {fileName: _jsxFileName, lineNumber: 193}}, "#")
                     , React.createElement(TableHead, { className: "w-24", __self: this, __source: {fileName: _jsxFileName, lineNumber: 194}}, "ID")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 195}}, "Province")
+                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 195}}, "Zone")
                     , React.createElement(TableHead, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 196}}, "Action")
                   )
                 )
@@ -207,7 +207,7 @@ export default function ProvinceManagement() {
                     )
                   ) : filteredProvinces.length === 0 ? (
                     React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 207}}
-                      , React.createElement(TableCell, { colSpan: 4, className: "h-24 text-center text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 208}}, "No provinces found. Create one above."
+                      , React.createElement(TableCell, { colSpan: 4, className: "h-24 text-center text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 208}}, "No zones found. Create one above."
 
                       )
                     )

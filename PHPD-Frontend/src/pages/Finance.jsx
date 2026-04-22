@@ -3,7 +3,7 @@ const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, LucideBanknote, Wallet, AlertCircle, CheckCircle2, Filter, Percent } from "lucide-react";
-import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
@@ -697,59 +697,50 @@ export default function Finance() {
               })
             )
 
-            /* Budget flow — full width */
-            , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 818}}
-              , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 819}}
-                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}, "Budget overview"  )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 821}}, "Totals (PKR millions) — Total Budget → Total Consume → Total Remaining"
-
+            /* Budget overview + Pie summary — same row (desktop) */
+            , React.createElement('div', { className: "grid grid-cols-1 gap-4 lg:grid-cols-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 818}}
+              , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 819}}
+                , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}
+                  , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 821}}, "Budget overview")
+                  , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 822}}, "Totals (PKR millions) — Total Budget → Total Consume → Total Remaining")
                 )
-              )
-              , React.createElement(CardContent, { className: "h-[360px] w-full sm:h-[420px] lg:h-[480px]"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 825}}
-                , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 826}}
-                  , React.createElement(ComposedChart, {
-                    data: flowChartData,
-                    margin: { top: 16, right: 32, left: 16, bottom: isMobile ? 52 : 36 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 827}}
-
+                , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 826}}
+                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 827}}
+                    , React.createElement(ComposedChart, { data: flowChartData, margin: { top: 16, right: 32, left: 16, bottom: isMobile ? 52 : 36 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 828}}
                       , React.createElement('defs', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 831}}
                         , React.createElement('linearGradient', { id: "colorFlowTotal", x1: "0", y1: "0", x2: "0", y2: "1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 832}}
                           , React.createElement('stop', { offset: "5%", stopColor: "#2F8F6C", stopOpacity: 0.35, __self: this, __source: {fileName: _jsxFileName, lineNumber: 833}} )
                           , React.createElement('stop', { offset: "95%", stopColor: "#2F8F6C", stopOpacity: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 834}} )
                         )
                       )
-                      , React.createElement(CartesianGrid, { strokeDasharray: "3 3" , vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 837}} )
-                      , React.createElement(XAxis, {
-                        dataKey: "stage",
-                        tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
-                        interval: 0,
-                        angle: isMobile ? -35 : 0,
-                        textAnchor: isMobile ? "end" : "middle",
-                        height: isMobile ? 70 : 40, __self: this, __source: {fileName: _jsxFileName, lineNumber: 838}}
-                      )
+                      , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 837}} )
+                      , React.createElement(XAxis, { dataKey: "stage", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, angle: isMobile ? -35 : 0, textAnchor: isMobile ? "end" : "middle", height: isMobile ? 70 : 40, __self: this, __source: {fileName: _jsxFileName, lineNumber: 838}} )
                       , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${v}M`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 846}} )
-                      , React.createElement(Tooltip, {
-                        contentStyle: {
-                          backgroundColor: "hsl(var(--card))",
-                          borderColor: "hsl(var(--border))",
-                          borderRadius: "8px",
-                        },
-                        formatter: (value, name) => {
-                          if (name === "Total (M)") return [`PKR ${Number(value).toFixed(2)} M`, name];
-                          return [`PKR ${Number(value).toFixed(2)} M`, name];
-                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 847}}
-                      )
+                      , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 847}} )
                       , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 858}} )
-                      , React.createElement(Bar, {
-                        dataKey: "totalM",
-                        fill: "url(#colorFlowTotal)",
-                        radius: [4, 4, 0, 0],
-                        name: "Total (M)" ,
-                        barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}}
+                      , React.createElement(Bar, { dataKey: "totalM", fill: "url(#colorFlowTotal)", radius: [4, 4, 0, 0], name: "Total (M)", barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}} )
+                    )
+                  )
+                )
+              )
+              , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 870}}
+                , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 871}}
+                  , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 872}}, "Budget distribution")
+                  , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 873}}, "Total Budget vs Total Consume vs Total Remaining (PKR millions)")
+                )
+                , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 876}}
+                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 877}}
+                    , React.createElement(PieChart, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 878}}
+                      , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 879}} )
+                      , React.createElement(Legend, { verticalAlign: "bottom", height: 36, iconType: "circle", wrapperStyle: { fontSize: 11 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 887}} )
+                      , React.createElement(Pie, { data: flowChartData, dataKey: "totalM", nameKey: "stage", cx: "50%", cy: "45%", innerRadius: "55%", outerRadius: "85%", paddingAngle: 2, stroke: "hsl(var(--card))", strokeWidth: 2, isAnimationActive: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 888}}
+                        , flowChartData.map((_entry, index) => React.createElement(Cell, { key: "cell-" + index, fill: [STAGE_COLORS[1], STAGE_COLORS[3], STAGE_COLORS[4]][index] || STAGE_COLORS[0], __self: this, __source: {fileName: _jsxFileName, lineNumber: 905}} ))
                       )
                     )
                   )
                 )
               )
+            )
 
             /* Project comparison — only projects with financial data; duplicate names disambiguated */
             , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 882}}

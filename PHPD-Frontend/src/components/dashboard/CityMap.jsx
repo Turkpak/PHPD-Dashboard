@@ -108,6 +108,22 @@ function getProjectStatusIcon(status) {
   });
 }
 
+function getGreenDotProjectIcon() {
+  return L.divIcon({
+    className: "project-green-dot",
+    html: `<span style="
+      width: 12px; height: 12px;
+      border-radius: 9999px;
+      background: #22c55e;
+      border: 2px solid rgba(255,255,255,0.95);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+      display: block;
+    "></span>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+  });
+}
+
 const MOCK_DATA = {
   cameras: [
     // Lahore
@@ -234,6 +250,8 @@ export function CityMap({
   showSurveillanceLayers = true,
   legendProjects,
   onProjectSelect,
+  showGeoBoundary = true,
+  projectMarkerVariant = "status",
 }
 
 
@@ -260,6 +278,8 @@ export function CityMap({
   const zoom = _nullishCoalesce(filterZoom, () => ( 12));
   const [isLegendCollapsed, setIsLegendCollapsed] = useState(false);
   const mapRef = useRef(null);
+  const greenDotIconRef = useRef(null);
+  if (!greenDotIconRef.current) greenDotIconRef.current = getGreenDotProjectIcon();
 
   const handleFileUpload = (e, id) => {
     if (e.target.files && e.target.files[0]) {
@@ -501,9 +521,9 @@ export function CityMap({
           )
 
           , geoData && (
-            React.createElement(LayersControl.Overlay, { checked: true, name: "Proposed Area Boundary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 502}}
+            React.createElement(LayersControl.Overlay, { checked: true, name: showGeoBoundary ? "Proposed Area Boundary" : "Project Locations"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 502}}
               , React.createElement(React.Fragment, null
-                , React.createElement(GeoJSON, {
+                , showGeoBoundary && React.createElement(GeoJSON, {
                   data: geoData,
                   style: (feature) => {
                     const status = _nullishCoalesce(_optionalChain([feature, 'optionalAccess', _3 => _3.properties, 'optionalAccess', _4 => _4.status]), () => ( "pending"));
@@ -547,7 +567,7 @@ export function CityMap({
                         React.createElement(Marker, {
                           key: `proj-center-${_nullishCoalesce(_optionalChain([f, 'optionalAccess', _22 => _22.properties, 'optionalAccess', _23 => _23.id]), () => ( idx))}`,
                           position: center,
-                          icon: getProjectStatusIcon(status),
+                          icon: projectMarkerVariant === "green" ? greenDotIconRef.current : getProjectStatusIcon(status),
                           eventHandlers: 
                             onProjectSelect && Number.isFinite(idNum)
                               ? {
@@ -632,7 +652,7 @@ export function CityMap({
                         )
                       ))
                     )
-                    , geoData && (
+                    , geoData && showGeoBoundary && (
                       React.createElement('div', { className: "flex items-center gap-2 pt-1.5 mt-1.5 border-t border-primary/10"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 634}}
                         , React.createElement('div', { className: "w-2 h-2 rounded border border-primary bg-primary/20 shrink-0"      , style: { borderStyle: "dashed" }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 635}} )
                         , React.createElement('span', { className: "text-[9px] font-bold text-primary/80 leading-tight"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 636}}, "Proposed Area Boundary"  )
