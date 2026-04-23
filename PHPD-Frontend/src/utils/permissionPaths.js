@@ -10,7 +10,6 @@ export function getPermissionForPath(
 
  = {
     "/": { sidebar_label: "Citywise Progress", sub_label: null },
-    "/comparison": { sidebar_label: "City Comparison", sub_label: null },
     "/finance": { sidebar_label: "Finance & Budget", sub_label: null },
     "/gis": { sidebar_label: "GIS Layers", sub_label: null },
     "/settings": { sidebar_label: "Settings", sub_label: null },

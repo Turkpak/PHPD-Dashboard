@@ -81,7 +81,6 @@ const ADD_USER_PERMISSION_ROWS = [
 
   { sidebar_label: "Finance & Budget", sub_label: null, displayLabel: "Finance & Budget" },
   { sidebar_label: "GIS Layers", sub_label: null, displayLabel: "GIS Layers" },
-  { sidebar_label: "City Comparison", sub_label: null, displayLabel: "Citywise Comparison" },
   { sidebar_label: "User Management", sub_label: null, displayLabel: "User Management" },
 ];
 
