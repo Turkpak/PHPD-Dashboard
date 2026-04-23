@@ -3,9 +3,7 @@ from ..common_imports import *
 class ListTehsilView(viewsets.ViewSet):
     queryset = Tehsil.objects.all()
     serializer_class = TehsilSerializer
-    permission_classes = [IsAuthenticated, HasSidebarPermission] 
-    sidebar_label = "Area Management"
-    sub_label = "Tehsil"
+    permission_classes = [AllowAny]
 
     def list(self, request, *args, **kwargs):
         try:

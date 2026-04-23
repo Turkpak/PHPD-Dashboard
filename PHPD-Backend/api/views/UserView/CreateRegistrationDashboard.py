@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from rest_framework import viewsets, status, serializers
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from ..common_imports import *  # your common imports like ApiResponse, MyUserSerializer
+from ..common_imports import *  
 
 class UserCreateView(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -14,7 +14,7 @@ class UserCreateView(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
 
             # Save the user
-            user = serializer.save()  # Calls serializer.create()
+            user = serializer.save()  
 
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)

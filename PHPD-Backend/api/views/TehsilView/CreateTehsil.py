@@ -3,9 +3,7 @@ from ..common_imports import *
 class TehsilCreateView(viewsets.ViewSet):
     queryset = Tehsil.objects.all()
     serializer_class = TehsilSerializer
-    permission_classes = [IsAuthenticated, HasSidebarPermission] 
-    sidebar_label = "Area Management"
-    sub_label = "Tehsil"
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -14,8 +12,8 @@ class TehsilCreateView(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
 
             mytehsil = Tehsil(
-                province=serializer.validated_data['province'],
-                division=serializer.validated_data['division'],
+                zone=serializer.validated_data['zone'],
+                circle=serializer.validated_data['circle'],
                 district=serializer.validated_data['district'],
                 tehsil_name=serializer.validated_data['tehsil_name'],
             )

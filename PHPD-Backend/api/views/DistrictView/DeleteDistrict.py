@@ -3,9 +3,8 @@ from ..common_imports import *
 class DistrictDeleteView(viewsets.ViewSet):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
-    permission_classes = [IsAuthenticated, HasSidebarPermission] 
-    sidebar_label = "Area Management"
-    sub_label = "District"
+    permission_classes = [AllowAny]
+
     def destroy(self, request, *args, **kwargs):
         district_id = kwargs.get('pk')
 

@@ -1,56 +1,60 @@
 from ..common_imports import *
 
-class ListDistrictView(viewsets.ViewSet):
-    queryset = District.objects.all()
-    serializer_class = DistrictSerializer
+class ListCircleView(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
     def list(self, request, *args, **kwargs):
         try:
-            district_id = request.query_params.get("id")
-            division_id = request.query_params.get("division")
+            circle_id = request.query_params.get("id")
+            zone_id = request.query_params.get("zone")
 
-            if district_id:
-                district = District.objects.filter(id=district_id).first()
-                if not district:
+            # Case 1: Get single circle by ID
+            if circle_id:
+                circle = Circle.objects.filter(id=circle_id).first()
+                if not circle:
                     return ApiResponse(
                         status=status.HTTP_404_NOT_FOUND,
-                        message="District not found.",
+                        message="Circle not found.",
                         http_status=status.HTTP_404_NOT_FOUND
                     ).create_response()
 
-                serializer = DistrictSerializer(district)
+                serializer = CircleSerializer(circle)
                 return ApiResponse(
                     status=status.HTTP_200_OK,
-                    message="District Found.",
+                    message="Circle Found.",
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()
-            elif division_id:
-                districts = District.objects.filter(division_id=division_id)
-                if not districts.exists():
+
+            # Case 2: Filter by zone
+            elif zone_id:
+                circles = Circle.objects.filter(zone_id=zone_id)
+                if not circles.exists():
                     return ApiResponse(
                         status=status.HTTP_404_NOT_FOUND,
-                        message="No districts found for this division.",
+                        message="No circles found for this zone.",
                         http_status=status.HTTP_404_NOT_FOUND
                     ).create_response()
 
-                serializer = DistrictSerializer(districts, many=True)
+                serializer = CircleSerializer(circles, many=True)
                 return ApiResponse(
                     status=status.HTTP_200_OK,
-                    message="Districts Found for the Division.",
+                    message="Circles Found for the Province.",
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()
+
+            # Case 3: Return all circles
             else:
-                queryset = District.objects.all()
-                serializer = DistrictSerializer(queryset, many=True)
+                circles = Circle.objects.all()
+                serializer = CircleSerializer(circles, many=True)
                 return ApiResponse(
                     status=status.HTTP_200_OK,
-                    message="All District Found.",
+                    message="All Circles Found.",
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()
+
         except serializers.ValidationError as e:
             return ApiResponse(
                 status=status.HTTP_400_BAD_REQUEST,

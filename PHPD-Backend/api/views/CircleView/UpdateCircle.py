@@ -1,31 +1,31 @@
 from ..common_imports import *
 
-class TehsilUpdateView(viewsets.ViewSet):
-    queryset = Tehsil.objects.all()
-    serializer_class = TehsilSerializer
+class CircleUpdateView(viewsets.ViewSet):
+    queryset = Circle.objects.all()
+    serializer_class = CircleSerializer
     permission_classes = [AllowAny]
 
     def update(self, request, *args, **kwargs):
         data = request.data
-        tehsil_id = kwargs.get('pk') 
+        circle_id = kwargs.get('pk') 
 
         try:
-            mytehsil = Tehsil.objects.get(id=tehsil_id)
+            mycircle = Circle.objects.get(id=circle_id)
 
-        except Tehsil.DoesNotExist:
+        except Circle.DoesNotExist:
             return ApiResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                message="Tehsil not found.",
+                message="Circle not found.",
                 http_status=status.HTTP_404_NOT_FOUND
             ).create_response()
 
         try:
-            serializer = TehsilSerializer(mytehsil, data=data, partial=True)  
+            serializer = CircleSerializer(mycircle, data=data, partial=True)  
             if serializer.is_valid():
                 serializer.save()
                 return ApiResponse(
                     status=status.HTTP_200_OK,
-                    message="Tehsil updated successfully.",
+                    message="Circle updated successfully.",
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()

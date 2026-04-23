@@ -1,13 +1,7 @@
-from .LoginView import *
 from .UserView import *
-from .ProvinceView import *
-from .DivisionView import *
+from .LoginView import *
+from .ZoneView import *
+from .CircleView import *
 from .DistrictView import *
 from .TehsilView import *
-from .StakeholderView import *
-from .ProjectView import *
-from .ProjectActivityView import *
-from .PictorialArchiveView import *
-from .ProgressImageView import *
-from .ActivityDelayLogView import *
-from .ProjectDocumentView import *
+

@@ -1,0 +1,9 @@
+**For Sana**
+password: admin123
+"GDAL_LIBRARY_PATH": "C:/Program Files/QGIS 3.34.15/bin/gdal310.dll",
+"GEOS_LIBRARY_PATH": "C:/Program Files/QGIS 3.34.15/bin/geos_c.dll"
+
+**For Nazar**
+password: postgres
+"GDAL_LIBRARY_PATH": "C:/Program Files/QGIS 3.44.1/bin/gdal311.dll",
+"GEOS_LIBRARY_PATH": "C:/Program Files/QGIS 3.44.1/bin/geos_c.dll"

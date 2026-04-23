@@ -3,9 +3,8 @@ from ..common_imports import *
 class DistrictUpdateView(viewsets.ViewSet):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
-    permission_classes = [IsAuthenticated, HasSidebarPermission] 
-    sidebar_label = "Area Management"
-    sub_label = "District"
+    permission_classes = [AllowAny]
+
     def update(self, request, *args, **kwargs):
         data = request.data
         district_id = kwargs.get('pk') 

@@ -1,34 +1,33 @@
 from ..common_imports import *
 
-class DistrictCreateView(viewsets.ViewSet):
-    queryset = District.objects.all()
-    serializer_class = DistrictSerializer
+class CircleCreateView(viewsets.ViewSet):
+    queryset = Circle.objects.all()
+    serializer_class = CircleSerializer
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         data = request.data
         try:
-            serializer = DistrictSerializer(data=data)
+            serializer = CircleSerializer(data=data)
             serializer.is_valid(raise_exception=True)
 
-            mydistrict = District(
-                zone=serializer.validated_data['zone'],
-                circle=serializer.validated_data['circle'],
-                district_name=serializer.validated_data['district_name'],
+            mycircle = Circle(
+                province=serializer.validated_data['province'],
+                circle_name=serializer.validated_data['circle_name'],
             )
-            mydistrict.save()
+            mycircle.save()
 
             return ApiResponse(
                 status=status.HTTP_201_CREATED,
-                message="District created successfully.",
-                data=DistrictSerializer(mydistrict).data,
+                message="Circle created successfully.",
+                data=CircleSerializer(mycircle).data,
                 http_status=status.HTTP_201_CREATED
             ).create_response()
 
         except IntegrityError as e:
             error_msg = str(e)
-            if 'district_name' in error_msg:
-                duplicate_detail = {'district_name': ['This district already exists.']}
+            if 'circle_name' in error_msg:
+                duplicate_detail = {'circle_name': ['This circle already exists.']}
             else:
                 duplicate_detail = {'detail': ['Duplicate entry error.']}
 
