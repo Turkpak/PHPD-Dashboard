@@ -129,53 +129,53 @@ class ZoneSerializer(serializers.ModelSerializer):
         model = Zone
         fields = ["id", "zone_name"]
 
-# # --------------------------------------------------------
-# # Division Administrative Divisions
-# # --------------------------------------------------------
-# class DivisionSerializer(serializers.ModelSerializer):
-#     province_name = serializers.SerializerMethodField()
-#     class Meta:
-#         model = Division
-#         fields = ["id", "division_name", "province", "province_name"]
+# --------------------------------------------------------
+# Circle Administrative Circles
+# --------------------------------------------------------
+class CircleSerializer(serializers.ModelSerializer):
+    zone_name = serializers.SerializerMethodField()
+    class Meta:
+        model = Circle
+        fields = ["id", "circle_name", "zone", "zone_name"]
 
-#     def get_province_name(self, obj):
-#         return obj.province.province_name
+    def get_zone_name(self, obj):
+        return obj.zone.zone_name
 
-# # --------------------------------------------------------
-# # District Administrative Divisions
-# # --------------------------------------------------------
-# class DistrictSerializer(serializers.ModelSerializer):
-#     province_name = serializers.SerializerMethodField()
-#     division_name = serializers.SerializerMethodField()
-#     class Meta:
-#         model = District
-#         fields = ["id", "district_name", "division", "province", "province_name", "division_name"]
+# --------------------------------------------------------
+# District Administrative Divisions
+# --------------------------------------------------------
+class DistrictSerializer(serializers.ModelSerializer):
+    zone_name = serializers.SerializerMethodField()
+    circle_name = serializers.SerializerMethodField()
+    class Meta:
+        model = District
+        fields = ["id", "district_name", "zone", "zone_name", "circle", "circle_name"]
 
-#     def get_province_name(self, obj):
-#         return obj.province.province_name
+    def get_zone_name(self, obj):
+        return obj.zone.zone_name
 
-#     def get_division_name(self, obj):
-#         return obj.division.division_name
+    def get_circle_name(self, obj):
+        return obj.circle.circle_name
 
-# # --------------------------------------------------------
-# # Tehsil Administrative Divisions
-# # --------------------------------------------------------
-# class TehsilSerializer(serializers.ModelSerializer):
-#     province_name = serializers.SerializerMethodField()
-#     division_name = serializers.SerializerMethodField()
-#     district_name = serializers.SerializerMethodField()
-#     class Meta:
-#         model = Tehsil
-#         fields = ["id", "tehsil_name", "district", "division", "province", "province_name", "division_name", "district_name"]
+# --------------------------------------------------------
+# Tehsil Administrative Divisions
+# --------------------------------------------------------
+class TehsilSerializer(serializers.ModelSerializer):
+    zone_name = serializers.SerializerMethodField()
+    circle_name = serializers.SerializerMethodField()
+    district_name = serializers.SerializerMethodField()
+    class Meta:
+        model = Tehsil
+        fields = ["id", "tehsil_name", "district", "zone", "circle", "zone_name", "circle_name", "district_name"]
     
-#     def get_province_name(self, obj):
-#         return obj.province.province_name
+    def get_zone_name(self, obj):
+        return obj.zone.zone_name
 
-#     def get_division_name(self, obj):
-#         return obj.division.division_name
+    def get_circle_name(self, obj):
+        return obj.circle.circle_name
 
-#     def get_district_name(self, obj):
-#         return obj.district.district_name
+    def get_district_name(self, obj):
+        return obj.district.district_name
 
 # # --------------------------------------------------------
 # # Stakeholder

@@ -165,18 +165,18 @@ class Zone(models.Model):
 
 
 # --------------------------------------------------------
-# Division (Circle)
+# Circle (Circle)
 # --------------------------------------------------------
-class Division(models.Model):
-    division_name = models.CharField(max_length=100)
+class Circle(models.Model):
+    circle_name = models.CharField(max_length=100)
     zone = models.ForeignKey(
         Zone,
         on_delete=models.CASCADE,
-        related_name='divisions'
+        related_name='circles'
     )
 
     def __str__(self):
-        return f"{self.division_name} ({self.zone.zone_name})"
+        return f"{self.circle_name} ({self.zone.zone_name})"
 
 
 # --------------------------------------------------------
@@ -184,23 +184,32 @@ class Division(models.Model):
 # --------------------------------------------------------
 class District(models.Model):
     district_name = models.CharField(max_length=100)
-    division = models.ForeignKey(
-        Division,
+    circle = models.ForeignKey(
+        Circle,
+        on_delete=models.CASCADE,
+        related_name='districts'
+    )
+    zone = models.ForeignKey(
+        Zone,
         on_delete=models.CASCADE,
         related_name='districts'
     )
 
     def __str__(self):
-        return f"{self.district_name} ({self.division.division_name})"
-
+        return f"{self.district_name} ({self.circle.circle_name}) ({self.zone.zone_name})"
 
 # --------------------------------------------------------
 # Tehsil
 # --------------------------------------------------------
 class Tehsil(models.Model):
     tehsil_name = models.CharField(max_length=100)
-    division = models.ForeignKey(
-        Division,
+    zone = models.ForeignKey(
+        Zone,
+        on_delete=models.CASCADE,
+        related_name='tehsils'
+    )
+    circle = models.ForeignKey(
+        Circle,
         on_delete=models.CASCADE,
         related_name='tehsils'
     )
@@ -209,11 +218,10 @@ class Tehsil(models.Model):
         on_delete=models.CASCADE,
         related_name='tehsils'
     )
-    
 
     def __str__(self):
-        return f"{self.tehsil_name} ({self.district.district_name}) ({self.division.division_name})" 
-    
+        return f"{self.tehsil_name} ({self.district.district_name}) ({self.circle.circle_name}) ({self.zone.zone_name})"
+        
 # --------------------------------------------------------
 # Projects
 # --------------------------------------------------------

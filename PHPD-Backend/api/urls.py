@@ -19,23 +19,23 @@ router.register(r'list-zone', ListZoneView, basename='list-zone')
 router.register(r'update-zone', ZoneUpdateView, basename='update-zone') 
 router.register(r'delete-zone', ZoneDeleteView, basename='delete-zone')
 
-# #--------------------------------- Division View ---------------------------------
-# router.register(r'create-division', DivisionCreateView, basename='create-division')
-# router.register(r'list-division', ListDivisionView, basename='list-division')
-# router.register(r'update-division', DivisionUpdateView, basename='update-division') 
-# router.register(r'delete-division', DivisionDeleteView, basename='delete-division')
+#--------------------------------- Circle View ---------------------------------
+router.register(r'create-circle', CircleCreateView, basename='create-circle')
+router.register(r'list-circle', ListCircleView, basename='list-circle')
+router.register(r'update-circle', CircleUpdateView, basename='update-circle') 
+router.register(r'delete-circle', CircleDeleteView, basename='delete-circle')
 
-# #--------------------------------- District View ---------------------------------
-# router.register(r'create-district', DistrictCreateView, basename='create-district')
-# router.register(r'list-district', ListDistrictView, basename='list-district')
-# router.register(r'update-district', DistrictUpdateView, basename='update-district') 
-# router.register(r'delete-district', DistrictDeleteView, basename='delete-district')
+#--------------------------------- District View ---------------------------------
+router.register(r'create-district', DistrictCreateView, basename='create-district')
+router.register(r'list-district', ListDistrictView, basename='list-district')
+router.register(r'update-district', DistrictUpdateView, basename='update-district') 
+router.register(r'delete-district', DistrictDeleteView, basename='delete-district')
 
-# #---------------------------------- Tehsil View ----------------------------------
-# router.register(r'create-tehsil', TehsilCreateView, basename='create-tehsil')
-# router.register(r'list-tehsil', ListTehsilView, basename='list-tehsil')
-# router.register(r'update-tehsil', TehsilUpdateView, basename='update-tehsil') 
-# router.register(r'delete-tehsil', TehsilDeleteView, basename='delete-tehsil')
+#---------------------------------- Tehsil View ----------------------------------
+router.register(r'create-tehsil', TehsilCreateView, basename='create-tehsil')
+router.register(r'list-tehsil', ListTehsilView, basename='list-tehsil')
+router.register(r'update-tehsil', TehsilUpdateView, basename='update-tehsil') 
+router.register(r'delete-tehsil', TehsilDeleteView, basename='delete-tehsil')
 
 # #---------------------------------- Stakeholder View ----------------------------------
 # router.register(r'create-stakeholder', StakeholderCreateView, basename='create-stakeholder')
