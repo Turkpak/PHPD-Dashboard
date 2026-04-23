@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from ..common_imports import *
 from django.contrib.auth import get_user_model
 
+
 class UserLoginDashboardCreateView(viewsets.ViewSet):
     queryset = MyUser.objects.all()
     serializer_class = MyUserLoginDashboardSerializer
@@ -12,8 +13,7 @@ class UserLoginDashboardCreateView(viewsets.ViewSet):
     def create(self, request):
         
         user=request.user
-        try:
-            
+        try:            
             email = request.data.get('email')
             password = request.data.get('password')
 
@@ -29,9 +29,6 @@ class UserLoginDashboardCreateView(viewsets.ViewSet):
                 login(request, user)  # manually log in
                 auth_data = utils.get_tokens_for_user(user)
 
-                permissions = UserPermission.objects.filter(user=user)
-                permissions_data = UserPermissionSerializer(permissions, many=True).data
-
                 verified = user.is_verified
             
                 res = {
@@ -46,9 +43,6 @@ class UserLoginDashboardCreateView(viewsets.ViewSet):
                     'token': auth_data['access'],
                     'refresh': auth_data['refresh'],
                     'role': user.role,
-                    'permissions': permissions_data,
-                    'stakeholder_id': user.stakeholder.id if user.stakeholder else None,
-                    'stakeholder_type': user.stakeholder.stakeholder_type if user.stakeholder else None,
                     'is_active': user.is_active,
                     **auth_data  
                 }

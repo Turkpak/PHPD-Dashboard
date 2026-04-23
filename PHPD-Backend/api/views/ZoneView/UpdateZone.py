@@ -1,32 +1,31 @@
 from ..common_imports import *
 
-class DistrictUpdateView(viewsets.ViewSet):
-    queryset = District.objects.all()
-    serializer_class = DistrictSerializer
-    permission_classes = [IsAuthenticated, HasSidebarPermission] 
-    sidebar_label = "Area Management"
-    sub_label = "District"
+class ZoneUpdateView(viewsets.ViewSet):
+    queryset = Zone.objects.all()
+    serializer_class = ZoneSerializer
+    permission_classes = [AllowAny]
+
     def update(self, request, *args, **kwargs):
         data = request.data
-        district_id = kwargs.get('pk') 
+        zone_id = kwargs.get('pk') 
 
         try:
-            mydistrict = District.objects.get(id=district_id)
+            myzone = Zone.objects.get(id=zone_id)
 
-        except District.DoesNotExist:
+        except Zone.DoesNotExist:
             return ApiResponse(
                 status=status.HTTP_404_NOT_FOUND,
-                message="District not found.",
+                message="Zone not found.",
                 http_status=status.HTTP_404_NOT_FOUND
             ).create_response()
 
         try:
-            serializer = DistrictSerializer(mydistrict, data=data, partial=True)  
+            serializer = ZoneSerializer(myzone, data=data, partial=True)  
             if serializer.is_valid():
                 serializer.save()
                 return ApiResponse(
                     status=status.HTTP_200_OK,
-                    message="District updated successfully.",
+                    message="Zone updated successfully.",
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()

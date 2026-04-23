@@ -1,41 +1,42 @@
 from ..common_imports import *
 
-class ListProvinceView(viewsets.ViewSet):
-    queryset = Province.objects.all()
-    serializer_class = ProvinceSerializer
-    permission_classes = [IsAuthenticated, HasSidebarPermission] 
-    sidebar_label = "Area Management"
-    sub_label = "Province"
+class ListZoneView(viewsets.ViewSet):
+    permission_classes = [AllowAny]
 
     def list(self, request, *args, **kwargs):
         try:
-            province_id = request.query_params.get("id")
+            zone_id = request.query_params.get("id")
 
-            if province_id:
-                queryset = Province.objects.filter(id=province_id).first()
-                if not queryset:
+            # Case 1: Get single zone by ID
+            if zone_id:
+                zone = Zone.objects.filter(id=zone_id).first()
+                if not zone:
                     return ApiResponse(
                         status=status.HTTP_404_NOT_FOUND,
-                        message="Province not found.",
+                        message="Zone not found.",
                         http_status=status.HTTP_404_NOT_FOUND
                     ).create_response()
-                serializer = ProvinceSerializer(queryset)
+
+                serializer = ZoneSerializer(zone)
                 return ApiResponse(
                     status=status.HTTP_200_OK,
-                    message="Province Found.",
+                    message="Zone Found.",
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()
 
+
+            # Case 3: Return all zones
             else:
-                queryset = Province.objects.all()
-                serializer = ProvinceSerializer(queryset, many=True)
+                zones = Zone.objects.all()
+                serializer = ZoneSerializer(zones, many=True)
                 return ApiResponse(
                     status=status.HTTP_200_OK,
-                    message="All Provinces Found.",
+                    message="All Zones Found.",
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()
+
         except serializers.ValidationError as e:
             return ApiResponse(
                 status=status.HTTP_400_BAD_REQUEST,
