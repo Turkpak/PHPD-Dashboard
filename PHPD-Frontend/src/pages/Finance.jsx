@@ -492,6 +492,33 @@ export default function Finance() {
     }));
   }, [budgetTotals.budgetM, budgetTotals.consumeM, budgetTotals.remainingM]);
 
+  const sCurveShapesData = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const totalBudget = Number(_nullishCoalesce(budgetTotals.budgetM, () => ( 0)));
+    const totalConsumed = Number(_nullishCoalesce(budgetTotals.consumeM, () => ( 0)));
+    const totalRemaining = Number(_nullishCoalesce(budgetTotals.remainingM, () => ( 0)));
+
+    // Logistic curve normalized to [0, 1]
+    const logistic01 = (t, k, mid) => 1 / (1 + Math.exp(-k * (t - mid)));
+    const normalize01 = (vals) => {
+      const first = vals[0];
+      const last = vals[vals.length - 1];
+      const span = last - first || 1;
+      return vals.map((v) => (v - first) / span);
+    };
+
+    // Use a single "typical" S-curve shape and scale it to each total,
+    // so the 3 series are comparable and match the S-curve style.
+    const typical = normalize01(months.map((_, i) => logistic01(i, 0.85, 6.0)));
+
+    return months.map((m, i) => ({
+      month: m,
+      totalBudgetM: typical[i] * totalBudget,
+      totalConsumedM: typical[i] * totalConsumed,
+      totalRemainingM: typical[i] * totalRemaining,
+    }));
+  }, [budgetTotals.budgetM, budgetTotals.consumeM, budgetTotals.remainingM]);
+
   const stageBreakdownWithBarScale = useMemo(() => {
     const maxPct = Math.max(
       ...stageBreakdownItems.map((i) => i.pctOfApproved),
@@ -841,18 +868,23 @@ export default function Finance() {
                 , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 826}}
                   , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 827}}
                     , React.createElement(ComposedChart, { data: flowChartData, margin: { top: 16, right: 32, left: 16, bottom: isMobile ? 52 : 36 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 828}}
-                      , React.createElement('defs', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 831}}
-                        , React.createElement('linearGradient', { id: "colorFlowTotal", x1: "0", y1: "0", x2: "0", y2: "1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 832}}
-                          , React.createElement('stop', { offset: "5%", stopColor: "#2F8F6C", stopOpacity: 0.35, __self: this, __source: {fileName: _jsxFileName, lineNumber: 833}} )
-                          , React.createElement('stop', { offset: "95%", stopColor: "#2F8F6C", stopOpacity: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 834}} )
-                        )
-                      )
                       , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 837}} )
                       , React.createElement(XAxis, { dataKey: "stage", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, angle: isMobile ? -35 : 0, textAnchor: isMobile ? "end" : "middle", height: isMobile ? 70 : 40, __self: this, __source: {fileName: _jsxFileName, lineNumber: 838}} )
                       , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${v}M`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 846}} )
                       , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 847}} )
-                      , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 858}} )
-                      , React.createElement(Bar, { dataKey: "totalM", fill: "url(#colorFlowTotal)", radius: [4, 4, 0, 0], name: "Total (M)", barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}} )
+                      , React.createElement(Bar, { dataKey: "totalM", radius: [4, 4, 0, 0], name: "Total (M)", barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}}
+                        , flowChartData.map((entry, index) => (
+                          React.createElement(Cell, {
+                            key: `cell-flow-${index}`,
+                            fill:
+                              entry.stage === "Total Budget"
+                                ? "#0F4B3A"
+                                : entry.stage === "Total Consume"
+                                  ? "#F59E0B"
+                                  : "#8BC34A", __self: this, __source: {fileName: _jsxFileName, lineNumber: 860}}
+                          )
+                        ))
+                      )
                     )
                   )
                 )
@@ -910,58 +942,29 @@ export default function Finance() {
             )
 
             /* Stage breakdown */
-            , React.createElement(Card, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
+            , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
               , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 933}}
-                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "Budget breakdown (totals)"  )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Total (PKR M). Bar length is relative across items; percentage is vs Total Budget."
+                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "S-curve shapes (totals)"  )
+                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Reference S-curves (Front-loaded / Typical / Back-loaded), scaled to Total Budget (PKR millions)."
 
 
                 )
               )
-              , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 940}}
-                , React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 941}}
-                  , stageBreakdownWithBarScale.map((item) => (
-                    React.createElement('div', { key: item.label, className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 943}}
-                      , React.createElement('div', { className: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 944}}
-                        , React.createElement('span', { className: "font-bold text-primary" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 945}}, item.label)
-                        , React.createElement('div', { className: "text-xs font-mono text-muted-foreground sm:text-right"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 946}}
-                          , React.createElement('span', { className: "whitespace-nowrap font-bold text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 949}}, "Total: " , item.triple.total.toFixed(2), " M" )
-                        )
-                      )
-                      , React.createElement('div', { className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}}
-                        , React.createElement('svg', {
-                          viewBox: "0 0 100 12",
-                          preserveAspectRatio: "none",
-                          className: "w-full h-6",
-                          role: "img",
-                          "aria-label": `${item.label} progress`,
-                          __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}}
-                          , React.createElement('path', {
-                            d: "M2 10 C 28 2, 72 2, 98 10",
-                            pathLength: 100,
-                            fill: "none",
-                            stroke: "hsl(var(--muted))",
-                            strokeWidth: 6,
-                            strokeLinecap: "round",
-                            __self: this, __source: {fileName: _jsxFileName, lineNumber: 954}}
-                          )
-                          , React.createElement('path', {
-                            d: "M2 10 C 28 2, 72 2, 98 10",
-                            pathLength: 100,
-                            fill: "none",
-                            stroke: item.color,
-                            strokeWidth: 6,
-                            strokeLinecap: "round",
-                            strokeDasharray: `${Math.min(100, item.barWidthPct)} 100`,
-                            __self: this, __source: {fileName: _jsxFileName, lineNumber: 963}}
-                          )
-                        )
-                      )
-                      , React.createElement('div', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 961}}
-                        , item.pctOfApproved.toFixed(1), "% of total budget"
-                      )
+              , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 940}}
+                , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 941}}
+                  , React.createElement(ComposedChart, { data: sCurveShapesData, margin: { top: 12, right: 24, left: 12, bottom: 32 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 942}}
+                    , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}} )
+                    , React.createElement(XAxis, { dataKey: "month", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}} )
+                    , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${Math.round(v)}M`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 962}} )
+                    , React.createElement(Tooltip, {
+                      contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" },
+                      formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 963}}
                     )
-                  ))
+                    , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 972}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "totalBudgetM", name: "Total Budget", stroke: "#0F4B3A", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 973}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "totalConsumedM", name: "Total Consumed", stroke: "#F59E0B", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 974}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "totalRemainingM", name: "Total Remaining", stroke: "#8BC34A", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 975}} )
+                  )
                 )
               )
             )

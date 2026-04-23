@@ -8,6 +8,7 @@ import { PhaseTimelineChart } from "@/components/dashboard/PhaseTimelineChart";
 import { PlannedVsActualChart } from "@/components/dashboard/PlannedVsActualChart";
 import { HierarchyCard } from "@/components/dashboard/HierarchyCard";
 import { CityMap } from "@/components/dashboard/CityMap";
+import { CityCompletionChart } from "@/components/comparison/CityCompletionChart";
 
 import { MilestoneDetailsPanel } from "@/components/dashboard/MilestoneDetailsPanel";
 import { exportDashboardToPPTX } from "@/utils/exportToPPTX";
@@ -957,6 +958,57 @@ export default function Dashboard() {
     });
     return rows;
   }, [apiProjects, ganttProgressByProjectId, divisionNameById, districtNameById, tehsilNameById]);
+
+  const divisionCompletionData = useMemo(() => {
+    if (!Array.isArray(apiDivisions) || apiDivisions.length === 0) return [];
+    if (!Array.isArray(apiDistricts) || !Array.isArray(apiTehsils) || !Array.isArray(apiProjects))
+      return [];
+
+    const clamp01 = (n) => Math.max(0, Math.min(100, n));
+    const avg = (values) => {
+      if (values.length === 0) return 0;
+      const sum = values.reduce((acc, v) => acc + v, 0);
+      return sum / values.length;
+    };
+
+    const calcProjectsOverall = (ps) => {
+      let sum = 0;
+      let count = 0;
+      for (const p of ps) {
+        const v = ganttProgressByProjectId.get(p.id);
+        if (v === undefined) continue;
+        sum += v;
+        count++;
+      }
+      return count > 0 ? clamp01(sum / count) : 0;
+    };
+
+    return apiDivisions
+      .map((div) => {
+        const divDistricts = apiDistricts.filter((d) => d.division === div.id);
+        const districtOveralls = [];
+
+        for (const dist of divDistricts) {
+          const distTehsils = apiTehsils.filter((t) => t.district === dist.id);
+          const tehsilOveralls = [];
+
+          for (const tehsil of distTehsils) {
+            const tehsilProjects = apiProjects.filter((p) => p.tehsil === tehsil.id);
+            const overall = calcProjectsOverall(tehsilProjects);
+            if (tehsilProjects.length > 0) tehsilOveralls.push(overall);
+          }
+
+          districtOveralls.push(tehsilOveralls.length > 0 ? avg(tehsilOveralls) : 0);
+        }
+
+        const completion = Math.round(avg(districtOveralls));
+        return {
+          city: `${div.division_name} Division`,
+          completion: clamp01(completion),
+        };
+      })
+      .sort((a, b) => b.completion - a.completion);
+  }, [apiDivisions, apiDistricts, apiTehsils, apiProjects, ganttProgressByProjectId]);
 
   const toSlug = (value) =>
     value
@@ -2396,6 +2448,13 @@ export default function Dashboard() {
               )
             );
           })()
+        ) : null
+
+        /* Division-wise completion chart — beneath Latest Projects + Map */
+        , viewType === "divisions" && !selectedItemName && !selectedItemType ? (
+          React.createElement('div', { className: "mt-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+            , React.createElement(CityCompletionChart, { cityData: divisionCompletionData, description: "Division Wise Progress", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+          )
         ) : null
 
         /* Milestone details should appear beneath Overall Progress (and replace the old charts when selected) */
