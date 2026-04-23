@@ -831,8 +831,8 @@ export default function Finance() {
               })
             )
 
-            /* Budget overview + Pie summary — same row (desktop) */
-            , React.createElement('div', { className: "grid grid-cols-1 gap-4 lg:grid-cols-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 818}}
+            /* Budget overview */
+            , React.createElement('div', { className: "grid grid-cols-1 gap-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 818}}
               , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 819}}
                 , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}
                   , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 821}}, "Budget overview")
@@ -853,23 +853,6 @@ export default function Finance() {
                       , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 847}} )
                       , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 858}} )
                       , React.createElement(Bar, { dataKey: "totalM", fill: "url(#colorFlowTotal)", radius: [4, 4, 0, 0], name: "Total (M)", barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}} )
-                    )
-                  )
-                )
-              )
-              , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 870}}
-                , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 871}}
-                  , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 872}}, "Budget distribution")
-                  , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 873}}, "Total Budget vs Total Consume vs Total Remaining (PKR millions)")
-                )
-                , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 876}}
-                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 877}}
-                    , React.createElement(PieChart, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 878}}
-                      , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 879}} )
-                      , React.createElement(Legend, { verticalAlign: "bottom", height: 36, iconType: "circle", wrapperStyle: { fontSize: 11 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 887}} )
-                      , React.createElement(Pie, { data: flowChartData, dataKey: "totalM", nameKey: "stage", cx: "50%", cy: "45%", innerRadius: "55%", outerRadius: "85%", paddingAngle: 2, stroke: "hsl(var(--card))", strokeWidth: 2, isAnimationActive: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 888}}
-                        , flowChartData.map((_entry, index) => React.createElement(Cell, { key: "cell-" + index, fill: [STAGE_COLORS[1], STAGE_COLORS[3], STAGE_COLORS[4]][index] || STAGE_COLORS[0], __self: this, __source: {fileName: _jsxFileName, lineNumber: 905}} ))
-                      )
                     )
                   )
                 )
@@ -945,13 +928,33 @@ export default function Finance() {
                           , React.createElement('span', { className: "whitespace-nowrap font-bold text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 949}}, "Total: " , item.triple.total.toFixed(2), " M" )
                         )
                       )
-                      , React.createElement('div', { className: "w-full bg-muted h-3 rounded-full overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}}
-                        , React.createElement('div', {
-                          className: "h-full rounded-full transition-all"  ,
-                          style: {
-                            width: `${Math.min(100, item.barWidthPct)}%`,
-                            backgroundColor: item.color,
-                          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}}
+                      , React.createElement('div', { className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}}
+                        , React.createElement('svg', {
+                          viewBox: "0 0 100 12",
+                          preserveAspectRatio: "none",
+                          className: "w-full h-6",
+                          role: "img",
+                          "aria-label": `${item.label} progress`,
+                          __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}}
+                          , React.createElement('path', {
+                            d: "M2 10 C 28 2, 72 2, 98 10",
+                            pathLength: 100,
+                            fill: "none",
+                            stroke: "hsl(var(--muted))",
+                            strokeWidth: 6,
+                            strokeLinecap: "round",
+                            __self: this, __source: {fileName: _jsxFileName, lineNumber: 954}}
+                          )
+                          , React.createElement('path', {
+                            d: "M2 10 C 28 2, 72 2, 98 10",
+                            pathLength: 100,
+                            fill: "none",
+                            stroke: item.color,
+                            strokeWidth: 6,
+                            strokeLinecap: "round",
+                            strokeDasharray: `${Math.min(100, item.barWidthPct)} 100`,
+                            __self: this, __source: {fileName: _jsxFileName, lineNumber: 963}}
+                          )
                         )
                       )
                       , React.createElement('div', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 961}}

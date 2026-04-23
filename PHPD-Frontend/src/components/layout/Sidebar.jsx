@@ -60,7 +60,7 @@ const NAV_ITEMS = [
   },
   { icon: LucideBanknote, label: "Finance & Budget", href: "/finance" },
   { icon: MapIcon, label: "GIS Layers", href: "/gis" },
-  { icon: BarChart3, label: "Citywise Comparison", href: "/comparison" },
+  
   { icon: UserCog, label: "User Management", href: "/user-management", roles: ["super_admin"] },
 ];
 
@@ -341,7 +341,7 @@ export function Sidebar() {
   return (
     <>
       <div className={cn(
-        "hidden border-r border-slate-100 bg-sidebar md:block fixed inset-y-0 left-0 z-30 shadow-[2px_0_20px_rgba(0,0,0,0.04)] transition-all duration-300",
+        "hidden border-r border-[#054332]/20 bg-sidebar md:block fixed inset-y-0 left-0 z-30 shadow-[2px_0_20px_rgba(5,67,50,0.06)] transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
       )}>
         <NavContent collapsed={isCollapsed} />
