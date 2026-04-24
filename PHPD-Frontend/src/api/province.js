@@ -1,5 +1,6 @@
  function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }
 import { get, post, put, del } from "./client";
+import { mockZones } from "./mockData";
 
 
 /**
@@ -18,15 +19,23 @@ const DELETE_PATH = "delete-zone/";
  * GET list-zone: fetch all zones.
  */
 export async function listProvinces() {
-  const data = await get(LIST);
-  // Backend uses `zone_name`; normalize to also expose `province_name`
-  // so existing frontend pages don't need to change all field reads.
-  if (!Array.isArray(data)) return [];
-  return data.map((row) => ({
-    ...row,
-    province_name: row.province_name ?? row.zone_name,
-    zone_name: row.zone_name ?? row.province_name,
-  }));
+  try {
+    const data = await get(LIST);
+    // Backend uses `zone_name`; normalize to also expose `province_name`
+    // so existing frontend pages don't need to change all field reads.
+    if (!Array.isArray(data)) return [];
+    return data.map((row) => ({
+      ...row,
+      province_name: row.province_name ?? row.zone_name,
+      zone_name: row.zone_name ?? row.province_name,
+    }));
+  } catch {
+    // Temporary fallback for UI visibility when backend isn't ready.
+    return mockZones.map((z) => ({
+      ...z,
+      province_name: z.zone_name,
+    }));
+  }
 }
 
 export async function getProvinceById(id) {

@@ -184,15 +184,22 @@ class Circle(models.Model):
 # --------------------------------------------------------
 class District(models.Model):
     district_name = models.CharField(max_length=100)
+    # NOTE: These are nullable to allow smooth migrations from older schemas
+    # (e.g., when adding circle/zone to existing tables). Once the database is
+    # populated and stabilized, you can tighten to null=False via a follow-up migration.
     circle = models.ForeignKey(
         Circle,
         on_delete=models.CASCADE,
-        related_name='districts'
+        related_name='districts',
+        null=True,
+        blank=True,
     )
     zone = models.ForeignKey(
         Zone,
         on_delete=models.CASCADE,
-        related_name='districts'
+        related_name='districts',
+        null=True,
+        blank=True,
     )
 
     def __str__(self):
@@ -206,17 +213,23 @@ class Tehsil(models.Model):
     zone = models.ForeignKey(
         Zone,
         on_delete=models.CASCADE,
-        related_name='tehsils'
+        related_name='tehsils',
+        null=True,
+        blank=True,
     )
     circle = models.ForeignKey(
         Circle,
         on_delete=models.CASCADE,
-        related_name='tehsils'
+        related_name='tehsils',
+        null=True,
+        blank=True,
     )
     district = models.ForeignKey(
         District,
         on_delete=models.CASCADE,
-        related_name='tehsils'
+        related_name='tehsils',
+        null=True,
+        blank=True,
     )
 
     def __str__(self):

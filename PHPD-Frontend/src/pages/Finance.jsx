@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
+import { mockProjects, mockZones, mockCircles, mockDistricts, mockTehsils, filterByZone, filterByCircle, filterByDistrict } from "@/api/mockData";
 import {
   getProjectById,
   getProjectSummary,
@@ -37,6 +37,9 @@ export default function Finance() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { width } = useWindowSize();
+  // TEMP: Keep Finance fast while APIs are still being wired.
+  // When you're ready to use real APIs, set this to false.
+  const FORCE_MOCK_FINANCE = true;
   const [selectedDivisionId, setSelectedDivisionId] = useState("all");
   const [selectedDistrictId, setSelectedDistrictId] = useState("all");
   const [selectedTehsilId, setSelectedTehsilId] = useState("all");
@@ -47,34 +50,49 @@ export default function Finance() {
 
   const isMobile = width < 640;
 
-  const { data: projects = [] } = useQuery({
+  const { data: projectsApi = [] } = useQuery({
     queryKey: ["projects"],
     queryFn: listProjects,
+    enabled: !FORCE_MOCK_FINANCE,
   });
+  const projects = FORCE_MOCK_FINANCE ? mockProjects : projectsApi;
 
-  const { data: divisions = [], isLoading: divisionsLoading } = useQuery({
+  const { data: divisionsApi = [], isLoading: divisionsLoadingApi } = useQuery({
     queryKey: ["finance", "list-division"],
     queryFn: () => listDivisions(),
+    enabled: !FORCE_MOCK_FINANCE,
     staleTime: 5 * 60 * 1000,
   });
+  const divisions = FORCE_MOCK_FINANCE
+    ? mockCircles.map((c) => ({ id: c.id, division_name: c.circle_name })) // keep existing "division" naming in this page
+    : divisionsApi;
+  const divisionsLoading = FORCE_MOCK_FINANCE ? false : divisionsLoadingApi;
 
   const divisionNumeric =
     selectedDivisionId !== "all" ? Number(selectedDivisionId) : null;
-  const { data: districts = [], isFetching: districtsLoading } = useQuery({
+  const { data: districtsApi = [], isFetching: districtsLoadingApi } = useQuery({
     queryKey: ["finance", "list-district", divisionNumeric],
     queryFn: () => listDistricts(divisionNumeric),
-    enabled: divisionNumeric != null && Number.isFinite(divisionNumeric),
+    enabled: !FORCE_MOCK_FINANCE && divisionNumeric != null && Number.isFinite(divisionNumeric),
     staleTime: 5 * 60 * 1000,
   });
+  const districts = FORCE_MOCK_FINANCE
+    ? filterByCircle(mockDistricts, divisionNumeric).map((d) => ({ id: d.id, district_name: d.district_name }))
+    : districtsApi;
+  const districtsLoading = FORCE_MOCK_FINANCE ? false : districtsLoadingApi;
 
   const districtNumeric =
     selectedDistrictId !== "all" ? Number(selectedDistrictId) : null;
-  const { data: tehsils = [], isFetching: tehsilsLoading } = useQuery({
+  const { data: tehsilsApi = [], isFetching: tehsilsLoadingApi } = useQuery({
     queryKey: ["finance", "list-tehsil", districtNumeric],
     queryFn: () => listTehsils(districtNumeric),
-    enabled: districtNumeric != null && Number.isFinite(districtNumeric),
+    enabled: !FORCE_MOCK_FINANCE && districtNumeric != null && Number.isFinite(districtNumeric),
     staleTime: 5 * 60 * 1000,
   });
+  const tehsils = FORCE_MOCK_FINANCE
+    ? filterByDistrict(mockTehsils, districtNumeric).map((t) => ({ id: t.id, tehsil_name: t.tehsil_name }))
+    : tehsilsApi;
+  const tehsilsLoading = FORCE_MOCK_FINANCE ? false : tehsilsLoadingApi;
 
   const isAllFilters =
     selectedDivisionId === "all" &&
@@ -82,12 +100,20 @@ export default function Finance() {
     selectedTehsilId === "all" &&
     selectedProjectId === "all";
 
-  const { data: projectSummary } = useQuery({
+  const { data: projectSummaryApi } = useQuery({
     queryKey: ["project-summary"],
     queryFn: getProjectSummary,
-    enabled: isAllFilters,
+    enabled: !FORCE_MOCK_FINANCE && isAllFilters,
     staleTime: 60 * 1000,
   });
+  const projectSummary = FORCE_MOCK_FINANCE
+    ? {
+      total_allocation: projects.reduce((acc, p) => acc + Number(p.total_budget_allocated || 0), 0),
+      total_pd_release: 0,
+      total_spending_release: 0,
+      total_pifra: projects.reduce((acc, p) => acc + Number(p.budget_utilized || 0), 0),
+    }
+    : projectSummaryApi;
 
   const filteredProjects = useMemo(() => {
     if (selectedDivisionId === "all") return projects;
@@ -176,15 +202,18 @@ export default function Finance() {
   }, [filteredProjects]);
 
   const selectedProjectNumericId = selectedProjectId !== "all" ? Number(selectedProjectId) : null;
-  const { data: selectedProject } = useQuery({
+  const { data: selectedProjectApi } = useQuery({
     queryKey: ["project-by-id", selectedProjectNumericId],
     queryFn: async () => {
       if (!selectedProjectNumericId) return null;
       return await getProjectById(selectedProjectNumericId);
     },
-    enabled: selectedProjectNumericId != null && Number.isFinite(selectedProjectNumericId),
+    enabled: !FORCE_MOCK_FINANCE && selectedProjectNumericId != null && Number.isFinite(selectedProjectNumericId),
     staleTime: 30 * 1000,
   });
+  const selectedProject = FORCE_MOCK_FINANCE
+    ? projects.find((p) => Number(p.id) === Number(selectedProjectNumericId)) || null
+    : selectedProjectApi;
 
   // Prefill budget edit inputs from selected project
   useEffect(() => {
@@ -758,33 +787,8 @@ export default function Finance() {
         )
 
         , (selectedProjectId !== "all" && !selectedProject) || (isAllFilters && !projectSummary) ? (
-          React.createElement(React.Fragment, null
-            /* Skeleton loader: keep layout stable while loading */
-            , React.createElement('div', { className: "grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 698}}
-              , Array.from({ length: 3 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "rounded-xl border border-border/50 shadow-sm overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 700}}
-                  , React.createElement(CardHeader, { className: "space-y-0 px-3 pb-1 pt-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 701}}
-                    , React.createElement('div', { className: "flex items-start justify-between gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 702}}
-                      , React.createElement(Skeleton, { className: "h-3 w-24" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 703}} )
-                      , React.createElement(Skeleton, { className: "h-8 w-8 rounded-lg"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 704}} )
-                    )
-                  )
-                  , React.createElement(CardContent, { className: "space-y-2 px-3 pb-3 pt-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 707}}
-                    , React.createElement(Skeleton, { className: "h-6 w-28" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 708}} )
-                    , React.createElement(Skeleton, { className: "h-2.5 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 709}} )
-                  )
-                )
-              ))
-            )
-            , React.createElement(Card, { className: "border-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 714}}
-              , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 715}}
-                , React.createElement(Skeleton, { className: "h-5 w-48" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 716}} )
-                , React.createElement(Skeleton, { className: "h-3 w-80 max-w-full"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 717}} )
-              )
-              , React.createElement(CardContent, { className: "h-[360px] sm:h-[420px] lg:h-[480px]"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 719}}
-                , React.createElement(Skeleton, { className: "h-full w-full rounded-xl"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 720}} )
-              )
-            )
+          React.createElement('div', { className: "rounded-xl border border-border/50 bg-muted/10 p-4 text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+            , "Loading financial data…"
           )
         ) : null
 

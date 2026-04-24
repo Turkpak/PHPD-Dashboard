@@ -112,8 +112,8 @@ export default function TehsilManagement() {
 
   const handleEdit = (t) => {
     setFormData({
-      zoneId: String(t.province),
-      circleId: String(t.division),
+      zoneId: String(_nullishCoalesce(t.zone, () => (t.province))),
+      circleId: String(_nullishCoalesce(t.circle, () => (t.division))),
       districtId: String(t.district),
       tehsil_name: t.tehsil_name,
     });
@@ -129,24 +129,24 @@ export default function TehsilManagement() {
       toast({ title: "Error", description: "Please select zone, circle and district", variant: "destructive" });
       return;
     }
-    const provinceId = Number(formData.zoneId);
-    const divisionId = Number(formData.circleId);
+    const zoneId = Number(formData.zoneId);
+    const circleId = Number(formData.circleId);
     const districtId = Number(formData.districtId);
     if (editingId !== null) {
       updateMutation.mutate({
         id: editingId,
         payload: {
           tehsil_name: formData.tehsil_name.trim(),
-          province: provinceId,
-          division: divisionId,
+          zone: zoneId,
+          circle: circleId,
           district: districtId,
         },
       });
     } else {
       createMutation.mutate({
         tehsil_name: formData.tehsil_name.trim(),
-        province: provinceId,
-        division: divisionId,
+        zone: zoneId,
+        circle: circleId,
         district: districtId,
       });
     }

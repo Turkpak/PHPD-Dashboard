@@ -12,7 +12,7 @@ class CircleCreateView(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
 
             mycircle = Circle(
-                province=serializer.validated_data['province'],
+                zone=serializer.validated_data['zone'],
                 circle_name=serializer.validated_data['circle_name'],
             )
             mycircle.save()
