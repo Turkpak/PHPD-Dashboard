@@ -12,8 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Edit2, Trash2, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
-  listProvinces,
-  listDivisions,
+  listProvinces as listZones,
+  listDivisions as listCircles,
   listDistricts,
   listTehsils,
   createTehsil,
@@ -24,8 +24,8 @@ import {
 
 export default function TehsilManagement() {
   const [formData, setFormData] = useState({
-    provinceId: "",
-    divisionId: "",
+    zoneId: "",
+    circleId: "",
     districtId: "",
     tehsil_name: "",
   });
@@ -36,23 +36,23 @@ export default function TehsilManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: provinces = [], isLoading: provincesLoading } = useQuery({
-    queryKey: ["provinces"],
-    queryFn: listProvinces,
+  const { data: zones = [], isLoading: zonesLoading } = useQuery({
+    queryKey: ["zones"],
+    queryFn: listZones,
   });
 
-  const provinceIdNum = formData.provinceId ? Number(formData.provinceId) : undefined;
-  const { data: divisionsByProvince = [] } = useQuery({
-    queryKey: ["divisions", provinceIdNum],
-    queryFn: () => listDivisions(provinceIdNum),
-    enabled: !!provinceIdNum,
+  const zoneIdNum = formData.zoneId ? Number(formData.zoneId) : undefined;
+  const { data: circlesByZone = [] } = useQuery({
+    queryKey: ["circles", zoneIdNum],
+    queryFn: () => listCircles(zoneIdNum),
+    enabled: !!zoneIdNum,
   });
 
-  const divisionIdNum = formData.divisionId ? Number(formData.divisionId) : undefined;
-  const { data: districtsByDivision = [] } = useQuery({
-    queryKey: ["districts", divisionIdNum],
-    queryFn: () => listDistricts(divisionIdNum),
-    enabled: !!divisionIdNum,
+  const circleIdNum = formData.circleId ? Number(formData.circleId) : undefined;
+  const { data: districtsByCircle = [] } = useQuery({
+    queryKey: ["districts", circleIdNum],
+    queryFn: () => listDistricts(circleIdNum),
+    enabled: !!circleIdNum,
   });
 
   const { data: allTehsilsRaw = [], isLoading: tehsilsLoading } = useQuery({
@@ -62,17 +62,17 @@ export default function TehsilManagement() {
   const allTehsils = Array.isArray(allTehsilsRaw) ? allTehsilsRaw : [];
 
   useEffect(() => {
-    if (!formData.provinceId) setFormData((f) => ({ ...f, divisionId: "", districtId: "" }));
-  }, [formData.provinceId]);
+    if (!formData.zoneId) setFormData((f) => ({ ...f, circleId: "", districtId: "" }));
+  }, [formData.zoneId]);
   useEffect(() => {
-    if (!formData.divisionId) setFormData((f) => ({ ...f, districtId: "" }));
-  }, [formData.divisionId]);
+    if (!formData.circleId) setFormData((f) => ({ ...f, districtId: "" }));
+  }, [formData.circleId]);
 
   const createMutation = useMutation({
     mutationFn: createTehsil,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tehsils"] });
-      setFormData({ provinceId: "", divisionId: "", districtId: "", tehsil_name: "" });
+      setFormData({ zoneId: "", circleId: "", districtId: "", tehsil_name: "" });
       toast({ title: "Success", description: "Tehsil created successfully" });
     },
     onError: (e) => {
@@ -90,7 +90,7 @@ export default function TehsilManagement() {
 ) => updateTehsil(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tehsils"] });
-      setFormData({ provinceId: "", divisionId: "", districtId: "", tehsil_name: "" });
+      setFormData({ zoneId: "", circleId: "", districtId: "", tehsil_name: "" });
       setEditingId(null);
       toast({ title: "Success", description: "Tehsil updated successfully" });
     },
@@ -112,8 +112,8 @@ export default function TehsilManagement() {
 
   const handleEdit = (t) => {
     setFormData({
-      provinceId: String(t.province),
-      divisionId: String(t.division),
+      zoneId: String(t.province),
+      circleId: String(t.division),
       districtId: String(t.district),
       tehsil_name: t.tehsil_name,
     });
@@ -125,12 +125,12 @@ export default function TehsilManagement() {
       toast({ title: "Error", description: "Tehsil name is required", variant: "destructive" });
       return;
     }
-    if (!formData.provinceId || !formData.divisionId || !formData.districtId) {
-      toast({ title: "Error", description: "Please select province, division and district", variant: "destructive" });
+    if (!formData.zoneId || !formData.circleId || !formData.districtId) {
+      toast({ title: "Error", description: "Please select zone, circle and district", variant: "destructive" });
       return;
     }
-    const provinceId = Number(formData.provinceId);
-    const divisionId = Number(formData.divisionId);
+    const provinceId = Number(formData.zoneId);
+    const divisionId = Number(formData.circleId);
     const districtId = Number(formData.districtId);
     if (editingId !== null) {
       updateMutation.mutate({
@@ -153,7 +153,7 @@ export default function TehsilManagement() {
   };
 
   const handleCancel = () => {
-    setFormData({ provinceId: "", divisionId: "", districtId: "", tehsil_name: "" });
+    setFormData({ zoneId: "", circleId: "", districtId: "", tehsil_name: "" });
     setEditingId(null);
   };
 
@@ -167,8 +167,8 @@ export default function TehsilManagement() {
     (t) =>
       t.tehsil_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (t.district_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.division_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.province_name || "").toLowerCase().includes(searchQuery.toLowerCase())
+      (_nullishCoalesce(_nullishCoalesce(t.circle_name, () => (t.division_name)), () => ( ""))).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (_nullishCoalesce(_nullishCoalesce(t.zone_name, () => (t.province_name)), () => ( ""))).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Reset to first page when filters change
@@ -186,7 +186,7 @@ export default function TehsilManagement() {
       , React.createElement('div', { className: "flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 184}}
         , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 185}}
           , React.createElement('h1', { className: "text-2xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 186}}, "Tehsil — Add / Edit"    )
-          , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 187}}, "Select Province → Division → District, then enter tehsil name and click Create Tehsil."             )
+          , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 187}}, "Select Zone → Circle → District, then enter tehsil name and click Create Tehsil."             )
         )
 
         , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 190}}
@@ -199,38 +199,38 @@ export default function TehsilManagement() {
           , React.createElement(CardContent, { className: "pt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 197}}
             , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 198}}
               , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 199}}
-                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}, "Province " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}, "*"))
+                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}, "Zone " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}, "*"))
                 , React.createElement(Select, {
-                  onValueChange: (v) => setFormData({ ...formData, provinceId: v, divisionId: "", districtId: "" }),
-                  value: formData.provinceId,
-                  disabled: provincesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 201}}
+                  onValueChange: (v) => setFormData({ ...formData, zoneId: v, circleId: "", districtId: "" }),
+                  value: formData.zoneId,
+                  disabled: zonesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 201}}
 
                   , React.createElement(SelectTrigger, { className: "h-10 text-xs text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 206}}
-                    , React.createElement(SelectValue, { placeholder: provinces.length === 0 ? "Add provinces first" : "Select province", __self: this, __source: {fileName: _jsxFileName, lineNumber: 207}} )
+                    , React.createElement(SelectValue, { placeholder: zones.length === 0 ? "Add zones first" : "Select zone", __self: this, __source: {fileName: _jsxFileName, lineNumber: 207}} )
                   )
                   , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 209}}
-                    , provinces.map((p) => (
-                      React.createElement(SelectItem, { key: p.id, value: String(p.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 211}}
-                        , p.province_name
+                    , zones.map((z) => (
+                      React.createElement(SelectItem, { key: z.id, value: String(z.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 211}}
+                        , _nullishCoalesce(z.zone_name, () => (z.province_name))
                       )
                     ))
                   )
                 )
               )
               , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 218}}
-                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}, "Division " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}, "*"))
+                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}, "Circle " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}, "*"))
                 , React.createElement(Select, {
-                  onValueChange: (v) => setFormData({ ...formData, divisionId: v, districtId: "" }),
-                  value: formData.divisionId,
-                  disabled: !formData.provinceId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 220}}
+                  onValueChange: (v) => setFormData({ ...formData, circleId: v, districtId: "" }),
+                  value: formData.circleId,
+                  disabled: !formData.zoneId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 220}}
 
                   , React.createElement(SelectTrigger, { className: "h-10 text-xs text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 225}}
-                    , React.createElement(SelectValue, { placeholder: !formData.provinceId ? "Select province first" : "Select division", __self: this, __source: {fileName: _jsxFileName, lineNumber: 226}} )
+                    , React.createElement(SelectValue, { placeholder: !formData.zoneId ? "Select zone first" : "Select circle", __self: this, __source: {fileName: _jsxFileName, lineNumber: 226}} )
                   )
                   , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 228}}
-                    , divisionsByProvince.map((d) => (
-                      React.createElement(SelectItem, { key: d.id, value: String(d.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 230}}
-                        , d.division_name
+                    , circlesByZone.map((c) => (
+                      React.createElement(SelectItem, { key: c.id, value: String(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 230}}
+                        , _nullishCoalesce(c.circle_name, () => (c.division_name))
                       )
                     ))
                   )
@@ -241,13 +241,13 @@ export default function TehsilManagement() {
                 , React.createElement(Select, {
                   onValueChange: (v) => setFormData({ ...formData, districtId: v }),
                   value: formData.districtId,
-                  disabled: !formData.divisionId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 239}}
+                  disabled: !formData.circleId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 239}}
 
                   , React.createElement(SelectTrigger, { className: "h-10 text-xs text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 244}}
-                    , React.createElement(SelectValue, { placeholder: !formData.divisionId ? "Select division first" : "Select district", __self: this, __source: {fileName: _jsxFileName, lineNumber: 245}} )
+                    , React.createElement(SelectValue, { placeholder: !formData.circleId ? "Select circle first" : "Select district", __self: this, __source: {fileName: _jsxFileName, lineNumber: 245}} )
                   )
                   , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 247}}
-                    , districtsByDivision.map((d) => (
+                    , districtsByCircle.map((d) => (
                       React.createElement(SelectItem, { key: d.id, value: String(d.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 249}}
                         , d.district_name
                       )
@@ -302,8 +302,8 @@ export default function TehsilManagement() {
                 , React.createElement(TableHeader, { className: "bg-muted/50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 300}}
                   , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 301}}
                     , React.createElement(TableHead, { className: "w-16", __self: this, __source: {fileName: _jsxFileName, lineNumber: 302}}, "#")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 303}}, "Province")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 304}}, "Division")
+                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 303}}, "Zone")
+                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 304}}, "Circle")
                     , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 305}}, "District")
                     , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 306}}, "Tehsil")
                     , React.createElement(TableHead, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 307}}, "Action")
@@ -320,8 +320,8 @@ export default function TehsilManagement() {
                     paginatedTehsils.map((tehsil, index) => (
                       React.createElement(TableRow, { key: tehsil.id, __self: this, __source: {fileName: _jsxFileName, lineNumber: 319}}
                         , React.createElement(TableCell, { className: "font-medium", __self: this, __source: {fileName: _jsxFileName, lineNumber: 320}}, startIdx + index + 1)
-                        , React.createElement(TableCell, { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 321}}, _nullishCoalesce(tehsil.province_name, () => ( "")))
-                        , React.createElement(TableCell, { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 322}}, _nullishCoalesce(tehsil.division_name, () => ( "")))
+                        , React.createElement(TableCell, { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 321}}, _nullishCoalesce(_nullishCoalesce(tehsil.zone_name, () => (tehsil.province_name)), () => ( "")))
+                        , React.createElement(TableCell, { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 322}}, _nullishCoalesce(_nullishCoalesce(tehsil.circle_name, () => (tehsil.division_name)), () => ( "")))
                         , React.createElement(TableCell, { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 323}}, _nullishCoalesce(tehsil.district_name, () => ( "")))
                         , React.createElement(TableCell, { className: "font-semibold text-primary whitespace-nowrap"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 324}}, tehsil.tehsil_name)
                         , React.createElement(TableCell, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 325}}
