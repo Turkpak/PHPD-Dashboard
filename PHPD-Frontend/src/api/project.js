@@ -8,6 +8,7 @@ import { get, post, put, del, request } from "./client";
 
 
 import { boundaryFileToGeojson } from "@/utils/boundaryToGeojson";
+import { mockProjects } from "./mockData";
 
 /** POST /api/create-project/ — multipart: stakeholder, project_name, ..., xer_file, boundary_file */
 const CREATE = "create-project/";
@@ -45,15 +46,23 @@ function normalizeProjectFeature(f
 }
 
 export async function listProjects() {
-  const data = await get(LIST);
-  if (!data) return [];
-  if (typeof data === "object" && "features" in data && Array.isArray((data ).features)) {
-    return (data ).features.map((f) => normalizeProjectFeature(f));
+  try {
+    const data = await get(LIST);
+    if (!data) return [];
+    if (typeof data === "object" && "features" in data && Array.isArray((data ).features)) {
+      return (data ).features.map((f) => normalizeProjectFeature(f));
+    }
+    if (Array.isArray(data)) {
+      return data.map((f) => normalizeProjectFeature(f ));
+    }
+    return [];
+  } catch {
+    // Temporary fallback so dashboard/maps/pages can render without backend.
+    return mockProjects.map((p) => ({
+      ...p,
+      project_reference_no: p.project_reference_no ?? `REF-${p.id}`,
+    }));
   }
-  if (Array.isArray(data)) {
-    return data.map((f) => normalizeProjectFeature(f ));
-  }
-  return [];
 }
 
 /** GET /api/top-projects/ — returns list of top projects with progress % */

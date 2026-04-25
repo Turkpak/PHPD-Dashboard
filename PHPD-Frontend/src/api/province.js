@@ -1,22 +1,41 @@
  function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }
 import { get, post, put, del } from "./client";
+import { mockZones } from "./mockData";
 
-
-/** POST /api/create-province/ — body: { province_name: string } */
-const CREATE_PATH = "create-province/";
-/** GET /api/list-province/ — returns all provinces with id and province_name */
-const LIST = "list-province/";
-/** PUT /api/update-province/{id}/ — body: { province_name?: string } */
-const UPDATE = "update-province/";
-const DELETE_PATH = "delete-province/";
 
 /**
- * GET list-province: fetch all provinces added by the user.
- * URL: http://127.0.0.1:8000/api/list-province/
+ * This module is used by the frontend "Zone" UI.
+ * Backend routes are named create-zone/list-zone/update-zone/delete-zone.
+ *
+ * Payload/fields are normalized to { province_name } on the client side to
+ * minimize churn across the existing frontend.
+ */
+const CREATE_PATH = "create-zone/";
+const LIST = "list-zone/";
+const UPDATE = "update-zone/";
+const DELETE_PATH = "delete-zone/";
+
+/**
+ * GET list-zone: fetch all zones.
  */
 export async function listProvinces() {
-  const data = await get(LIST);
-  return Array.isArray(data) ? data : [];
+  try {
+    const data = await get(LIST);
+    // Backend uses `zone_name`; normalize to also expose `province_name`
+    // so existing frontend pages don't need to change all field reads.
+    if (!Array.isArray(data)) return [];
+    return data.map((row) => ({
+      ...row,
+      province_name: row.province_name ?? row.zone_name,
+      zone_name: row.zone_name ?? row.province_name,
+    }));
+  } catch {
+    // Temporary fallback for UI visibility when backend isn't ready.
+    return mockZones.map((z) => ({
+      ...z,
+      province_name: z.zone_name,
+    }));
+  }
 }
 
 export async function getProvinceById(id) {
@@ -25,21 +44,20 @@ export async function getProvinceById(id) {
 }
 
 /**
- * POST create-province: create a new province.
- * URL: http://127.0.0.1:8000/api/create-province/
- * Body: { province_name: "Punjab" }
+ * POST create-zone: create a new zone.
  */
 export async function createProvince(payload) {
-  return post(CREATE_PATH, { province_name: payload.province_name.trim() });
+  const name = String(payload?.province_name ?? payload?.zone_name ?? "").trim();
+  return post(CREATE_PATH, { zone_name: name });
 }
 
 /**
- * PUT update-province: update province name by id.
- * URL: http://127.0.0.1:8000/api/update-province/1/
- * Body: { province_name: string }
+ * PUT update-zone: update zone name by id.
  */
 export async function updateProvince(id, payload) {
-  const body = payload.province_name !== undefined ? { province_name: String(payload.province_name).trim() } : {};
+  const hasName = payload?.province_name !== undefined || payload?.zone_name !== undefined;
+  const name = String(payload?.province_name ?? payload?.zone_name ?? "").trim();
+  const body = hasName ? { zone_name: name } : {};
   return put(`${UPDATE}${id}/`, body);
 }
 

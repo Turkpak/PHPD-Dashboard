@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
+import { mockProjects, mockZones, mockCircles, mockDistricts, mockTehsils, filterByZone, filterByCircle, filterByDistrict } from "@/api/mockData";
 import {
   getProjectById,
   getProjectSummary,
@@ -37,6 +37,9 @@ export default function Finance() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { width } = useWindowSize();
+  // TEMP: Keep Finance fast while APIs are still being wired.
+  // When you're ready to use real APIs, set this to false.
+  const FORCE_MOCK_FINANCE = true;
   const [selectedDivisionId, setSelectedDivisionId] = useState("all");
   const [selectedDistrictId, setSelectedDistrictId] = useState("all");
   const [selectedTehsilId, setSelectedTehsilId] = useState("all");
@@ -47,34 +50,49 @@ export default function Finance() {
 
   const isMobile = width < 640;
 
-  const { data: projects = [] } = useQuery({
+  const { data: projectsApi = [] } = useQuery({
     queryKey: ["projects"],
     queryFn: listProjects,
+    enabled: !FORCE_MOCK_FINANCE,
   });
+  const projects = FORCE_MOCK_FINANCE ? mockProjects : projectsApi;
 
-  const { data: divisions = [], isLoading: divisionsLoading } = useQuery({
+  const { data: divisionsApi = [], isLoading: divisionsLoadingApi } = useQuery({
     queryKey: ["finance", "list-division"],
     queryFn: () => listDivisions(),
+    enabled: !FORCE_MOCK_FINANCE,
     staleTime: 5 * 60 * 1000,
   });
+  const divisions = FORCE_MOCK_FINANCE
+    ? mockCircles.map((c) => ({ id: c.id, division_name: c.circle_name })) // keep existing "division" naming in this page
+    : divisionsApi;
+  const divisionsLoading = FORCE_MOCK_FINANCE ? false : divisionsLoadingApi;
 
   const divisionNumeric =
     selectedDivisionId !== "all" ? Number(selectedDivisionId) : null;
-  const { data: districts = [], isFetching: districtsLoading } = useQuery({
+  const { data: districtsApi = [], isFetching: districtsLoadingApi } = useQuery({
     queryKey: ["finance", "list-district", divisionNumeric],
     queryFn: () => listDistricts(divisionNumeric),
-    enabled: divisionNumeric != null && Number.isFinite(divisionNumeric),
+    enabled: !FORCE_MOCK_FINANCE && divisionNumeric != null && Number.isFinite(divisionNumeric),
     staleTime: 5 * 60 * 1000,
   });
+  const districts = FORCE_MOCK_FINANCE
+    ? filterByCircle(mockDistricts, divisionNumeric).map((d) => ({ id: d.id, district_name: d.district_name }))
+    : districtsApi;
+  const districtsLoading = FORCE_MOCK_FINANCE ? false : districtsLoadingApi;
 
   const districtNumeric =
     selectedDistrictId !== "all" ? Number(selectedDistrictId) : null;
-  const { data: tehsils = [], isFetching: tehsilsLoading } = useQuery({
+  const { data: tehsilsApi = [], isFetching: tehsilsLoadingApi } = useQuery({
     queryKey: ["finance", "list-tehsil", districtNumeric],
     queryFn: () => listTehsils(districtNumeric),
-    enabled: districtNumeric != null && Number.isFinite(districtNumeric),
+    enabled: !FORCE_MOCK_FINANCE && districtNumeric != null && Number.isFinite(districtNumeric),
     staleTime: 5 * 60 * 1000,
   });
+  const tehsils = FORCE_MOCK_FINANCE
+    ? filterByDistrict(mockTehsils, districtNumeric).map((t) => ({ id: t.id, tehsil_name: t.tehsil_name }))
+    : tehsilsApi;
+  const tehsilsLoading = FORCE_MOCK_FINANCE ? false : tehsilsLoadingApi;
 
   const isAllFilters =
     selectedDivisionId === "all" &&
@@ -82,12 +100,20 @@ export default function Finance() {
     selectedTehsilId === "all" &&
     selectedProjectId === "all";
 
-  const { data: projectSummary } = useQuery({
+  const { data: projectSummaryApi } = useQuery({
     queryKey: ["project-summary"],
     queryFn: getProjectSummary,
-    enabled: isAllFilters,
+    enabled: !FORCE_MOCK_FINANCE && isAllFilters,
     staleTime: 60 * 1000,
   });
+  const projectSummary = FORCE_MOCK_FINANCE
+    ? {
+      total_allocation: projects.reduce((acc, p) => acc + Number(p.total_budget_allocated || 0), 0),
+      total_pd_release: 0,
+      total_spending_release: 0,
+      total_pifra: projects.reduce((acc, p) => acc + Number(p.budget_utilized || 0), 0),
+    }
+    : projectSummaryApi;
 
   const filteredProjects = useMemo(() => {
     if (selectedDivisionId === "all") return projects;
@@ -176,15 +202,18 @@ export default function Finance() {
   }, [filteredProjects]);
 
   const selectedProjectNumericId = selectedProjectId !== "all" ? Number(selectedProjectId) : null;
-  const { data: selectedProject } = useQuery({
+  const { data: selectedProjectApi } = useQuery({
     queryKey: ["project-by-id", selectedProjectNumericId],
     queryFn: async () => {
       if (!selectedProjectNumericId) return null;
       return await getProjectById(selectedProjectNumericId);
     },
-    enabled: selectedProjectNumericId != null && Number.isFinite(selectedProjectNumericId),
+    enabled: !FORCE_MOCK_FINANCE && selectedProjectNumericId != null && Number.isFinite(selectedProjectNumericId),
     staleTime: 30 * 1000,
   });
+  const selectedProject = FORCE_MOCK_FINANCE
+    ? projects.find((p) => Number(p.id) === Number(selectedProjectNumericId)) || null
+    : selectedProjectApi;
 
   // Prefill budget edit inputs from selected project
   useEffect(() => {
@@ -492,6 +521,33 @@ export default function Finance() {
     }));
   }, [budgetTotals.budgetM, budgetTotals.consumeM, budgetTotals.remainingM]);
 
+  const sCurveShapesData = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const totalBudget = Number(_nullishCoalesce(budgetTotals.budgetM, () => ( 0)));
+    const totalConsumed = Number(_nullishCoalesce(budgetTotals.consumeM, () => ( 0)));
+    const totalRemaining = Number(_nullishCoalesce(budgetTotals.remainingM, () => ( 0)));
+
+    // Logistic curve normalized to [0, 1]
+    const logistic01 = (t, k, mid) => 1 / (1 + Math.exp(-k * (t - mid)));
+    const normalize01 = (vals) => {
+      const first = vals[0];
+      const last = vals[vals.length - 1];
+      const span = last - first || 1;
+      return vals.map((v) => (v - first) / span);
+    };
+
+    // Use a single "typical" S-curve shape and scale it to each total,
+    // so the 3 series are comparable and match the S-curve style.
+    const typical = normalize01(months.map((_, i) => logistic01(i, 0.85, 6.0)));
+
+    return months.map((m, i) => ({
+      month: m,
+      totalBudgetM: typical[i] * totalBudget,
+      totalConsumedM: typical[i] * totalConsumed,
+      totalRemainingM: typical[i] * totalRemaining,
+    }));
+  }, [budgetTotals.budgetM, budgetTotals.consumeM, budgetTotals.remainingM]);
+
   const stageBreakdownWithBarScale = useMemo(() => {
     const maxPct = Math.max(
       ...stageBreakdownItems.map((i) => i.pctOfApproved),
@@ -731,33 +787,8 @@ export default function Finance() {
         )
 
         , (selectedProjectId !== "all" && !selectedProject) || (isAllFilters && !projectSummary) ? (
-          React.createElement(React.Fragment, null
-            /* Skeleton loader: keep layout stable while loading */
-            , React.createElement('div', { className: "grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 698}}
-              , Array.from({ length: 3 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "rounded-xl border border-border/50 shadow-sm overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 700}}
-                  , React.createElement(CardHeader, { className: "space-y-0 px-3 pb-1 pt-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 701}}
-                    , React.createElement('div', { className: "flex items-start justify-between gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 702}}
-                      , React.createElement(Skeleton, { className: "h-3 w-24" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 703}} )
-                      , React.createElement(Skeleton, { className: "h-8 w-8 rounded-lg"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 704}} )
-                    )
-                  )
-                  , React.createElement(CardContent, { className: "space-y-2 px-3 pb-3 pt-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 707}}
-                    , React.createElement(Skeleton, { className: "h-6 w-28" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 708}} )
-                    , React.createElement(Skeleton, { className: "h-2.5 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 709}} )
-                  )
-                )
-              ))
-            )
-            , React.createElement(Card, { className: "border-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 714}}
-              , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 715}}
-                , React.createElement(Skeleton, { className: "h-5 w-48" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 716}} )
-                , React.createElement(Skeleton, { className: "h-3 w-80 max-w-full"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 717}} )
-              )
-              , React.createElement(CardContent, { className: "h-[360px] sm:h-[420px] lg:h-[480px]"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 719}}
-                , React.createElement(Skeleton, { className: "h-full w-full rounded-xl"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 720}} )
-              )
-            )
+          React.createElement('div', { className: "rounded-xl border border-border/50 bg-muted/10 p-4 text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+            , "Loading financial data…"
           )
         ) : null
 
@@ -831,8 +862,8 @@ export default function Finance() {
               })
             )
 
-            /* Budget overview + Pie summary — same row (desktop) */
-            , React.createElement('div', { className: "grid grid-cols-1 gap-4 lg:grid-cols-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 818}}
+            /* Budget overview */
+            , React.createElement('div', { className: "grid grid-cols-1 gap-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 818}}
               , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 819}}
                 , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}
                   , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 821}}, "Budget overview")
@@ -841,34 +872,22 @@ export default function Finance() {
                 , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 826}}
                   , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 827}}
                     , React.createElement(ComposedChart, { data: flowChartData, margin: { top: 16, right: 32, left: 16, bottom: isMobile ? 52 : 36 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 828}}
-                      , React.createElement('defs', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 831}}
-                        , React.createElement('linearGradient', { id: "colorFlowTotal", x1: "0", y1: "0", x2: "0", y2: "1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 832}}
-                          , React.createElement('stop', { offset: "5%", stopColor: "#2F8F6C", stopOpacity: 0.35, __self: this, __source: {fileName: _jsxFileName, lineNumber: 833}} )
-                          , React.createElement('stop', { offset: "95%", stopColor: "#2F8F6C", stopOpacity: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 834}} )
-                        )
-                      )
                       , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 837}} )
                       , React.createElement(XAxis, { dataKey: "stage", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, angle: isMobile ? -35 : 0, textAnchor: isMobile ? "end" : "middle", height: isMobile ? 70 : 40, __self: this, __source: {fileName: _jsxFileName, lineNumber: 838}} )
                       , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${v}M`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 846}} )
                       , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 847}} )
-                      , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 858}} )
-                      , React.createElement(Bar, { dataKey: "totalM", fill: "url(#colorFlowTotal)", radius: [4, 4, 0, 0], name: "Total (M)", barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}} )
-                    )
-                  )
-                )
-              )
-              , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 870}}
-                , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 871}}
-                  , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 872}}, "Budget distribution")
-                  , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 873}}, "Total Budget vs Total Consume vs Total Remaining (PKR millions)")
-                )
-                , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 876}}
-                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 877}}
-                    , React.createElement(PieChart, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 878}}
-                      , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 879}} )
-                      , React.createElement(Legend, { verticalAlign: "bottom", height: 36, iconType: "circle", wrapperStyle: { fontSize: 11 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 887}} )
-                      , React.createElement(Pie, { data: flowChartData, dataKey: "totalM", nameKey: "stage", cx: "50%", cy: "45%", innerRadius: "55%", outerRadius: "85%", paddingAngle: 2, stroke: "hsl(var(--card))", strokeWidth: 2, isAnimationActive: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 888}}
-                        , flowChartData.map((_entry, index) => React.createElement(Cell, { key: "cell-" + index, fill: [STAGE_COLORS[1], STAGE_COLORS[3], STAGE_COLORS[4]][index] || STAGE_COLORS[0], __self: this, __source: {fileName: _jsxFileName, lineNumber: 905}} ))
+                      , React.createElement(Bar, { dataKey: "totalM", radius: [4, 4, 0, 0], name: "Total (M)", barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}}
+                        , flowChartData.map((entry, index) => (
+                          React.createElement(Cell, {
+                            key: `cell-flow-${index}`,
+                            fill:
+                              entry.stage === "Total Budget"
+                                ? "#0F4B3A"
+                                : entry.stage === "Total Consume"
+                                  ? "#F59E0B"
+                                  : "#8BC34A", __self: this, __source: {fileName: _jsxFileName, lineNumber: 860}}
+                          )
+                        ))
                       )
                     )
                   )
@@ -927,38 +946,29 @@ export default function Finance() {
             )
 
             /* Stage breakdown */
-            , React.createElement(Card, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
+            , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
               , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 933}}
-                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "Budget breakdown (totals)"  )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Total (PKR M). Bar length is relative across items; percentage is vs Total Budget."
+                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "S-curve shapes (totals)"  )
+                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Reference S-curves (Front-loaded / Typical / Back-loaded), scaled to Total Budget (PKR millions)."
 
 
                 )
               )
-              , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 940}}
-                , React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 941}}
-                  , stageBreakdownWithBarScale.map((item) => (
-                    React.createElement('div', { key: item.label, className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 943}}
-                      , React.createElement('div', { className: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 944}}
-                        , React.createElement('span', { className: "font-bold text-primary" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 945}}, item.label)
-                        , React.createElement('div', { className: "text-xs font-mono text-muted-foreground sm:text-right"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 946}}
-                          , React.createElement('span', { className: "whitespace-nowrap font-bold text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 949}}, "Total: " , item.triple.total.toFixed(2), " M" )
-                        )
-                      )
-                      , React.createElement('div', { className: "w-full bg-muted h-3 rounded-full overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}}
-                        , React.createElement('div', {
-                          className: "h-full rounded-full transition-all"  ,
-                          style: {
-                            width: `${Math.min(100, item.barWidthPct)}%`,
-                            backgroundColor: item.color,
-                          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}}
-                        )
-                      )
-                      , React.createElement('div', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 961}}
-                        , item.pctOfApproved.toFixed(1), "% of total budget"
-                      )
+              , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 940}}
+                , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 941}}
+                  , React.createElement(ComposedChart, { data: sCurveShapesData, margin: { top: 12, right: 24, left: 12, bottom: 32 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 942}}
+                    , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}} )
+                    , React.createElement(XAxis, { dataKey: "month", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}} )
+                    , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${Math.round(v)}M`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 962}} )
+                    , React.createElement(Tooltip, {
+                      contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" },
+                      formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 963}}
                     )
-                  ))
+                    , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 972}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "totalBudgetM", name: "Total Budget", stroke: "#0F4B3A", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 973}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "totalConsumedM", name: "Total Consumed", stroke: "#F59E0B", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 974}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "totalRemainingM", name: "Total Remaining", stroke: "#8BC34A", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 975}} )
+                  )
                 )
               )
             )

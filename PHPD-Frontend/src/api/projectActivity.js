@@ -1,5 +1,6 @@
  function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { get, post, put, del } from "./client";
+import { mockGanttSchedulesForProjects, mockProjects } from "./mockData";
 
 
 
@@ -111,9 +112,14 @@ export async function deleteProjectActivity(id) {
 
 /** GET /api/project-gantt-all/ — schedules for all projects (nested tasks) */
 export async function getProjectGanttAll() {
-  const data = await get("project-gantt-all/");
-  const schedules = Array.isArray(_optionalChain([(data ), 'optionalAccess', _ => _.schedules])) ? (data ).schedules : [];
-  return schedules ;
+  try {
+    const data = await get("project-gantt-all/");
+    const schedules = Array.isArray(_optionalChain([(data ), 'optionalAccess', _ => _.schedules])) ? (data ).schedules : [];
+    return schedules ;
+  } catch {
+    // Temporary fallback for Dashboard/Comparison progress calculations.
+    return mockGanttSchedulesForProjects(mockProjects);
+  }
 }
 
 export async function getProjectGanttData(projectId) {

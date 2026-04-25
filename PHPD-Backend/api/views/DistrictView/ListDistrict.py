@@ -8,7 +8,8 @@ class ListDistrictView(viewsets.ViewSet):
     def list(self, request, *args, **kwargs):
         try:
             district_id = request.query_params.get("id")
-            division_id = request.query_params.get("division")
+            circle_id = request.query_params.get("circle")
+            zone_id = request.query_params.get("zone")
 
             if district_id:
                 district = District.objects.filter(id=district_id).first()
@@ -26,19 +27,35 @@ class ListDistrictView(viewsets.ViewSet):
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()
-            elif division_id:
-                districts = District.objects.filter(division_id=division_id)
+            elif circle_id:
+                districts = District.objects.filter(circle_id=circle_id)
                 if not districts.exists():
                     return ApiResponse(
                         status=status.HTTP_404_NOT_FOUND,
-                        message="No districts found for this division.",
+                        message="No districts found for this circle.",
                         http_status=status.HTTP_404_NOT_FOUND
                     ).create_response()
 
                 serializer = DistrictSerializer(districts, many=True)
                 return ApiResponse(
                     status=status.HTTP_200_OK,
-                    message="Districts Found for the Division.",
+                    message="Districts Found for the Circle.",
+                    data=serializer.data,
+                    http_status=status.HTTP_200_OK
+                ).create_response()
+            elif zone_id:
+                districts = District.objects.filter(zone_id=zone_id)
+                if not districts.exists():
+                    return ApiResponse(
+                        status=status.HTTP_404_NOT_FOUND,
+                        message="No districts found for this zone.",
+                        http_status=status.HTTP_404_NOT_FOUND
+                    ).create_response()
+
+                serializer = DistrictSerializer(districts, many=True)
+                return ApiResponse(
+                    status=status.HTTP_200_OK,
+                    message="Districts Found for the Zone.",
                     data=serializer.data,
                     http_status=status.HTTP_200_OK
                 ).create_response()
