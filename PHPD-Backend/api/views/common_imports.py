@@ -32,3 +32,4 @@ from django.http import HttpResponse, FileResponse
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 # import pandas as pd
+from api.permissions import HasSidebarPermission

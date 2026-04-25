@@ -37,63 +37,57 @@ router.register(r'list-tehsil', ListTehsilView, basename='list-tehsil')
 router.register(r'update-tehsil', TehsilUpdateView, basename='update-tehsil') 
 router.register(r'delete-tehsil', TehsilDeleteView, basename='delete-tehsil')
 
-# #---------------------------------- Stakeholder View ----------------------------------
-# router.register(r'create-stakeholder', StakeholderCreateView, basename='create-stakeholder')
-# router.register(r'list-stakeholder', ListStakeholderView, basename='list-stakeholder')
-# router.register(r'update-stakeholder', StakeholderUpdateView, basename='update-stakeholder')
-# router.register(r'delete-stakeholder', StakeholderDeleteView, basename='delete-stakeholder')
+#---------------------------------- Stakeholder View ----------------------------------
+router.register(r'create-stakeholder', StakeholderCreateView, basename='create-stakeholder')
+router.register(r'list-stakeholder', ListStakeholderView, basename='list-stakeholder')
+router.register(r'update-stakeholder', StakeholderUpdateView, basename='update-stakeholder')
+router.register(r'delete-stakeholder', StakeholderDeleteView, basename='delete-stakeholder')
 
-# #---------------------------------- Project View ----------------------------------
-# router.register(r'create-project', ProjectCreateView, basename='create-project')
-# router.register(r'list-project', ListProjectView, basename='list-project')
-# router.register(r'update-project', ProjectUpdateView, basename='update-project') 
-# router.register(r'delete-project', ProjectDeleteView, basename='delete-project')
-# router.register(r'top-projects', TopProjectsView, basename='top-projects')
+#---------------------------------- Project View ----------------------------------
+router.register(r'create-project', ProjectCreateView, basename='create-project')
+router.register(r'list-project', ListProjectView, basename='list-project')
+router.register(r'update-project', ProjectUpdateView, basename='update-project') 
+router.register(r'delete-project', ProjectDeleteView, basename='delete-project')
+router.register(r'top-projects', TopProjectsView, basename='top-projects')
 
-# #---------------------------------- Project Activity View ----------------------------------
-# router.register(r'create-project-activity', ProjectActivityCreateView, basename='create-project-activity')
-# router.register(r'list-project-activity', ListProjectActivityView, basename='list-project-activity')
-# router.register(r'update-project-activity', ProjectActivityUpdateView, basename='update-project-activity')
-# router.register(r'delete-project-activity', ProjectActivityDeleteView, basename='delete-project-activity')
-# # router.register(r'project-gantt', ProjectGanttView, basename='project-gantt')
+#---------------------------------- Project Activity View ----------------------------------
+router.register(r'create-project-activity', ProjectActivityCreateView, basename='create-project-activity')
+router.register(r'list-project-activity', ListProjectActivityView, basename='list-project-activity')
+router.register(r'update-project-activity', ProjectActivityUpdateView, basename='update-project-activity')
+router.register(r'delete-project-activity', ProjectActivityDeleteView, basename='delete-project-activity')
+# router.register(r'project-gantt', ProjectGanttView, basename='project-gantt')
 
-# router.register(r'create-progress-image', ProgressImageCreateViewSet, basename='create-progress-image')
-# router.register(r'list-progress-image', ListProgressImageView, basename='list-progress-image')
-# router.register(r'update-progress-image', ProgressImageUpdateView, basename='update-progress-image')
-# router.register(r'delete-progress-image', DeleteProgressImageView, basename='delete-progress-image')
+router.register(r'create-progress-image', ProgressImageCreateViewSet, basename='create-progress-image')
+router.register(r'list-progress-image', ListProgressImageView, basename='list-progress-image')
+router.register(r'update-progress-image', ProgressImageUpdateView, basename='update-progress-image')
+router.register(r'delete-progress-image', DeleteProgressImageView, basename='delete-progress-image')
 
-# #--------------------------------- Pictorial Archive View ---------------------------------
-# router.register(r'create-pictorial-archive', PictorialArchiveCreateView, basename='create-pictorial-archive')
-# router.register(r'list-pictorial-archive', ListPictorialArchiveView, basename='list-pictorial-archive')
-# router.register(r'update-pictorial-archive', PictorialArchiveUpdateView, basename='update-pictorial-archive')
-# router.register(r'delete-pictorial-archive', PictorialArchiveDeleteView, basename='delete-pictorial-archive')
+# ---------------------------------- Project Document View ----------------------------------
 
-# # ---------------------------------- Project Document View ----------------------------------
-
-# router.register(r'create-project-document', ProjectDocumentCreateView, basename='create-project-document')
-# router.register(r'list-project-document', ListProjectDocumentView, basename='list-project-document')
-# router.register(r'update-project-document', UpdateProjectDocumentView, basename='update-project-document')
+router.register(r'create-project-document', ProjectDocumentCreateView, basename='create-project-document')
+router.register(r'list-project-document', ListProjectDocumentView, basename='list-project-document')
+router.register(r'update-project-document', UpdateProjectDocumentView, basename='update-project-document')
 
 # Mounted under /api/ from server.urls — single include keeps routes at /api/<resource>/.
 urlpatterns = [
     path('', include(router.urls)),
 
-    # # ✅ Gantt API
-    # path('project-gantt/<int:project_id>/', ProjectGanttView.as_view(), name='project-gantt'),
+    # ✅ Gantt API
+    path('project-gantt/<int:project_id>/', ProjectGanttView.as_view(), name='project-gantt'),
 
-    # # ✅ NEW: Update Actual Task Data
-    # path('update-task-actual/<int:task_id>/', UpdateTaskActualView.as_view(), name='update-task-actual'),
+    # ✅ NEW: Update Actual Task Data
+    path('update-task-actual/<int:task_id>/', UpdateTaskActualView.as_view(), name='update-task-actual'),
 
-    # # urls.py
-    # path('project-gantt-nested/<int:project_id>/', ProjectGanttNestedView.as_view(), name='project-gantt-nested'),
+    # urls.py
+    path('project-gantt-nested/<int:project_id>/', ProjectGanttNestedView.as_view(), name='project-gantt-nested'),
 
-    # path('project-gantt-all/', ProjectGanttAllView.as_view(), name='project-gantt-all'),
-    # # *
-    # path('project-summary/', ProjectSummaryView.as_view(), name='project-summary'),
+    path('project-gantt-all/', ProjectGanttAllView.as_view(), name='project-gantt-all'),
+    # *
+    path('project-summary/', ProjectSummaryView.as_view(), name='project-summary'),
 
-    # path("add-delay-log/", ActivityDelayLogCreateView.as_view()),
-    # path("list-delay-log/", ActivityDelayLogListView.as_view()),
-    # path("update-delay-log/<int:pk>/", ActivityDelayLogUpdateView.as_view()),
+    path("add-delay-log/", ActivityDelayLogCreateView.as_view()),
+    path("list-delay-log/", ActivityDelayLogListView.as_view()),
+    path("update-delay-log/<int:pk>/", ActivityDelayLogUpdateView.as_view()),
 ]
 
 # if settings.DEBUG:

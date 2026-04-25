@@ -177,337 +177,296 @@ class TehsilSerializer(serializers.ModelSerializer):
     def get_district_name(self, obj):
         return obj.district.district_name
 
-# # --------------------------------------------------------
-# # Stakeholder
-# # --------------------------------------------------------
-# class StakeholderSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Stakeholder
-#         fields = ['id', 'stakeholder_type', 'stakeholder_title', 'status']
+# --------------------------------------------------------
+# Stakeholder
+# --------------------------------------------------------
+class StakeholderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stakeholder
+        fields = ['id', 'stakeholder_type', 'stakeholder_title', 'status']
 
-# class ProjectActivitySerializer(serializers.ModelSerializer):
-#     project_name = serializers.SerializerMethodField()
-#     duration_display = serializers.SerializerMethodField()
-#     class Meta:
-#         model = ProjectActivity
-#         fields = ["id", "project", "project_name", "activity_id", "activity_name", "start_date", "end_date", "progress", "actual_start", "actual_end", "progress_date", "progress_status", "duration", "duration_display"]
+class ProjectActivitySerializer(serializers.ModelSerializer):
+    project_name = serializers.SerializerMethodField()
+    duration_display = serializers.SerializerMethodField()
+    class Meta:
+        model = ProjectActivity
+        fields = ["id", "project", "project_name", "activity_id", "activity_name", "start_date", "end_date", "progress", "actual_start", "actual_end", "progress_date", "progress_status", "duration", "duration_display"]
     
-#     def get_project_name(self, obj):
-#         return obj.project.project_name
+    def get_project_name(self, obj):
+        return obj.project.project_name
     
-#     def get_duration_display(self, obj):
-#         # Use total_duration property to include child durations if needed
-#         duration = getattr(obj, "total_duration", obj.duration) or 0
-#         return f"{int(duration)} day" if duration == 1 else f"{int(duration)} days"
+    def get_duration_display(self, obj):
+        # Use total_duration property to include child durations if needed
+        duration = getattr(obj, "total_duration", obj.duration) or 0
+        return f"{int(duration)} day" if duration == 1 else f"{int(duration)} days"
 
-# class ProgressImageSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ProgressImage
-#         fields = "__all__"
+class ProgressImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProgressImage
+        fields = "__all__"
 
-# class ProjectDocumentSerializer(serializers.ModelSerializer):
-#     file_url = serializers.SerializerMethodField()
+class ProjectDocumentSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
 
-#     class Meta:
-#         model = ProjectDocument
-#         fields = [
-#             "id",
-#             "project",
-#             "activity",
-#             "title",
-#             "file",
-#             "file_url",
-#             "uploaded_at",
-#         ]
+    class Meta:
+        model = ProjectDocument
+        fields = [
+            "id",
+            "project",
+            "activity",
+            "title",
+            "file",
+            "file_url",
+            "uploaded_at",
+        ]
 
-#     def get_file_url(self, obj):
-#         request = self.context.get("request")
-#         if obj.file and request:
-#             return request.build_absolute_uri(obj.file.url)
-#         return None
-# # --------------------------------------------------------
-# # Project
-# # --------------------------------------------------------
+    def get_file_url(self, obj):
+        request = self.context.get("request")
+        if obj.file and request:
+            return request.build_absolute_uri(obj.file.url)
+        return None
+# --------------------------------------------------------
+# Project
+# --------------------------------------------------------
 
-# class ProjectSerializer(GeoFeatureModelSerializer):
-#     province_name = serializers.SerializerMethodField()
-#     division_name = serializers.SerializerMethodField()
-#     district_name = serializers.SerializerMethodField()
-#     tehsil_name = serializers.SerializerMethodField()
-#     stakeholder_details = serializers.SerializerMethodField()
-#     stakeholder = serializers.PrimaryKeyRelatedField(
-#         many=True,
-#         queryset=Stakeholder.objects.all(),
-#         required=False
-#     )
-#     activities = ProjectActivitySerializer(many=True, read_only=True)
-#     project_starting_date = serializers.DateField(
-#         input_formats=["%Y-%m-%d", "%Y-%m-%d %H:%M"]
-#     )
-#     boundary_file = serializers.FileField(write_only=True, required=False)
-#     xer_file = serializers.FileField(write_only=True, required=False)
+class ProjectSerializer(GeoFeatureModelSerializer):
+    zone_name = serializers.SerializerMethodField()
+    circle_name = serializers.SerializerMethodField()
+    district_name = serializers.SerializerMethodField()
+    tehsil_name = serializers.SerializerMethodField()
+    stakeholder_details = serializers.SerializerMethodField()
+    stakeholder = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Stakeholder.objects.all(),
+        required=False
+    )
+    activities = ProjectActivitySerializer(many=True, read_only=True)
+    project_starting_date = serializers.DateField(
+        input_formats=["%Y-%m-%d", "%Y-%m-%d %H:%M"]
+    )
+    xer_file = serializers.FileField(write_only=True, required=False)
 
-#     class Meta:
-#         model = Project
-#         geo_field = "geom"
-#         fields = [
-#             'id', 'stakeholder', 'stakeholder_details',
-#             'project_name', 'project_description',
-#             'project_starting_date', 'project_reference_no',
-#             'province', 'province_name',
-#             'division', 'division_name', 'district', 'district_name',
-#             'tehsil', 'tehsil_name',
-#             'total_budget_allocated', 'budget_utilized',
-#             'budget_variance', 'budget_remaining',
-#             'xer_file', 'boundary_file', 'geom',
-#             'allocation_capital_cost', 'allocation_revenue_cost', 'allocation_total_cost', 
-#             'pd_release_capital_cost', 'pd_release_cost', 'pd_release_total_cost',
-#             'spending_release_capital_cost', 'spending_release_revenue_cost', 'spending_release_total_cost',
-#             'pifra_utilization_capital_cost', 'pifra_utilization_revenue_cost', 'pifra_utilization_total_cost', 'pifra_utilization_date',
-#             'percentage_utilization_capital', 'percentage_utilization_revenue', 'percentage_utilization_total',
-#             'created_at', 'updated_at', "activities"
-#         ]
+    class Meta:
+        model = Project
+        geo_field = "geom"
+        fields = [
+            'id', 'stakeholder', 'stakeholder_details',
+            'project_name', 'project_description',
+            'project_starting_date', 'project_reference_no',
+            'zone', 'zone_name', 'circle', 'circle_name',
+            'district', 'district_name',
+            'tehsil', 'tehsil_name',
+            'total_budget', 'total_consume', 'remaining_budget',
+            'xer_file', 
+            'created_at', 'updated_at', "activities"
+        ]
 
-#     # ---------- Readable Names ----------
-#     def get_province_name(self, obj):
-#         return obj.province.province_name if obj.province else None
+    # ---------- Readable Names ----------
+    def get_zone_name(self, obj):
+        return obj.zone.zone_name
 
-#     def get_division_name(self, obj):
-#         return obj.division.division_name if obj.division else None
+    def get_circle_name(self, obj):
+        return obj.circle.circle_name
+    
+    def get_district_name(self, obj):
+        return obj.district.district_name if obj.district else None
 
-#     def get_district_name(self, obj):
-#         return obj.district.district_name if obj.district else None
+    def get_tehsil_name(self, obj):
+        return obj.tehsil.tehsil_name
 
-#     def get_tehsil_name(self, obj):
-#         return obj.tehsil.tehsil_name
+    # ---------- Stakeholder Details ----------
+    def get_stakeholder_details(self, obj):
+        return [
+            {
+                "stakeholder_type": s.stakeholder_type,
+                "stakeholder_title": s.stakeholder_title
+            }
+            for s in obj.stakeholder.all()
+        ]
 
-#     # ---------- Stakeholder Details ----------
-#     def get_stakeholder_details(self, obj):
-#         return [
-#             {
-#                 "stakeholder_type": s.stakeholder_type,
-#                 "stakeholder_title": s.stakeholder_title
-#             }
-#             for s in obj.stakeholder.all()
-#         ]
+    # ---------- Create ----------
+    def create(self, validated_data):
+        stakeholders = validated_data.pop('stakeholder', [])
+        xer_file = validated_data.pop('xer_file', None)
 
-#     # ---------- Create ----------
-#     def create(self, validated_data):
-#         stakeholders = validated_data.pop('stakeholder', [])
-#         xer_file = validated_data.pop('xer_file', None)
-#         boundary_file = validated_data.pop('boundary_file', None)
+        project = Project.objects.create(**validated_data)
+        project.stakeholder.set(stakeholders)
 
-#         project = Project.objects.create(**validated_data)
-#         project.stakeholder.set(stakeholders)
+        if xer_file:
+            # Parse the uploaded XER in-memory and create activities without
+            # persisting the file to local storage.
+            try:
+                self._save_activities(project, xer_file)
+            except Exception:
+                pass
 
-#         if xer_file:
-#             # Parse the uploaded XER in-memory and create activities without
-#             # persisting the file to local storage.
-#             try:
-#                 self._save_activities(project, xer_file)
-#             except Exception:
-#                 pass
-#         # Handle GeoJSON
-#         if boundary_file:
-#             project.geom = self._parse_boundary_file(boundary_file)
+        project.save()
 
-#         project.save()
+        return project
 
-#         return project
+    # ---------- Update ----------
+    def update(self, instance, validated_data):
+        stakeholders = validated_data.pop('stakeholder', None)
+        xer_file = validated_data.pop('xer_file', None)
 
-#     # ---------- Update ----------
-#     def update(self, instance, validated_data):
-#         stakeholders = validated_data.pop('stakeholder', None)
-#         xer_file = validated_data.pop('xer_file', None)
-#         boundary_file = validated_data.pop('boundary_file', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
 
-#         for attr, value in validated_data.items():
-#             setattr(instance, attr, value)
+        if stakeholders is not None:
+            instance.stakeholder.set(stakeholders)
 
-#         if stakeholders is not None:
-#             instance.stakeholder.set(stakeholders)
+        if xer_file:
+            # Rebuild activities from the uploaded XER without saving the file.
+            instance.activities.all().delete()
+            try:
+                self._save_activities(instance, xer_file)
+            except Exception:
+                pass
 
-#         if xer_file:
-#             # Rebuild activities from the uploaded XER without saving the file.
-#             instance.activities.all().delete()
-#             try:
-#                 self._save_activities(instance, xer_file)
-#             except Exception:
-#                 pass
+        instance.save()
+        return instance
 
-#         # Handle GeoJSON
-#         if boundary_file:
-#             instance.geom = self._parse_boundary_file(boundary_file)
+    # ------------------------
+    # Generate file path without saving
+    # ------------------------
+    def _generate_xer_path(self, project, filename):
+        from django.utils.text import slugify
+        from datetime import datetime
+        import uuid
+        import os
 
-#         instance.save()
-#         return instance
+        ext = filename.split('.')[-1].lower()
+        filename = f"{uuid.uuid4()}.{ext}"
 
-#     # ------------------------
-#     # Generate file path without saving
-#     # ------------------------
-#     def _generate_xer_path(self, project, filename):
-#         from django.utils.text import slugify
-#         from datetime import datetime
-#         import uuid
-#         import os
+        project_name = f"{project.id}-{slugify(project.project_name)}" if project.project_name else "no-project"
+        date_folder = datetime.now().strftime("%Y-%m-%d")
+        subfolder = "xer"
 
-#         ext = filename.split('.')[-1].lower()
-#         filename = f"{uuid.uuid4()}.{ext}"
+        path = os.path.join("projects", project_name, date_folder, subfolder, filename)
+        return path.replace("\\", "/")  # Ensure forward slashes for frontend
 
-#         project_name = f"{project.id}-{slugify(project.project_name)}" if project.project_name else "no-project"
-#         date_folder = datetime.now().strftime("%Y-%m-%d")
-#         subfolder = "xer"
+    # ---------- Private: Parse XER and save tasks ----------
+    def _save_activities(self, project, xer_file):
+        def _parse_xer_date(value):
+            if not value:
+                return None
+            if isinstance(value, datetime):
+                return value.date()
+            if isinstance(value, str):
+                date_string = value.strip().split(" ")[0]
+                try:
+                    return datetime.strptime(date_string, "%Y-%m-%d").date()
+                except ValueError:
+                    return None
+            return None
 
-#         path = os.path.join("projects", project_name, date_folder, subfolder, filename)
-#         return path.replace("\\", "/")  # Ensure forward slashes for frontend
-#     # ---------- Private: Parse GeoJSON & Ensure MultiPolygon ----------
-#     def _parse_boundary_file(self, boundary_file):
-#         try:
-#             boundary_file.seek(0)
-#             geojson_data = json.load(boundary_file)
-#             geometry = (
-#                 geojson_data["features"][0]["geometry"]
-#                 if geojson_data.get("type") == "FeatureCollection"
-#                 else geojson_data.get("geometry")
-#             )
+        xer_file.seek(0)
+        data = parse_xer(xer_file)
 
-#             geom_obj = GEOSGeometry(json.dumps(geometry))
+        wbs = data["wbs"]
+        tasks = data["tasks"]
+        dependencies = data["dependencies"]
 
-#             # Ensure MultiPolygon
-#             if isinstance(geom_obj, Polygon):
-#                 geom_obj = MultiPolygon(geom_obj)
-#             elif not isinstance(geom_obj, MultiPolygon):
-#                 raise serializers.ValidationError("Geometry must be Polygon or MultiPolygon.")
+        wbs_objects = {}
+        task_map = {}
 
-#             return geom_obj
+        # 1. WBS
+        for wbs_id, w in wbs.items():
+            parent = wbs_objects.get(w["parent"])
+            obj = ProjectActivity.objects.create(
+                project=project,
+                activity_id=wbs_id,
+                activity_name=w["name"],
+                parent=parent,
+                task_type="wbs"
+            )
+            wbs_objects[wbs_id] = obj
 
-#         except Exception as e:
-#             raise serializers.ValidationError({
-#                 "boundary_file": f"Invalid GeoJSON: {e}"
-#             })
+        # 2. TASKS
+        for task in tasks:
+            parent = wbs_objects.get(task["wbs_id"])
+            start = _parse_xer_date(task.get("start_date"))
+            end = _parse_xer_date(task.get("end_date"))
+            task_type = "milestone" if start and end and start == end else "task"
 
-#     # ---------- Private: Parse XER and save tasks ----------
-#     def _save_activities(self, project, xer_file):
-#         def _parse_xer_date(value):
-#             if not value:
-#                 return None
-#             if isinstance(value, datetime):
-#                 return value.date()
-#             if isinstance(value, str):
-#                 date_string = value.strip().split(" ")[0]
-#                 try:
-#                     return datetime.strptime(date_string, "%Y-%m-%d").date()
-#                 except ValueError:
-#                     return None
-#             return None
+            obj = ProjectActivity.objects.create(
+                project=project,
+                activity_id=task.get("activity_id"),
+                activity_name=task.get("activity_name"),
+                parent=parent,
+                start_date=start,
+                end_date=end,
+                progress=task.get("progress") or 0,
+                duration=task.get("duration") or 0,
+                task_type=task_type
+            )
+            task_map[task.get("activity_id")] = obj
 
-#         xer_file.seek(0)
-#         data = parse_xer(xer_file)
+        # 3. DEPENDENCIES
+        for dep in dependencies:
+            task_obj = task_map.get(dep.get("task_id"))
+            pred_obj = task_map.get(dep.get("pred_task_id"))
+            if task_obj and pred_obj:
+                TaskDependency.objects.create(
+                    project=project,
+                    task=task_obj,
+                    predecessor=pred_obj,
+                    type=dep.get("type")
+                )
 
-#         wbs = data["wbs"]
-#         tasks = data["tasks"]
-#         dependencies = data["dependencies"]
+class TopProjectSerializer(serializers.ModelSerializer):
+    zone_name = serializers.CharField(source='zone.zone_name', read_only=True)
+    progress = serializers.FloatField(read_only=True)
 
-#         wbs_objects = {}
-#         task_map = {}
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "project_name",
+            "zone_name",
+            "progress"
+        ]
+class TaskSerializer(serializers.ModelSerializer):
+    parent_id = serializers.PrimaryKeyRelatedField(
+        source='parent',
+        read_only=True
+    )
 
-#         # 1. WBS
-#         for wbs_id, w in wbs.items():
-#             parent = wbs_objects.get(w["parent"])
-#             obj = ProjectActivity.objects.create(
-#                 project=project,
-#                 activity_id=wbs_id,
-#                 activity_name=w["name"],
-#                 parent=parent,
-#                 task_type="wbs"
-#             )
-#             wbs_objects[wbs_id] = obj
+    class Meta:
+        model = ProjectActivity
+        fields = [
+            "id", "activity_id", "activity_name", "parent_id",
+            # planned
+            "start_date",
+            "end_date",
 
-#         # 2. TASKS
-#         for task in tasks:
-#             parent = wbs_objects.get(task["wbs_id"])
-#             start = _parse_xer_date(task.get("start_date"))
-#             end = _parse_xer_date(task.get("end_date"))
-#             task_type = "milestone" if start and end and start == end else "task"
+            # actual
+            "actual_start",
+            "actual_end",
 
-#             obj = ProjectActivity.objects.create(
-#                 project=project,
-#                 activity_id=task.get("activity_id"),
-#                 activity_name=task.get("activity_name"),
-#                 parent=parent,
-#                 start_date=start,
-#                 end_date=end,
-#                 progress=task.get("progress") or 0,
-#                 duration=task.get("duration") or 0,
-#                 task_type=task_type
-#             )
-#             task_map[task.get("activity_id")] = obj
+            "progress",
+            "duration",
+            "task_type"
+        ]
 
-#         # 3. DEPENDENCIES
-#         for dep in dependencies:
-#             task_obj = task_map.get(dep.get("task_id"))
-#             pred_obj = task_map.get(dep.get("pred_task_id"))
-#             if task_obj and pred_obj:
-#                 TaskDependency.objects.create(
-#                     project=project,
-#                     task=task_obj,
-#                     predecessor=pred_obj,
-#                     type=dep.get("type")
-#                 )
+class ActivityDelayLogSerializer(serializers.ModelSerializer):
+    action_by_info = serializers.SerializerMethodField()
 
-# class TopProjectSerializer(serializers.ModelSerializer):
-#     division_name = serializers.CharField(source='division.division_name', read_only=True)
-#     progress = serializers.FloatField(read_only=True)
+    class Meta:
+        model = ActivityDelayLog
+        fields = "__all__"
+        read_only_fields = ["originator", "created_by"]
 
-#     class Meta:
-#         model = Project
-#         fields = [
-#             "id",
-#             "project_name",
-#             "division_name",
-#             "progress"
-#         ]
-# class TaskSerializer(serializers.ModelSerializer):
-#     parent_id = serializers.PrimaryKeyRelatedField(
-#         source='parent',
-#         read_only=True
-#     )
-
-#     class Meta:
-#         model = ProjectActivity
-#         fields = [
-#             "id", "activity_id", "activity_name", "parent_id",
-#             # planned
-#             "start_date",
-#             "end_date",
-
-#             # actual
-#             "actual_start",
-#             "actual_end",
-
-#             "progress",
-#             "duration",
-#             "task_type"
-#         ]
-
-# class ActivityDelayLogSerializer(serializers.ModelSerializer):
-#     action_by_info = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = ActivityDelayLog
-#         fields = "__all__"
-#         read_only_fields = ["originator", "created_by"]
-
-#     def get_action_by_info(self, obj):
-#         if obj.action_by:
-#             return {
-#                 "stakeholder_type": obj.action_by.stakeholder_type,
-#                 "stakeholder_title": obj.action_by.stakeholder_title
-#             }
-#         return None
-# # --------------------------------------------------------
-# # Pictorial Archive
-# # --------------------------------------------------------
+    def get_action_by_info(self, obj):
+        if obj.action_by:
+            return {
+                "stakeholder_type": obj.action_by.stakeholder_type,
+                "stakeholder_title": obj.action_by.stakeholder_title
+            }
+        return None
+# --------------------------------------------------------
+# Pictorial Archive
+# --------------------------------------------------------
 # class PictorialArchiveSerializer(serializers.ModelSerializer):
 #     project_name = serializers.SerializerMethodField()
 #     class Meta:
