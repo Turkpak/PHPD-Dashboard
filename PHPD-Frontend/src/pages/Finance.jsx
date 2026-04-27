@@ -2,7 +2,7 @@ import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, LucideBanknote, Wallet, AlertCircle, CheckCircle2, Filter, Percent } from "lucide-react";
+import { TrendingUp, Wallet, CheckCircle2, Filter } from "lucide-react";
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,10 @@ import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
-import { mockProjects, mockZones, mockCircles, mockDistricts, mockTehsils, filterByZone, filterByCircle, filterByDistrict } from "@/api/mockData";
 import {
   getProjectById,
-  getProjectSummary,
   listProjects,
+  listProvinces,
   listDivisions,
   listDistricts,
   listTehsils,
@@ -37,10 +36,8 @@ export default function Finance() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { width } = useWindowSize();
-  // TEMP: Keep Finance fast while APIs are still being wired.
-  // When you're ready to use real APIs, set this to false.
-  const FORCE_MOCK_FINANCE = true;
-  const [selectedDivisionId, setSelectedDivisionId] = useState("all");
+  const [selectedZoneId, setSelectedZoneId] = useState("all");
+  const [selectedCircleId, setSelectedCircleId] = useState("all");
   const [selectedDistrictId, setSelectedDistrictId] = useState("all");
   const [selectedTehsilId, setSelectedTehsilId] = useState("all");
   const [selectedProjectId, setSelectedProjectId] = useState("all");
@@ -53,153 +50,77 @@ export default function Finance() {
   const { data: projectsApi = [] } = useQuery({
     queryKey: ["projects"],
     queryFn: listProjects,
-    enabled: !FORCE_MOCK_FINANCE,
   });
-  const projects = FORCE_MOCK_FINANCE ? mockProjects : projectsApi;
+  const projects = projectsApi;
 
-  const { data: divisionsApi = [], isLoading: divisionsLoadingApi } = useQuery({
-    queryKey: ["finance", "list-division"],
-    queryFn: () => listDivisions(),
-    enabled: !FORCE_MOCK_FINANCE,
+  const { data: zones = [], isLoading: zonesLoading } = useQuery({
+    queryKey: ["finance", "zones"],
+    queryFn: () => listProvinces(),
     staleTime: 5 * 60 * 1000,
   });
-  const divisions = FORCE_MOCK_FINANCE
-    ? mockCircles.map((c) => ({ id: c.id, division_name: c.circle_name })) // keep existing "division" naming in this page
-    : divisionsApi;
-  const divisionsLoading = FORCE_MOCK_FINANCE ? false : divisionsLoadingApi;
 
-  const divisionNumeric =
-    selectedDivisionId !== "all" ? Number(selectedDivisionId) : null;
+  const zoneNumeric = selectedZoneId !== "all" ? Number(selectedZoneId) : null;
+  const { data: circles = [], isFetching: circlesLoading } = useQuery({
+    queryKey: ["finance", "circles", zoneNumeric],
+    queryFn: () => listDivisions(zoneNumeric),
+    enabled: zoneNumeric != null && Number.isFinite(zoneNumeric),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const circleNumeric =
+    selectedCircleId !== "all" ? Number(selectedCircleId) : null;
   const { data: districtsApi = [], isFetching: districtsLoadingApi } = useQuery({
-    queryKey: ["finance", "list-district", divisionNumeric],
-    queryFn: () => listDistricts(divisionNumeric),
-    enabled: !FORCE_MOCK_FINANCE && divisionNumeric != null && Number.isFinite(divisionNumeric),
+    queryKey: ["finance", "list-district", circleNumeric],
+    queryFn: () => listDistricts(circleNumeric),
+    enabled: circleNumeric != null && Number.isFinite(circleNumeric),
     staleTime: 5 * 60 * 1000,
   });
-  const districts = FORCE_MOCK_FINANCE
-    ? filterByCircle(mockDistricts, divisionNumeric).map((d) => ({ id: d.id, district_name: d.district_name }))
-    : districtsApi;
-  const districtsLoading = FORCE_MOCK_FINANCE ? false : districtsLoadingApi;
+  const districts = districtsApi;
+  const districtsLoading = districtsLoadingApi;
 
   const districtNumeric =
     selectedDistrictId !== "all" ? Number(selectedDistrictId) : null;
   const { data: tehsilsApi = [], isFetching: tehsilsLoadingApi } = useQuery({
     queryKey: ["finance", "list-tehsil", districtNumeric],
     queryFn: () => listTehsils(districtNumeric),
-    enabled: !FORCE_MOCK_FINANCE && districtNumeric != null && Number.isFinite(districtNumeric),
+    enabled: districtNumeric != null && Number.isFinite(districtNumeric),
     staleTime: 5 * 60 * 1000,
   });
-  const tehsils = FORCE_MOCK_FINANCE
-    ? filterByDistrict(mockTehsils, districtNumeric).map((t) => ({ id: t.id, tehsil_name: t.tehsil_name }))
-    : tehsilsApi;
-  const tehsilsLoading = FORCE_MOCK_FINANCE ? false : tehsilsLoadingApi;
+  const tehsils = tehsilsApi;
+  const tehsilsLoading = tehsilsLoadingApi;
 
   const isAllFilters =
-    selectedDivisionId === "all" &&
+    selectedZoneId === "all" &&
+    selectedCircleId === "all" &&
     selectedDistrictId === "all" &&
     selectedTehsilId === "all" &&
     selectedProjectId === "all";
 
-  const { data: projectSummaryApi } = useQuery({
-    queryKey: ["project-summary"],
-    queryFn: getProjectSummary,
-    enabled: !FORCE_MOCK_FINANCE && isAllFilters,
-    staleTime: 60 * 1000,
-  });
-  const projectSummary = FORCE_MOCK_FINANCE
-    ? {
-      total_allocation: projects.reduce((acc, p) => acc + Number(p.total_budget_allocated || 0), 0),
-      total_pd_release: 0,
-      total_spending_release: 0,
-      total_pifra: projects.reduce((acc, p) => acc + Number(p.budget_utilized || 0), 0),
-    }
-    : projectSummaryApi;
-
   const filteredProjects = useMemo(() => {
-    if (selectedDivisionId === "all") return projects;
-
-    const divName =
-      _nullishCoalesce(_optionalChain([divisions, 'access', _2 => _2.find, 'call', _3 => _3((d) => String(d.id) === selectedDivisionId), 'optionalAccess', _4 => _4.division_name]), () => ( null));
-    const distName =
-      selectedDistrictId !== "all"
-        ? _nullishCoalesce(_optionalChain([districts, 'access', _5 => _5.find, 'call', _6 => _6((d) => String(d.id) === selectedDistrictId), 'optionalAccess', _7 => _7.district_name]), () => ( null))
-        : null;
-    const tehName =
-      selectedTehsilId !== "all"
-        ? _nullishCoalesce(_optionalChain([tehsils, 'access', _8 => _8.find, 'call', _9 => _9((t) => String(t.id) === selectedTehsilId), 'optionalAccess', _10 => _10.tehsil_name]), () => ( null))
-        : null;
-
-    const divNum = Number(selectedDivisionId);
-    const distNum = selectedDistrictId !== "all" ? Number(selectedDistrictId) : null;
-    const tehNum = selectedTehsilId !== "all" ? Number(selectedTehsilId) : null;
-
-    let list = projects.filter((p) => {
-      const byId = typeof p.division === "number" && p.division === divNum;
-      const byName =
-        divName != null &&
-        _optionalChain([p, 'access', _11 => _11.division_name, 'optionalAccess', _12 => _12.trim, 'call', _13 => _13(), 'access', _14 => _14.toLowerCase, 'call', _15 => _15()]) === divName.trim().toLowerCase();
-      return byId || byName;
-    });
-
-    if (selectedDistrictId !== "all") {
-      list = list.filter((p) => {
-        const byId = distNum != null && typeof p.district === "number" && p.district === distNum;
-        const byName =
-          distName != null &&
-          _optionalChain([p, 'access', _16 => _16.district_name, 'optionalAccess', _17 => _17.trim, 'call', _18 => _18(), 'access', _19 => _19.toLowerCase, 'call', _20 => _20()]) === distName.trim().toLowerCase();
-        return byId || byName;
-      });
+    let list = projects;
+    if (zoneNumeric != null && Number.isFinite(zoneNumeric)) {
+      list = list.filter((p) => (_nullishCoalesce(p.zone, () => ( p.province))) === zoneNumeric);
     }
-
-    if (selectedTehsilId !== "all") {
-      list = list.filter((p) => {
-        const byId = tehNum != null && typeof p.tehsil === "number" && p.tehsil === tehNum;
-        const byName =
-          tehName != null &&
-          _optionalChain([p, 'access', _21 => _21.tehsil_name, 'optionalAccess', _22 => _22.trim, 'call', _23 => _23(), 'access', _24 => _24.toLowerCase, 'call', _25 => _25()]) === tehName.trim().toLowerCase();
-        return byId || byName;
-      });
+    if (circleNumeric != null && Number.isFinite(circleNumeric)) {
+      list = list.filter((p) => (_nullishCoalesce(p.circle, () => ( p.division))) === circleNumeric);
     }
-
+    if (districtNumeric != null && Number.isFinite(districtNumeric)) {
+      list = list.filter((p) => p.district === districtNumeric);
+    }
+    const tehsilNumeric =
+      selectedTehsilId !== "all" ? Number(selectedTehsilId) : null;
+    if (tehsilNumeric != null && Number.isFinite(tehsilNumeric)) {
+      list = list.filter((p) => p.tehsil === tehsilNumeric);
+    }
     return list;
   }, [
     projects,
-    selectedDivisionId,
+    zoneNumeric,
+    circleNumeric,
     selectedDistrictId,
     selectedTehsilId,
-    divisions,
-    districts,
-    tehsils,
+    districtNumeric,
   ]);
-
-  const aggregatedFinancials = useMemo(() => {
-    const toNum = (v) => {
-      const n = typeof v === "number" ? v : Number(String(_nullishCoalesce(v, () => ( ""))));
-      return Number.isFinite(n) ? n : 0;
-    };
-    const sum = (key) =>
-      filteredProjects.reduce((acc, p) => acc + toNum((p )[key]), 0);
-
-    return {
-      allocation_capital_cost: sum("allocation_capital_cost" ),
-      allocation_revenue_cost: sum("allocation_revenue_cost" ),
-      allocation_total_cost: sum("allocation_total_cost" ),
-      pd_release_capital_cost: sum("pd_release_capital_cost" ),
-      pd_release_cost: sum("pd_release_cost" ),
-      pd_release_total_cost: sum("pd_release_total_cost" ),
-      spending_release_capital_cost: sum("spending_release_capital_cost" ),
-      spending_release_revenue_cost: sum("spending_release_revenue_cost" ),
-      spending_release_total_cost: sum("spending_release_total_cost" ),
-      pifra_utilization_capital_cost: sum("pifra_utilization_capital_cost" ),
-      pifra_utilization_revenue_cost: sum("pifra_utilization_revenue_cost" ),
-      pifra_utilization_total_cost: sum("pifra_utilization_total_cost" ),
-      percentage_utilization_total: (() => {
-        const alloc = sum("allocation_total_cost" );
-        const pifra = sum("pifra_utilization_total_cost" );
-        return alloc > 0 ? (pifra / alloc) * 100 : 0;
-      })(),
-    };
-  }, [filteredProjects]);
 
   const selectedProjectNumericId = selectedProjectId !== "all" ? Number(selectedProjectId) : null;
   const { data: selectedProjectApi } = useQuery({
@@ -208,12 +129,10 @@ export default function Finance() {
       if (!selectedProjectNumericId) return null;
       return await getProjectById(selectedProjectNumericId);
     },
-    enabled: !FORCE_MOCK_FINANCE && selectedProjectNumericId != null && Number.isFinite(selectedProjectNumericId),
+    enabled: selectedProjectNumericId != null && Number.isFinite(selectedProjectNumericId),
     staleTime: 30 * 1000,
   });
-  const selectedProject = FORCE_MOCK_FINANCE
-    ? projects.find((p) => Number(p.id) === Number(selectedProjectNumericId)) || null
-    : selectedProjectApi;
+  const selectedProject = selectedProjectApi;
 
   // Prefill budget edit inputs from selected project
   useEffect(() => {
@@ -224,20 +143,23 @@ export default function Finance() {
       return;
     }
     setBudgetAllocatedInput(
-      selectedProject.total_budget_allocated != null
-        ? String(selectedProject.total_budget_allocated)
+      selectedProject.total_budget != null
+        ? String(selectedProject.total_budget)
         : "",
     );
     setBudgetUtilizedInput(
-      selectedProject.budget_utilized != null ? String(selectedProject.budget_utilized) : "",
+      selectedProject.total_consume != null ? String(selectedProject.total_consume) : "",
     );
   }, [selectedProject]);
 
-  // When a project is selected first, list-project/?id=… fills division/district/tehsil (ids + names).
+  // When a project is selected first, list-project/?id=… fills zone/circle/district/tehsil (ids + names).
   useEffect(() => {
     if (!selectedProject) return;
-    if (selectedProject.division != null && Number.isFinite(Number(selectedProject.division))) {
-      setSelectedDivisionId(String(selectedProject.division));
+    if (selectedProject.zone != null && Number.isFinite(Number(selectedProject.zone))) {
+      setSelectedZoneId(String(selectedProject.zone));
+    }
+    if (selectedProject.circle != null && Number.isFinite(Number(selectedProject.circle))) {
+      setSelectedCircleId(String(selectedProject.circle));
     }
     if (selectedProject.district != null && Number.isFinite(Number(selectedProject.district))) {
       setSelectedDistrictId(String(selectedProject.district));
@@ -254,17 +176,17 @@ export default function Finance() {
     };
 
     if (selectedProject) {
-      const budgetM = toNum(selectedProject.total_budget_allocated);
-      const consumeM = toNum(selectedProject.budget_utilized);
+      const budgetM = toNum(selectedProject.total_budget);
+      const consumeM = toNum(selectedProject.total_consume);
       const remainingM =
-        selectedProject.budget_remaining != null
-          ? toNum(selectedProject.budget_remaining)
+        selectedProject.remaining_budget != null
+          ? toNum(selectedProject.remaining_budget)
           : Math.max(0, budgetM - consumeM);
       return { budgetM, consumeM, remainingM };
     }
 
-    const budgetM = filteredProjects.reduce((sum, p) => sum + toNum(p.total_budget_allocated), 0);
-    const consumeM = filteredProjects.reduce((sum, p) => sum + toNum(p.budget_utilized), 0);
+    const budgetM = filteredProjects.reduce((sum, p) => sum + toNum(p.total_budget), 0);
+    const consumeM = filteredProjects.reduce((sum, p) => sum + toNum(p.total_consume), 0);
     const remainingM = Math.max(0, budgetM - consumeM);
     return { budgetM, consumeM, remainingM };
   }, [selectedProject, filteredProjects]);
@@ -283,8 +205,8 @@ export default function Finance() {
       const baseName = (_optionalChain([p, 'access', _26 => _26.project_name, 'optionalAccess', _27 => _27.trim, 'call', _28 => _28()]) || `#${p.id}`) ;
       return {
         division: baseName,
-        budgetM: Number(_nullishCoalesce(p.total_budget_allocated, () => ( 0))),
-        consumeM: Number(_nullishCoalesce(p.budget_utilized, () => ( 0))),
+        budgetM: Number(_nullishCoalesce(p.total_budget, () => ( 0))),
+        consumeM: Number(_nullishCoalesce(p.total_consume, () => ( 0))),
         id: p.id,
         color: STAGE_COLORS[i % STAGE_COLORS.length],
       };
@@ -303,129 +225,16 @@ export default function Finance() {
     return withUniqueLabels.filter((r) => r.budgetM > EPS || r.consumeM > EPS);
   }, [filteredProjects]);
 
-  const kpiDerived = useMemo(() => {
-    const allocationM = selectedProject
-      ? Number(_nullishCoalesce(selectedProject.allocation_total_cost, () => ( 0)))
-      : !isAllFilters
-        ? aggregatedFinancials.allocation_total_cost
-        : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _29 => _29.total_allocation]), () => ( 0)));
-    const spendingM = selectedProject
-      ? Number(_nullishCoalesce(selectedProject.spending_release_total_cost, () => ( 0)))
-      : !isAllFilters
-        ? aggregatedFinancials.spending_release_total_cost
-        : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _30 => _30.total_spending_release]), () => ( 0)));
-    const pifraM = selectedProject
-      ? Number(_nullishCoalesce(selectedProject.pifra_utilization_total_cost, () => ( 0)))
-      : !isAllFilters
-        ? aggregatedFinancials.pifra_utilization_total_cost
-        : Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _31 => _31.total_pifra]), () => ( 0)));
+  const handleZoneChange = (value) => {
+    setSelectedZoneId(value);
+    setSelectedCircleId("all");
+    setSelectedDistrictId("all");
+    setSelectedTehsilId("all");
+    setSelectedProjectId("all");
+  };
 
-    const utilVsAllocationPct = allocationM > 0 ? (pifraM / allocationM) * 100 : 0;
-    const utilVsSpendingPct = spendingM > 0 ? (pifraM / spendingM) * 100 : 0;
-    return { allocationM, spendingM, pifraM, utilVsAllocationPct, utilVsSpendingPct };
-  }, [selectedProject, projectSummary, aggregatedFinancials, isAllFilters]);
-
-  const kpiDataWithIcons = useMemo(() => {
-    const pifraVsKpi = {
-      valueM: kpiDerived.utilVsAllocationPct,
-      label: "PIFRA vs allocation",
-      icon: Percent,
-      trend: kpiDerived.utilVsAllocationPct - 100,
-      format: "percent" ,
-    };
-    if (selectedProject) {
-      return {
-        allocation: {
-          valueM: Number(_nullishCoalesce(selectedProject.allocation_total_cost, () => ( 0))),
-          label: "Allocation (total)",
-          icon: Wallet,
-          trend: 0,
-        },
-        pdRelease: {
-          valueM: Number(_nullishCoalesce(selectedProject.pd_release_total_cost, () => ( 0))),
-          label: "P&D release (total)",
-          icon: LucideBanknote,
-          trend: 0,
-        },
-        spendingRelease: {
-          valueM: Number(_nullishCoalesce(selectedProject.spending_release_total_cost, () => ( 0))),
-          label: "Spending release (total)",
-          icon: AlertCircle,
-          trend: 0,
-        },
-        pifra: {
-          valueM: Number(_nullishCoalesce(selectedProject.pifra_utilization_total_cost, () => ( 0))),
-          label: "PIFRA utilization (total)",
-          icon: CheckCircle2,
-          trend: kpiDerived.utilVsSpendingPct,
-        },
-        pifraVsAllocation: pifraVsKpi,
-      } ;
-    }
-    if (!isAllFilters) {
-      return {
-        allocation: {
-          valueM: aggregatedFinancials.allocation_total_cost,
-          label: `Allocation • ${filteredProjects.length} proj.`,
-          icon: Wallet,
-          trend: 0,
-        },
-        pdRelease: {
-          valueM: aggregatedFinancials.pd_release_total_cost,
-          label: "P&D release (total)",
-          icon: LucideBanknote,
-          trend: 0,
-        },
-        spendingRelease: {
-          valueM: aggregatedFinancials.spending_release_total_cost,
-          label: "Spending release (total)",
-          icon: AlertCircle,
-          trend: 0,
-        },
-        pifra: {
-          valueM: aggregatedFinancials.pifra_utilization_total_cost,
-          label: "PIFRA utilization (total)",
-          icon: CheckCircle2,
-          trend: kpiDerived.utilVsSpendingPct,
-        },
-        pifraVsAllocation: pifraVsKpi,
-      } ;
-    }
-    return {
-      allocation: {
-        valueM: Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _32 => _32.total_allocation]), () => ( 0))),
-        label: "Total allocation",
-        icon: Wallet,
-        trend: 0,
-      },
-      pdRelease: {
-        valueM: Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _33 => _33.total_pd_release]), () => ( 0))),
-        label: "Total P&D release",
-        icon: LucideBanknote,
-        trend: 0,
-      },
-      spendingRelease: {
-        valueM: Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _34 => _34.total_spending_release]), () => ( 0))),
-        label: "Total spending release",
-        icon: AlertCircle,
-        trend: 0,
-      },
-      pifra: {
-        valueM: Number(_nullishCoalesce(_optionalChain([projectSummary, 'optionalAccess', _35 => _35.total_pifra]), () => ( 0))),
-        label: "Total PIFRA utilization",
-        icon: CheckCircle2,
-        trend: kpiDerived.utilVsSpendingPct,
-      },
-      pifraVsAllocation: pifraVsKpi,
-    } ;
-  }, [selectedProject, projectSummary, kpiDerived, aggregatedFinancials, isAllFilters, filteredProjects.length]);
-
-  const utilizationRate = kpiDerived.utilVsAllocationPct;
-  const totalPlannedM = kpiDerived.allocationM;
-  const totalActualM = kpiDerived.pifraM;
-
-  const handleDivisionChange = (value) => {
-    setSelectedDivisionId(value);
+  const handleCircleChange = (value) => {
+    setSelectedCircleId(value);
     setSelectedDistrictId("all");
     setSelectedTehsilId("all");
     setSelectedProjectId("all");
@@ -521,31 +330,13 @@ export default function Finance() {
     }));
   }, [budgetTotals.budgetM, budgetTotals.consumeM, budgetTotals.remainingM]);
 
-  const sCurveShapesData = useMemo(() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const totalBudget = Number(_nullishCoalesce(budgetTotals.budgetM, () => ( 0)));
-    const totalConsumed = Number(_nullishCoalesce(budgetTotals.consumeM, () => ( 0)));
-    const totalRemaining = Number(_nullishCoalesce(budgetTotals.remainingM, () => ( 0)));
-
-    // Logistic curve normalized to [0, 1]
-    const logistic01 = (t, k, mid) => 1 / (1 + Math.exp(-k * (t - mid)));
-    const normalize01 = (vals) => {
-      const first = vals[0];
-      const last = vals[vals.length - 1];
-      const span = last - first || 1;
-      return vals.map((v) => (v - first) / span);
-    };
-
-    // Use a single "typical" S-curve shape and scale it to each total,
-    // so the 3 series are comparable and match the S-curve style.
-    const typical = normalize01(months.map((_, i) => logistic01(i, 0.85, 6.0)));
-
-    return months.map((m, i) => ({
-      month: m,
-      totalBudgetM: typical[i] * totalBudget,
-      totalConsumedM: typical[i] * totalConsumed,
-      totalRemainingM: typical[i] * totalRemaining,
-    }));
+  const financialFlowCurveData = useMemo(() => {
+    // New schema: only totals from list-project API
+    return [
+      { stage: "Total Budget", totalM: budgetTotals.budgetM },
+      { stage: "Total Consume", totalM: budgetTotals.consumeM },
+      { stage: "Total Remaining", totalM: budgetTotals.remainingM },
+    ];
   }, [budgetTotals.budgetM, budgetTotals.consumeM, budgetTotals.remainingM]);
 
   const stageBreakdownWithBarScale = useMemo(() => {
@@ -561,13 +352,11 @@ export default function Finance() {
 
   const updateBudgetMutation = useMutation({
     mutationFn: async ({ projectId, allocatedM, utilizedM }) => {
-      const variance = allocatedM - utilizedM;
       const remaining = Math.max(0, allocatedM - utilizedM);
       return await updateProject(projectId, {
-        total_budget_allocated: allocatedM,
-        budget_utilized: utilizedM,
-        budget_variance: String(variance),
-        budget_remaining: String(remaining),
+        total_budget: String(allocatedM),
+        total_consume: String(utilizedM),
+        remaining_budget: String(remaining),
       });
     },
     onSuccess: () => {
@@ -576,7 +365,6 @@ export default function Finance() {
       if (selectedProjectNumericId != null) {
         queryClient.invalidateQueries({ queryKey: ["project-by-id", selectedProjectNumericId] });
       }
-      queryClient.invalidateQueries({ queryKey: ["project-summary"] });
 
       toast({ title: "Success", description: "Budget updated successfully." });
       setIsBudgetEditOpen(false);
@@ -615,18 +403,45 @@ export default function Finance() {
           , React.createElement(Filter, { className: "h-4 w-4 text-muted-foreground shrink-0"   , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 581}} )
           , React.createElement('div', { className: "grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-3 min-w-0"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 582}}
             , React.createElement('div', { className: "flex flex-col gap-1 min-w-0 sm:flex sm:flex-wrap sm:flex-row sm:items-center sm:gap-2"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 583}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 584}}, "Division")
-              , React.createElement(Select, { value: selectedDivisionId, onValueChange: handleDivisionChange, disabled: divisionsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 585}}
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 584}}, "Zone")
+              , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, disabled: zonesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 585}}
                 , React.createElement(SelectTrigger, { className: "h-9 w-full sm:w-[140px] border-border/50 bg-background rounded-md"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 586}}
-                  , React.createElement(SelectValue, { placeholder: divisionsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 587}} )
+                  , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 587}} )
                 )
                 , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 589}}
                   , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 590}}, "All")
-                  , divisions.map((d) => (
-                    React.createElement(SelectItem, { key: d.id, value: String(d.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 592}}
-                      , d.division_name
+                  , zones.map((z) => (
+                    React.createElement(SelectItem, { key: z.id, value: String(z.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 592}}
+                      , _nullishCoalesce(z.zone_name, () => ( z.province_name))
                     )
                   ))
+                )
+              )
+            )
+
+            , React.createElement('div', { className: "flex flex-col gap-1 min-w-0 sm:flex sm:flex-wrap sm:flex-row sm:items-center sm:gap-2"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}}
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 601}}, "Circle")
+              , React.createElement(Select, {
+                value: selectedCircleId,
+                onValueChange: handleCircleChange,
+                disabled: selectedZoneId === "all" || circlesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 602}}
+
+                , React.createElement(SelectTrigger, {
+                  className: cn(
+                    "h-9 w-full sm:w-[140px] border-border/50 bg-background rounded-md",
+                    (selectedZoneId === "all" || circlesLoading) && "opacity-50 cursor-not-allowed"
+                  ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 607}}
+
+                  , React.createElement(SelectValue, { placeholder: circlesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 613}} )
+                )
+                , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 615}}
+                  , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 616}}, "All")
+                  , selectedZoneId !== "all" &&
+                    circles.map((c) => (
+                      React.createElement(SelectItem, { key: c.id, value: String(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 619}}
+                        , _nullishCoalesce(c.circle_name, () => ( c.division_name))
+                      )
+                    ))
                 )
               )
             )
@@ -636,19 +451,19 @@ export default function Finance() {
               , React.createElement(Select, {
                 value: selectedDistrictId,
                 onValueChange: handleDistrictChange,
-                disabled: selectedDivisionId === "all" || districtsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 602}}
+                disabled: selectedCircleId === "all" || districtsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 602}}
 
                 , React.createElement(SelectTrigger, {
                   className: cn(
                     "h-9 w-full sm:w-[140px] border-border/50 bg-background rounded-md",
-                    (selectedDivisionId === "all" || districtsLoading) && "opacity-50 cursor-not-allowed"
+                    (selectedCircleId === "all" || districtsLoading) && "opacity-50 cursor-not-allowed"
                   ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 607}}
 
                   , React.createElement(SelectValue, { placeholder: districtsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 613}} )
                 )
                 , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 615}}
                   , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 616}}, "All")
-                  , selectedDivisionId !== "all" &&
+                  , selectedCircleId !== "all" &&
                     districts.map((d) => (
                       React.createElement(SelectItem, { key: d.id, value: String(d.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 619}}
                         , d.district_name
@@ -663,12 +478,13 @@ export default function Finance() {
               , React.createElement(Select, {
                 value: selectedTehsilId,
                 onValueChange: handleTehsilChange,
-                disabled: selectedDivisionId === "all" || selectedDistrictId === "all" || tehsilsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 629}}
+                disabled: selectedZoneId === "all" || selectedCircleId === "all" || selectedDistrictId === "all" || tehsilsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 629}}
 
                 , React.createElement(SelectTrigger, {
                   className: cn(
                     "h-9 w-full sm:w-[140px] border-border/50 bg-background rounded-md",
-                    (selectedDivisionId === "all" ||
+                    (selectedZoneId === "all" ||
+                      selectedCircleId === "all" ||
                       selectedDistrictId === "all" ||
                       tehsilsLoading) &&
                       "opacity-50 cursor-not-allowed"
@@ -678,7 +494,8 @@ export default function Finance() {
                 )
                 , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 645}}
                   , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 646}}, "All")
-                  , selectedDivisionId !== "all" &&
+                  , selectedZoneId !== "all" &&
+                    selectedCircleId !== "all" &&
                     selectedDistrictId !== "all" &&
                     tehsils.map((t) => (
                       React.createElement(SelectItem, { key: t.id, value: String(t.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 650}}
@@ -717,7 +534,8 @@ export default function Finance() {
               , "Update Budget")
             )
           )
-          , (selectedDivisionId !== "all" ||
+          , (selectedZoneId !== "all" ||
+            selectedCircleId !== "all" ||
             selectedDistrictId !== "all" ||
             selectedTehsilId !== "all" ||
             selectedProjectId !== "all") && (
@@ -725,7 +543,8 @@ export default function Finance() {
               variant: "destructive",
               size: "sm",
               onClick: () => {
-                setSelectedDivisionId("all");
+                setSelectedZoneId("all");
+                setSelectedCircleId("all");
                 setSelectedDistrictId("all");
                 setSelectedTehsilId("all");
                 setSelectedProjectId("all");
@@ -786,13 +605,13 @@ export default function Finance() {
           )
         )
 
-        , (selectedProjectId !== "all" && !selectedProject) || (isAllFilters && !projectSummary) ? (
+        , (selectedProjectId !== "all" && !selectedProject) ? (
           React.createElement('div', { className: "rounded-xl border border-border/50 bg-muted/10 p-4 text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
             , "Loading financial data…"
           )
         ) : null
 
-        , (!isAllFilters || projectSummary) && (
+        , (
           React.createElement(React.Fragment, null
             /* KPI row: 3 cards (Budget / Consume / Remaining) */
             , React.createElement('div', { className: "grid grid-cols-1 items-stretch gap-3 sm:grid-cols-3 sm:gap-3"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 729}}
@@ -945,29 +764,29 @@ export default function Finance() {
               )
             )
 
-            /* Stage breakdown */
+            /* Financial flow curve (API-derived) */
             , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
               , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 933}}
-                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "S-curve shapes (totals)"  )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Reference S-curves (Front-loaded / Typical / Back-loaded), scaled to Total Budget (PKR millions)."
+                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "Financial flow curve"  )
+                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Allocation → P&D release → Spending release → PIFRA utilization (Capital / Revenue / Total), based on current selection."
 
 
                 )
               )
               , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 940}}
                 , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 941}}
-                  , React.createElement(ComposedChart, { data: sCurveShapesData, margin: { top: 12, right: 24, left: 12, bottom: 32 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 942}}
+                  , React.createElement(ComposedChart, { data: financialFlowCurveData, margin: { top: 12, right: 24, left: 12, bottom: 32 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 942}}
                     , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}} )
-                    , React.createElement(XAxis, { dataKey: "month", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}} )
+                    , React.createElement(XAxis, { dataKey: "stage", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}} )
                     , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${Math.round(v)}M`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 962}} )
                     , React.createElement(Tooltip, {
                       contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" },
                       formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 963}}
                     )
                     , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 972}} )
-                    , React.createElement(Line, { type: "monotone", dataKey: "totalBudgetM", name: "Total Budget", stroke: "#0F4B3A", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 973}} )
-                    , React.createElement(Line, { type: "monotone", dataKey: "totalConsumedM", name: "Total Consumed", stroke: "#F59E0B", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 974}} )
-                    , React.createElement(Line, { type: "monotone", dataKey: "totalRemainingM", name: "Total Remaining", stroke: "#8BC34A", strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 975}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "capitalM", name: "Capital (M)", stroke: STAGE_COLORS[1], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 973}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "revenueM", name: "Revenue (M)", stroke: STAGE_COLORS[3], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 974}} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "totalM", name: "Total (M)", stroke: STAGE_COLORS[4], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 975}} )
                   )
                 )
               )

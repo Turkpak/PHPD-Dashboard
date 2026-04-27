@@ -198,6 +198,12 @@ export default function GISLayers() {
   const [selectedDistrictId, setSelectedDistrictId] = useState("all");
   const [selectedTehsilId, setSelectedTehsilId] = useState("all");
   const [selectedProjectId, setSelectedProjectId] = useState("all");
+  const hasActiveFilters =
+    selectedZoneId !== "all" ||
+    selectedCircleId !== "all" ||
+    selectedDistrictId !== "all" ||
+    selectedTehsilId !== "all" ||
+    selectedProjectId !== "all";
 
   const handleZoneChange = (value) => {
     setSelectedZoneId(value);
@@ -450,20 +456,20 @@ export default function GISLayers() {
       , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 392}}
         /* Filters — card panel with clear hierarchy */
         , React.createElement(Card, { className: "border border-border/60 bg-card shadow-sm overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 394}}
-          , React.createElement(CardContent, { className: "p-4 sm:p-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 395}}
+          , React.createElement(CardContent, { className: cn("transition-all", hasActiveFilters ? "p-3 sm:p-4" : "p-4 sm:p-5") , __self: this, __source: {fileName: _jsxFileName, lineNumber: 395}}
             , React.createElement('div', { className: "mx-auto w-full max-w-6xl"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 396}}
-              , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-center sm:gap-4"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 397}}
-                , React.createElement('div', { className: "flex items-center gap-2 shrink-0 pb-0.5 justify-center sm:justify-start"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 398}}
-                , React.createElement('div', { className: "flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 399}}
-                  , React.createElement(Filter, { className: "h-3.5 w-3.5" , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 400}} )
+              , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 397}}
+                , React.createElement('div', { className: "flex items-center gap-2 shrink-0 justify-center sm:justify-start"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 398}}
+                , React.createElement('div', { className: cn("flex items-center justify-center rounded-lg bg-primary/10 text-primary", hasActiveFilters ? "h-7 w-7" : "h-8 w-8")       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 399}}
+                  , React.createElement(Filter, { className: cn("shrink-0", hasActiveFilters ? "h-3 w-3" : "h-3.5 w-3.5") , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 400}} )
                 )
-                , React.createElement('span', { className: "text-sm font-semibold text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 402}}, "Filters")
+                , React.createElement('span', { className: cn("font-semibold text-foreground leading-none", hasActiveFilters ? "text-[13px]" : "text-sm")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 402}}, "Filters")
               )
-                , React.createElement('div', { className: "grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-wrap sm:items-end sm:justify-center sm:gap-3 min-w-0"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 404}}
+                , React.createElement('div', { className: "grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-nowrap sm:items-end sm:justify-end sm:gap-3 min-w-0"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 404}}
                   , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 405}}
-                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 406}}, "Zone")
+                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 406}}, "Zone")
                     , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, __self: this, __source: {fileName: _jsxFileName, lineNumber: 407}}
-                      , React.createElement(SelectTrigger, { className: "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 408}}
+                      , React.createElement(SelectTrigger, { className: cn("w-full sm:w-[120px] border-border/60 bg-background rounded-xl shadow-sm", hasActiveFilters ? "h-8" : "h-9")      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 408}}
                         , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 409}} )
                       )
                       , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 411}}
@@ -478,7 +484,7 @@ export default function GISLayers() {
                   )
 
                   , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 422}}
-                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "Circle")
+                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "Circle")
                     , React.createElement(Select, {
                       value: selectedCircleId,
                       onValueChange: handleCircleChange,
@@ -486,7 +492,8 @@ export default function GISLayers() {
 
                       , React.createElement(SelectTrigger, {
                         className: cn(
-                          "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm",
+                          "w-full sm:w-[120px] border-border/60 bg-background rounded-xl shadow-sm",
+                          hasActiveFilters ? "h-8" : "h-9",
                           (selectedZoneId === "all" || circlesLoading) &&
                             "opacity-60 cursor-not-allowed",
                         ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
@@ -506,7 +513,7 @@ export default function GISLayers() {
                   )
 
                   , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 422}}
-                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "District")
+                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "District")
                     , React.createElement(Select, {
                       value: selectedDistrictId,
                       onValueChange: handleDistrictChange,
@@ -514,7 +521,8 @@ export default function GISLayers() {
 
                       , React.createElement(SelectTrigger, {
                         className: cn(
-                          "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm",
+                          "w-full sm:w-[120px] border-border/60 bg-background rounded-xl shadow-sm",
+                          hasActiveFilters ? "h-8" : "h-9",
                           (selectedCircleId === "all" || districtsLoading) &&
                             "opacity-60 cursor-not-allowed",
                         ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
@@ -534,7 +542,7 @@ export default function GISLayers() {
                   )
 
                   , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 450}}
-                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 451}}, "Tehsil")
+                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 451}}, "Tehsil")
                     , React.createElement(Select, {
                       value: selectedTehsilId,
                       onValueChange: handleTehsilChange,
@@ -547,7 +555,8 @@ export default function GISLayers() {
 
                       , React.createElement(SelectTrigger, {
                         className: cn(
-                          "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm",
+                          "w-full sm:w-[120px] border-border/60 bg-background rounded-xl shadow-sm",
+                          hasActiveFilters ? "h-8" : "h-9",
                           (selectedZoneId === "all" ||
                             selectedCircleId === "all" ||
                             selectedDistrictId === "all" ||
@@ -571,9 +580,9 @@ export default function GISLayers() {
                   )
 
                   , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 484}}
-                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 485}}, "Project")
+                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 485}}, "Project")
                     , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 486}}
-                      , React.createElement(SelectTrigger, { className: "h-8 w-full sm:w-[150px] border-border/60 bg-background rounded-lg shadow-sm"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 487}}
+                      , React.createElement(SelectTrigger, { className: cn("w-full sm:w-[140px] border-border/60 bg-background rounded-xl shadow-sm", hasActiveFilters ? "h-8" : "h-9")      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 487}}
                         , React.createElement(SelectValue, { placeholder: "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 488}} )
                       )
                       , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 490}}
@@ -587,11 +596,7 @@ export default function GISLayers() {
                     )
                   )
 
-                  , (selectedZoneId !== "all" ||
-                    selectedCircleId !== "all" ||
-                    selectedDistrictId !== "all" ||
-                    selectedTehsilId !== "all" ||
-                    selectedProjectId !== "all") && (
+                  , hasActiveFilters && (
                     React.createElement(Button, {
                       variant: "destructive",
                       size: "sm",
@@ -602,7 +607,10 @@ export default function GISLayers() {
                         setSelectedTehsilId("all");
                         setSelectedProjectId("all");
                       },
-                      className: "col-span-2 sm:col-span-auto h-7 min-h-7 px-2.5 text-white bg-red-600 hover:bg-red-700 border-0 rounded-md font-medium text-[11px]"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 505}}
+                      className: cn(
+                        "col-span-2 px-3 text-white bg-red-600 hover:bg-red-700 border-0 rounded-xl font-semibold shadow-sm sm:col-span-auto sm:ml-2 sm:self-end",
+                        hasActiveFilters ? "h-8 text-[11px]" : "h-9 text-xs",
+                      )           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 505}}
 , "Clear filters"
 
                     )
