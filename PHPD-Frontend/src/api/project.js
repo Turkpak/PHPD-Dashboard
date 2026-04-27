@@ -127,9 +127,14 @@ export async function createProject(payload) {
 
   if (hasFiles) {
     const form = new FormData();
-    appendFormValue(form, "stakeholder", payload.stakeholder);
+    // stakeholder is ManyToMany; send repeated keys if array
+    if (Array.isArray(payload.stakeholder)) {
+      for (const sid of payload.stakeholder) appendFormValue(form, "stakeholder", sid);
+    } else {
+      appendFormValue(form, "stakeholder", payload.stakeholder);
+    }
+
     appendFormValue(form, "project_name", _nullishCoalesce(payload.project_name, () => ( "")));
-    appendFormValue(form, "category", _nullishCoalesce(payload.category, () => ( "")));
     appendFormValue(form, "project_description", _nullishCoalesce(payload.project_description, () => ( "")));
     appendFormValue(
       form,
@@ -137,36 +142,22 @@ export async function createProject(payload) {
       _nullishCoalesce(normalizeDateFieldForApi(payload.project_starting_date), () => ( undefined)),
     );
     appendFormValue(form, "project_reference_no", _nullishCoalesce(payload.project_reference_no, () => ( "")));
-    appendFormValue(form, "latitude_coordinates", _nullishCoalesce(payload.latitude_coordinates, () => ( "")));
-    appendFormValue(form, "longitude_coordinates", _nullishCoalesce(payload.longitude_coordinates, () => ( "")));
+
+    // Category: backend expects project_category + (optional) project_category_other
+    appendFormValue(form, "project_category", _nullishCoalesce(payload.project_category, () => ( "")));
+    appendFormValue(form, "project_category_other", _nullishCoalesce(payload.project_category_other, () => ( "")));
+
+    // Location fields used by frontend (geom not needed)
+    appendFormValue(form, "latitude", _nullishCoalesce(payload.latitude, () => ( "")));
+    appendFormValue(form, "longitude", _nullishCoalesce(payload.longitude, () => ( "")));
+
     appendFormValue(form, "zone", _nullishCoalesce(payload.zone, () => ( "")));
-    appendFormValue(form, "circle", _nullishCoalesce(payload.circle, () => ( "")));
-    appendFormValue(form, "province", payload.province);
-    appendFormValue(form, "division", payload.division);
     appendFormValue(form, "district", payload.district);
     appendFormValue(form, "tehsil", payload.tehsil);
-    appendFormValue(form, "total_budget_allocated", _nullishCoalesce(payload.total_budget_allocated, () => ( "")));
-    appendFormValue(form, "budget_utilized", _nullishCoalesce(payload.budget_utilized, () => ( "")));
-    appendFormValue(form, "allocation_capital_cost", payload.allocation_capital_cost);
-    appendFormValue(form, "allocation_revenue_cost", payload.allocation_revenue_cost);
-    appendFormValue(form, "allocation_total_cost", payload.allocation_total_cost);
-    appendFormValue(form, "pd_release_capital_cost", payload.pd_release_capital_cost);
-    appendFormValue(form, "pd_release_cost", payload.pd_release_cost);
-    appendFormValue(form, "pd_release_total_cost", payload.pd_release_total_cost);
-    appendFormValue(form, "spending_release_capital_cost", payload.spending_release_capital_cost);
-    appendFormValue(form, "spending_release_revenue_cost", payload.spending_release_revenue_cost);
-    appendFormValue(form, "spending_release_total_cost", payload.spending_release_total_cost);
-    appendFormValue(form, "pifra_utilization_capital_cost", payload.pifra_utilization_capital_cost);
-    appendFormValue(form, "pifra_utilization_revenue_cost", payload.pifra_utilization_revenue_cost);
-    appendFormValue(form, "pifra_utilization_total_cost", payload.pifra_utilization_total_cost);
-    appendFormValue(
-      form,
-      "pifra_utilization_date",
-      _nullishCoalesce(normalizeDateFieldForApi(payload.pifra_utilization_date), () => ( undefined)),
-    );
-    appendFormValue(form, "percentage_utilization_capital", payload.percentage_utilization_capital);
-    appendFormValue(form, "percentage_utilization_revenue", payload.percentage_utilization_revenue);
-    appendFormValue(form, "percentage_utilization_total", payload.percentage_utilization_total);
+
+    appendFormValue(form, "total_budget", _nullishCoalesce(payload.total_budget, () => ( "")));
+    appendFormValue(form, "total_consume", _nullishCoalesce(payload.total_consume, () => ( "")));
+    appendFormValue(form, "remaining_budget", _nullishCoalesce(payload.remaining_budget, () => ( "")));
 
     if (payload.xer_file) form.append("xer_file", payload.xer_file);
 
@@ -182,38 +173,21 @@ export async function createProject(payload) {
   return post(
     CREATE,
     sanitizeProjectDates({
-    stakeholder: payload.stakeholder,
-    project_name: _nullishCoalesce(payload.project_name, () => ( null)),
-    category: _nullishCoalesce(payload.category, () => ( null)),
-    project_description: _nullishCoalesce(payload.project_description, () => ( null)),
-    project_starting_date: _nullishCoalesce(payload.project_starting_date, () => ( null)),
-    project_reference_no: _nullishCoalesce(payload.project_reference_no, () => ( null)),
-    latitude_coordinates: _nullishCoalesce(payload.latitude_coordinates, () => ( null)),
-    longitude_coordinates: _nullishCoalesce(payload.longitude_coordinates, () => ( null)),
-    zone: _nullishCoalesce(payload.zone, () => ( null)),
-    circle: _nullishCoalesce(payload.circle, () => ( null)),
-    province: payload.province,
-    division: payload.division,
-    district: payload.district,
-    tehsil: payload.tehsil,
-    total_budget_allocated: _nullishCoalesce(payload.total_budget_allocated, () => ( null)),
-    budget_utilized: _nullishCoalesce(payload.budget_utilized, () => ( null)),
-    allocation_capital_cost: _nullishCoalesce(payload.allocation_capital_cost, () => ( null)),
-    allocation_revenue_cost: _nullishCoalesce(payload.allocation_revenue_cost, () => ( null)),
-    allocation_total_cost: _nullishCoalesce(payload.allocation_total_cost, () => ( null)),
-    pd_release_capital_cost: _nullishCoalesce(payload.pd_release_capital_cost, () => ( null)),
-    pd_release_cost: _nullishCoalesce(payload.pd_release_cost, () => ( null)),
-    pd_release_total_cost: _nullishCoalesce(payload.pd_release_total_cost, () => ( null)),
-    spending_release_capital_cost: _nullishCoalesce(payload.spending_release_capital_cost, () => ( null)),
-    spending_release_revenue_cost: _nullishCoalesce(payload.spending_release_revenue_cost, () => ( null)),
-    spending_release_total_cost: _nullishCoalesce(payload.spending_release_total_cost, () => ( null)),
-    pifra_utilization_capital_cost: _nullishCoalesce(payload.pifra_utilization_capital_cost, () => ( null)),
-    pifra_utilization_revenue_cost: _nullishCoalesce(payload.pifra_utilization_revenue_cost, () => ( null)),
-    pifra_utilization_total_cost: _nullishCoalesce(payload.pifra_utilization_total_cost, () => ( null)),
-    pifra_utilization_date: _nullishCoalesce(payload.pifra_utilization_date, () => ( null)),
-    percentage_utilization_capital: _nullishCoalesce(payload.percentage_utilization_capital, () => ( null)),
-    percentage_utilization_revenue: _nullishCoalesce(payload.percentage_utilization_revenue, () => ( null)),
-    percentage_utilization_total: _nullishCoalesce(payload.percentage_utilization_total, () => ( null)),
+      stakeholder: payload.stakeholder,
+      project_name: _nullishCoalesce(payload.project_name, () => ( null)),
+      project_description: _nullishCoalesce(payload.project_description, () => ( null)),
+      project_starting_date: _nullishCoalesce(payload.project_starting_date, () => ( null)),
+      project_reference_no: _nullishCoalesce(payload.project_reference_no, () => ( null)),
+      project_category: _nullishCoalesce(payload.project_category, () => ( null)),
+      project_category_other: _nullishCoalesce(payload.project_category_other, () => ( null)),
+      latitude: _nullishCoalesce(payload.latitude, () => ( null)),
+      longitude: _nullishCoalesce(payload.longitude, () => ( null)),
+      zone: _nullishCoalesce(payload.zone, () => ( null)),
+      district: payload.district,
+      tehsil: payload.tehsil,
+      total_budget: _nullishCoalesce(payload.total_budget, () => ( null)),
+      total_consume: _nullishCoalesce(payload.total_consume, () => ( null)),
+      remaining_budget: _nullishCoalesce(payload.remaining_budget, () => ( null)),
     } ),
   );
 }
@@ -231,49 +205,20 @@ export async function updateProject(id, payload) {
       appendFormValue(form, "stakeholder", p.stakeholder);
     }
     appendFormValue(form, "project_name", p.project_name);
-    appendFormValue(form, "category", p.category);
+    appendFormValue(form, "project_category", p.project_category);
+    appendFormValue(form, "project_category_other", p.project_category_other);
     appendFormValue(form, "project_description", p.project_description);
     appendFormValue(form, "project_starting_date", _nullishCoalesce(normalizeDateFieldForApi(p.project_starting_date), () => ( undefined)));
     appendFormValue(form, "project_reference_no", p.project_reference_no);
-    appendFormValue(form, "latitude_coordinates", p.latitude_coordinates);
-    appendFormValue(form, "longitude_coordinates", p.longitude_coordinates);
+    appendFormValue(form, "latitude", p.latitude);
+    appendFormValue(form, "longitude", p.longitude);
     appendFormValue(form, "zone", p.zone);
-    appendFormValue(form, "circle", p.circle);
-    appendFormValue(form, "province", p.province);
-    appendFormValue(form, "division", p.division);
     appendFormValue(form, "district", p.district);
     appendFormValue(form, "tehsil", p.tehsil);
 
-    appendFormValue(form, "total_budget_allocated", p.total_budget_allocated);
-    appendFormValue(form, "budget_utilized", p.budget_utilized);
-    appendFormValue(form, "budget_variance", p.budget_variance);
-    appendFormValue(form, "budget_remaining", p.budget_remaining);
-
-    // Financial breakdown fields (optional)
-    for (const key of [
-      "allocation_capital_cost",
-      "allocation_revenue_cost",
-      "allocation_total_cost",
-      "pd_release_capital_cost",
-      "pd_release_cost",
-      "pd_release_total_cost",
-      "spending_release_capital_cost",
-      "spending_release_revenue_cost",
-      "spending_release_total_cost",
-      "pifra_utilization_capital_cost",
-      "pifra_utilization_revenue_cost",
-      "pifra_utilization_total_cost",
-      "pifra_utilization_date",
-      "percentage_utilization_capital",
-      "percentage_utilization_revenue",
-      "percentage_utilization_total",
-    ] ) {
-      if (key === "pifra_utilization_date") {
-        appendFormValue(form, key, _nullishCoalesce(normalizeDateFieldForApi(p[key]), () => ( undefined)));
-      } else {
-        appendFormValue(form, key, p[key]);
-      }
-    }
+    appendFormValue(form, "total_budget", p.total_budget);
+    appendFormValue(form, "total_consume", p.total_consume);
+    appendFormValue(form, "remaining_budget", p.remaining_budget);
 
     if (p.xer_file) form.append("xer_file", p.xer_file);
 

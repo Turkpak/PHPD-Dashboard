@@ -69,8 +69,8 @@ const ADD_USER_PERMISSION_ROWS = [
 
   // Area Management (tree)
   { sidebar_label: "Area Management", sub_label: null, displayLabel: "Area Management", kind: "group", groupId: "area" },
-  { sidebar_label: "Area Management", sub_label: "Province", displayLabel: "Province", indent: 1, kind: "item", groupId: "area" },
-  { sidebar_label: "Area Management", sub_label: "Division", displayLabel: "Division", indent: 1, kind: "item", groupId: "area" },
+  { sidebar_label: "Area Management", sub_label: "Zone", displayLabel: "Zone", indent: 1, kind: "item", groupId: "area" },
+  { sidebar_label: "Area Management", sub_label: "Circle", displayLabel: "Circle", indent: 1, kind: "item", groupId: "area" },
   { sidebar_label: "Area Management", sub_label: "District", displayLabel: "District", indent: 1, kind: "item", groupId: "area" },
   { sidebar_label: "Area Management", sub_label: "Tehsil", displayLabel: "Tehsil", indent: 1, kind: "item", groupId: "area" },
 
@@ -81,7 +81,6 @@ const ADD_USER_PERMISSION_ROWS = [
 
   { sidebar_label: "Finance & Budget", sub_label: null, displayLabel: "Finance & Budget" },
   { sidebar_label: "GIS Layers", sub_label: null, displayLabel: "GIS Layers" },
-  { sidebar_label: "City Comparison", sub_label: null, displayLabel: "Citywise Comparison" },
   { sidebar_label: "User Management", sub_label: null, displayLabel: "User Management" },
 ];
 

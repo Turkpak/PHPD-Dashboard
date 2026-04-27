@@ -32,6 +32,8 @@ import {
   listStakeholders,
   listDistricts,
   listTehsils,
+  listProvinces,
+  listDivisions,
   createProject,
   updateProject,
   deleteProject,
@@ -293,11 +295,27 @@ export default function ProjectManagement() {
     queryKey: ["stakeholders"],
     queryFn: listStakeholders,
   });
-  // Province/Division removed from create/edit form; keep only District/Tehsil selectors.
-  const { data: districtsList = [] } = useQuery({
-    queryKey: ["districts"],
-    queryFn: () => listDistricts(undefined),
+  const { data: zonesList = [] } = useQuery({
+    queryKey: ["zones"],
+    queryFn: listProvinces,
   });
+
+  const [selectedZoneId, setSelectedZoneId] = useState("");
+  const zoneIdNum = selectedZoneId ? Number(selectedZoneId) : undefined;
+  const { data: circlesList = [] } = useQuery({
+    queryKey: ["circles", zoneIdNum],
+    queryFn: () => listDivisions(zoneIdNum),
+    enabled: !!zoneIdNum,
+  });
+
+  const [selectedCircleId, setSelectedCircleId] = useState("");
+  const circleIdNum = selectedCircleId ? Number(selectedCircleId) : undefined;
+  const { data: districtsList = [] } = useQuery({
+    queryKey: ["districts", circleIdNum],
+    queryFn: () => listDistricts(circleIdNum),
+    enabled: !!circleIdNum,
+  });
+
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
   const districtIdNum = selectedDistrictId ? Number(selectedDistrictId) : undefined;
   const { data: tehsilsList = [] } = useQuery({
@@ -350,12 +368,13 @@ export default function ProjectManagement() {
   const [startingDate, setStartingDate] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
   const [category, setCategory] = useState("");
+  const [categoryOther, setCategoryOther] = useState("");
   const [latitudeCoordinates, setLatitudeCoordinates] = useState("");
   const [longitudeCoordinates, setLongitudeCoordinates] = useState("");
-  const [zone, setZone] = useState("");
-  const [circle, setCircle] = useState("");
   const [stakeholderIds, setStakeholderIds] = useState([]);
   const [selectedTehsilId, setSelectedTehsilId] = useState("");
+  const [zoneComboboxOpen, setZoneComboboxOpen] = useState(false);
+  const [circleComboboxOpen, setCircleComboboxOpen] = useState(false);
   const [districtComboboxOpen, setDistrictComboboxOpen] = useState(false);
   const [tehsilComboboxOpen, setTehsilComboboxOpen] = useState(false);
   const [totalBudgetAllocated, setTotalBudgetAllocated] = useState("");
@@ -376,27 +395,20 @@ export default function ProjectManagement() {
     return String(Math.max(0, t - u));
   }, [totalBudgetAllocated, budgetUtilized]);
 
-  const zoneOptions = useMemo(() => {
-    const options = new Set();
-    for (const p of projectsData) {
-      const z = String(_nullishCoalesce(p.zone, () => ( ""))).trim();
-      if (z) options.add(z);
-    }
-    const current = String(zone || "").trim();
-    if (current) options.add(current);
-    return Array.from(options).sort((a, b) => a.localeCompare(b));
-  }, [projectsData, zone]);
 
-  const circleOptions = useMemo(() => {
-    const options = new Set();
-    for (const p of projectsData) {
-      const c = String(_nullishCoalesce(p.circle, () => ( ""))).trim();
-      if (c) options.add(c);
-    }
-    const current = String(circle || "").trim();
-    if (current) options.add(current);
-    return Array.from(options).sort((a, b) => a.localeCompare(b));
-  }, [projectsData, circle]);
+
+  useEffect(() => {
+    if (skipGeographyClearRef.current) return;
+    setSelectedCircleId("");
+    setSelectedDistrictId("");
+    setSelectedTehsilId("");
+  }, [selectedZoneId]);
+
+  useEffect(() => {
+    if (skipGeographyClearRef.current) return;
+    setSelectedDistrictId("");
+    setSelectedTehsilId("");
+  }, [selectedCircleId]);
 
   useEffect(() => {
     if (skipGeographyClearRef.current) return;
@@ -408,6 +420,8 @@ export default function ProjectManagement() {
     if (!skipGeographyClearRef.current) return;
     if (!editingProject) return;
     const allSet =
+      selectedZoneId === String(editingProject.zone) &&
+      selectedCircleId === String(editingProject.circle) &&
       selectedDistrictId === String(editingProject.district) &&
       selectedTehsilId === String(editingProject.tehsil);
     if (allSet) skipGeographyClearRef.current = false;
@@ -441,13 +455,14 @@ export default function ProjectManagement() {
   const resetForm = () => {
     setProjectName("");
     setCategory("");
+    setCategoryOther("");
     setProjectDescription("");
     setStartingDate("");
     setReferenceNumber("");
     setLatitudeCoordinates("");
     setLongitudeCoordinates("");
-    setZone("");
-    setCircle("");
+    setSelectedZoneId("");
+    setSelectedCircleId("");
     setStakeholderIds([]);
     setSelectedDistrictId("");
     setSelectedTehsilId("");
@@ -470,31 +485,34 @@ export default function ProjectManagement() {
     }
     skipGeographyClearRef.current = true;
     await Promise.all([
-      queryClient.prefetchQuery({ queryKey: ["districts"], queryFn: () => listDistricts(undefined) }),
+      queryClient.prefetchQuery({ queryKey: ["zones"], queryFn: listProvinces }),
+      queryClient.prefetchQuery({ queryKey: ["circles", p.zone], queryFn: () => listDivisions(p.zone) }),
+      queryClient.prefetchQuery({ queryKey: ["districts", p.circle], queryFn: () => listDistricts(p.circle) }),
       queryClient.prefetchQuery({ queryKey: ["tehsils", p.district], queryFn: () => listTehsils(p.district) }),
     ]);
     setEditingProject(p);
     setProjectName(_nullishCoalesce(p.project_name, () => ( "")));
-    setCategory(String(_nullishCoalesce(p.category, () => ( ""))));
+    setCategory(_nullishCoalesce(p.project_category, () => ( "")));
+    setCategoryOther(_nullishCoalesce(p.project_category_other, () => ( "")));
     setProjectDescription(_nullishCoalesce(p.project_description, () => ( "")));
     setStartingDate(p.project_starting_date ? p.project_starting_date.slice(0, 10) : "");
     setReferenceNumber(_nullishCoalesce(p.project_reference_no, () => ( "")));
     setLatitudeCoordinates(
       String(
-        _nullishCoalesce(p.latitude_coordinates, () => (
-          _nullishCoalesce(p.latitude, () => ( ""))
+        _nullishCoalesce(p.latitude, () => (
+          _nullishCoalesce(p.latitude_coordinates, () => ( ""))
         ))
       )
     );
     setLongitudeCoordinates(
       String(
-        _nullishCoalesce(p.longitude_coordinates, () => (
-          _nullishCoalesce(p.longitude, () => ( ""))
+        _nullishCoalesce(p.longitude, () => (
+          _nullishCoalesce(p.longitude_coordinates, () => ( ""))
         ))
       )
     );
-    setZone(String(_nullishCoalesce(p.zone, () => ( ""))));
-    setCircle(String(_nullishCoalesce(p.circle, () => ( ""))));
+    setSelectedZoneId(String(p.zone));
+    // selectedCircleId removed as it's not in the Project model
     setStakeholderIds(
       Array.isArray(p.stakeholder)
         ? p.stakeholder.map(String)
@@ -504,8 +522,16 @@ export default function ProjectManagement() {
     );
     setSelectedDistrictId(String(p.district));
     setSelectedTehsilId(String(p.tehsil));
-    setTotalBudgetAllocated(_nullishCoalesce(p.total_budget_allocated, () => ( "")));
-    setBudgetUtilized(_nullishCoalesce(p.budget_utilized, () => ( "")));
+    setTotalBudgetAllocated(
+      _nullishCoalesce(p.total_budget, () => (
+        _nullishCoalesce(p.total_budget_allocated, () => ( ""))
+      ))
+    );
+    setBudgetUtilized(
+      _nullishCoalesce(p.total_consume, () => (
+        _nullishCoalesce(p.budget_utilized, () => ( ""))
+      ))
+    );
 
     setXerFile(null);
     setCurrentStep(1);
@@ -567,40 +593,38 @@ export default function ProjectManagement() {
           payload: {
             stakeholder: stakeholderIds.map(Number),
             project_name: projectName.trim() || null,
-            category: category.trim() || null,
+            project_category: category === "Other" ? "Other" : (category.trim() || null),
+            project_category_other: category === "Other" ? categoryOther.trim() : null,
             project_description: projectDescription.trim() || null,
             project_starting_date: startingDate || null,
             project_reference_no: referenceNumber.trim() || null,
-            latitude_coordinates: latitudeCoordinates.trim() || null,
-            longitude_coordinates: longitudeCoordinates.trim() || null,
-            zone: zone.trim() || null,
-            circle: circle.trim() || null,
-            district: Number(selectedDistrictId),
-            tehsil: Number(selectedTehsilId),
-            total_budget_allocated: totalBudgetAllocated.trim() || null,
-            budget_utilized: budgetUtilized.trim() || null,
-            budget_variance: String(variance),
-            budget_remaining: String(remaining),
+            latitude: latitudeCoordinates.trim() || null,
+            longitude: longitudeCoordinates.trim() || null,
+            zone: selectedZoneId ? Number(selectedZoneId) : null,
+            district: selectedDistrictId ? Number(selectedDistrictId) : null,
+            tehsil: selectedTehsilId ? Number(selectedTehsilId) : null,
+            total_budget: totalBudgetAllocated.trim() || null,
+            total_consume: budgetUtilized.trim() || null,
+            remaining_budget: String(remaining),
           },
         });
       } else {
         createProjectMutation.mutate({
           stakeholder: stakeholderIds.map(Number),
           project_name: projectName.trim() || null,
-          category: category.trim() || null,
+          project_category: category === "Other" ? "Other" : (category.trim() || null),
+          project_category_other: category === "Other" ? categoryOther.trim() : null,
           project_description: projectDescription.trim() || null,
           project_starting_date: startingDate || null,
           project_reference_no: referenceNumber.trim() || null,
-          latitude_coordinates: latitudeCoordinates.trim() || null,
-          longitude_coordinates: longitudeCoordinates.trim() || null,
-          zone: zone.trim() || null,
-          circle: circle.trim() || null,
-          district: Number(selectedDistrictId),
-          tehsil: Number(selectedTehsilId),
-          total_budget_allocated: totalBudget,
-          budget_utilized: utilized,
-          budget_variance: String(variance),
-          budget_remaining: String(remaining),
+          latitude: latitudeCoordinates.trim() || null,
+          longitude: longitudeCoordinates.trim() || null,
+          zone: selectedZoneId ? Number(selectedZoneId) : null,
+          district: selectedDistrictId ? Number(selectedDistrictId) : null,
+          tehsil: selectedTehsilId ? Number(selectedTehsilId) : null,
+          total_budget: totalBudgetAllocated.trim() || null,
+          total_consume: budgetUtilized.trim() || null,
+          remaining_budget: String(remaining),
           xer_file: _nullishCoalesce(xerFile, () => ( undefined)),
         });
       }
@@ -619,13 +643,15 @@ export default function ProjectManagement() {
     const query = locationSearch.trim().toLowerCase();
 
     const filtered = projectsData.filter((project) => {
-      const divisionText = (_nullishCoalesce(project.division_name, () => ( String(_nullishCoalesce(project.division, () => ( "")))))).toLowerCase();
+      const zoneText = (_nullishCoalesce(project.zone_name, () => ( String(_nullishCoalesce(project.zone, () => ( "")))))).toLowerCase();
+      const circleText = (_nullishCoalesce(project.circle_name, () => ( String(_nullishCoalesce(project.circle, () => ( "")))))).toLowerCase();
       const districtText = (_nullishCoalesce(project.district_name, () => ( String(_nullishCoalesce(project.district, () => ( "")))))).toLowerCase();
       const tehsilText = (_nullishCoalesce(project.tehsil_name, () => ( String(_nullishCoalesce(project.tehsil, () => ( "")))))).toLowerCase();
 
       if (!query) return true;
       return (
-        divisionText.includes(query) ||
+        zoneText.includes(query) ||
+        circleText.includes(query) ||
         districtText.includes(query) ||
         tehsilText.includes(query)
       );
@@ -767,16 +793,30 @@ export default function ProjectManagement() {
                           onChange: (e) => setProjectName(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1171}}
                         )
                       )
-                      , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1177}}
-                        , React.createElement(Label, { htmlFor: "category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1178}}, "Category" )
-                        , React.createElement(Select, { value: category || "", onValueChange: setCategory, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1179}}
-                          , React.createElement(SelectTrigger, { id: "category", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1180}}
-                            , React.createElement(SelectValue, { placeholder: "Select category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1181}} )
+                      , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1177}}
+                        , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1178}}
+                          , React.createElement(Label, { htmlFor: "category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1179}}, "Category" )
+                          , React.createElement(Select, { value: category || "", onValueChange: setCategory, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1180}}
+                            , React.createElement(SelectTrigger, { id: "category", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1181}}
+                              , React.createElement(SelectValue, { placeholder: "Select category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1182}} )
+                            )
+                            , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1184}}
+                              , React.createElement(SelectItem, { value: "Basic Health Unit", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1185}}, "Basic Health Unit" )
+                              , React.createElement(SelectItem, { value: "Dispensary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1186}}, "Dispensary" )
+                              , React.createElement(SelectItem, { value: "Dispilated", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1187}}, "Dispilated" )
+                              , React.createElement(SelectItem, { value: "Other", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1188}}, "Other" )
+                            )
                           )
-                          , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1183}}
-                            , React.createElement(SelectItem, { value: "Basic Health Unit", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1184}}, "Basic Health Unit" )
-                            , React.createElement(SelectItem, { value: "Dispensary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1185}}, "Dispensary" )
-                            , React.createElement(SelectItem, { value: "Dispilated", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1186}}, "Dispilated" )
+                        )
+                        , category === "Other" && (
+                          React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1191}}
+                            , React.createElement(Label, { htmlFor: "categoryOther", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1192}}, "Please specify category"  )
+                            , React.createElement(Input, {
+                              id: "categoryOther",
+                              placeholder: "Enter category name"  ,
+                              value: categoryOther,
+                              onChange: (e) => setCategoryOther(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1193}}
+                            )
                           )
                         )
                       )
@@ -894,28 +934,109 @@ export default function ProjectManagement() {
 
                       , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1252}}
                         , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1253}}
-                          , React.createElement(Label, { htmlFor: "zone", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1254}}, "Zone" )
-                          , React.createElement(Select, { value: zone || "", onValueChange: setZone, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1255}}
-                            , React.createElement(SelectTrigger, { id: "zone", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1256}}
-                              , React.createElement(SelectValue, { placeholder: zoneOptions.length ? "Select zone" : "No zone options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1257}} )
+                          , React.createElement(Label, { htmlFor: "zone", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1254}}, "Zone *" )
+                          , React.createElement(Popover, { open: zoneComboboxOpen, onOpenChange: setZoneComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1255}}
+                            , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1256}}
+                              , React.createElement(Button, {
+                                id: "zone",
+                                variant: "outline",
+                                role: "combobox",
+                                'aria-expanded': zoneComboboxOpen,
+                                className: "w-full justify-between font-normal h-9 px-3 text-sm"     ,
+                                type: "button", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1257}}
+
+                                , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1266}}
+                                  , selectedZoneId
+                                    ? (_nullishCoalesce(_optionalChain([zonesList, 'access', _Z => _Z.find, 'call', _Z2 => _Z2((z) => String(z.id) === selectedZoneId), 'optionalAccess', _Z3 => _Z3.zone_name]), () => (
+                                      "Select zone")))
+                                    : "Select zone"
+                                )
+                                , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1274}} )
+                              )
                             )
-                            , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1259}}
-                              , zoneOptions.map((z) => (
-                                React.createElement(SelectItem, { key: z, value: z, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1261}}, z )
-                              ))
+                            , React.createElement(PopoverContent, { className: "w-[var(--radix-popover-trigger-width)] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1277}}
+                              , React.createElement(Command, {
+                                filter: (value, search) => {
+                                  const q = (search || "").toLowerCase();
+                                  if (!q) return 1;
+                                  return (value || "").toLowerCase().includes(q) ? 1 : 0;
+                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1278}}
+
+                                , React.createElement(CommandInput, { placeholder: "Type to search zone…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1285}} )
+                                , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1286}}
+                                  , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1287}}, "No zone found."  )
+                                  , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1288}}
+                                    , zonesList.map((z) => (
+                                      React.createElement(CommandItem, {
+                                        key: z.id,
+                                        value: z.zone_name,
+                                        onSelect: () => {
+                                          skipGeographyClearRef.current = false;
+                                          setSelectedZoneId(String(z.id));
+                                          setZoneComboboxOpen(false);
+                                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1290}}
+
+                                        , z.zone_name
+                                      )
+                                    ))
+                                  )
+                                )
+                              )
                             )
                           )
                         )
-                        , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1263}}
-                          , React.createElement(Label, { htmlFor: "circle", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1264}}, "Circle" )
-                          , React.createElement(Select, { value: circle || "", onValueChange: setCircle, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1265}}
-                            , React.createElement(SelectTrigger, { id: "circle", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1266}}
-                              , React.createElement(SelectValue, { placeholder: circleOptions.length ? "Select circle" : "No circle options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1267}} )
+                        , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1308}}
+                          , React.createElement(Label, { htmlFor: "circle", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1309}}, "Circle *" )
+                          , React.createElement(Popover, { open: circleComboboxOpen, onOpenChange: setCircleComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1310}}
+                            , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1311}}
+                              , React.createElement(Button, {
+                                id: "circle",
+                                variant: "outline",
+                                role: "combobox",
+                                'aria-expanded': circleComboboxOpen,
+                                disabled: !selectedZoneId,
+                                className: "w-full justify-between font-normal h-9 px-3 text-sm"     ,
+                                type: "button", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1312}}
+
+                                , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1321}}
+                                  , selectedCircleId
+                                    ? (_nullishCoalesce(_optionalChain([circlesList, 'access', _C => _C.find, 'call', _C2 => _C2((c) => String(c.id) === selectedCircleId), 'optionalAccess', _C3 => _C3.circle_name]), () => (
+                                      "Select circle")))
+                                    : selectedZoneId
+                                      ? "Select circle"
+                                      : "Select zone first"
+                                )
+                                , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1329}} )
+                              )
                             )
-                            , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1269}}
-                              , circleOptions.map((c) => (
-                                React.createElement(SelectItem, { key: c, value: c, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1271}}, c )
-                              ))
+                            , React.createElement(PopoverContent, { className: "w-[var(--radix-popover-trigger-width)] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1332}}
+                              , React.createElement(Command, {
+                                filter: (value, search) => {
+                                  const q = (search || "").toLowerCase();
+                                  if (!q) return 1;
+                                  return (value || "").toLowerCase().includes(q) ? 1 : 0;
+                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1333}}
+
+                                , React.createElement(CommandInput, { placeholder: "Type to search circle…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1340}} )
+                                , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1341}}
+                                  , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1342}}, "No circle found."  )
+                                  , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1343}}
+                                    , circlesList.map((c) => (
+                                      React.createElement(CommandItem, {
+                                        key: c.id,
+                                        value: c.circle_name,
+                                        onSelect: () => {
+                                          skipGeographyClearRef.current = false;
+                                          setSelectedCircleId(String(c.id));
+                                          setCircleComboboxOpen(false);
+                                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1345}}
+
+                                        , c.circle_name
+                                      )
+                                    ))
+                                  )
+                                )
+                              )
                             )
                           )
                         )
@@ -1707,16 +1828,30 @@ export default function ProjectManagement() {
                     onChange: (e) => setProjectName(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2417}}
                   )
                 )
-                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2424}}
-                  , React.createElement(Label, { htmlFor: "category_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2425}}, "Category" )
-                  , React.createElement(Select, { value: category || "", onValueChange: setCategory, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2426}}
-                    , React.createElement(SelectTrigger, { id: "category_modal", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2427}}
-                      , React.createElement(SelectValue, { placeholder: "Select category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2428}} )
+                , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2424}}
+                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2425}}
+                    , React.createElement(Label, { htmlFor: "category_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2426}}, "Category" )
+                    , React.createElement(Select, { value: category || "", onValueChange: setCategory, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2427}}
+                      , React.createElement(SelectTrigger, { id: "category_modal", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2428}}
+                        , React.createElement(SelectValue, { placeholder: "Select category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2429}} )
+                      )
+                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2431}}
+                        , React.createElement(SelectItem, { value: "Basic Health Unit", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2432}}, "Basic Health Unit" )
+                        , React.createElement(SelectItem, { value: "Dispensary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2433}}, "Dispensary" )
+                        , React.createElement(SelectItem, { value: "Dispilated", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2434}}, "Dispilated" )
+                        , React.createElement(SelectItem, { value: "Other", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2435}}, "Other" )
+                      )
                     )
-                    , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2430}}
-                      , React.createElement(SelectItem, { value: "Basic Health Unit", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2431}}, "Basic Health Unit" )
-                      , React.createElement(SelectItem, { value: "Dispensary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2432}}, "Dispensary" )
-                      , React.createElement(SelectItem, { value: "Dispilated", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2433}}, "Dispilated" )
+                  )
+                  , category === "Other" && (
+                    React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2438}}
+                      , React.createElement(Label, { htmlFor: "categoryOther_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2439}}, "Please specify category"  )
+                      , React.createElement(Input, {
+                        id: "categoryOther_modal",
+                        placeholder: "Enter category name"  ,
+                        value: categoryOther,
+                        onChange: (e) => setCategoryOther(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2440}}
+                      )
                     )
                   )
                 )
@@ -1843,29 +1978,112 @@ export default function ProjectManagement() {
                 )
 
                 , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2506}}
+                  /* Zone — searchable */
                   , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2507}}
-                    , React.createElement(Label, { htmlFor: "zone_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2508}}, "Zone" )
-                    , React.createElement(Select, { value: zone || "", onValueChange: setZone, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2509}}
-                      , React.createElement(SelectTrigger, { id: "zone_modal", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2510}}
-                        , React.createElement(SelectValue, { placeholder: zoneOptions.length ? "Select zone" : "No zone options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2511}} )
+                    , React.createElement(Label, { htmlFor: "zone_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2508}}, "Zone *" )
+                    , React.createElement(Popover, { open: zoneComboboxOpen, onOpenChange: setZoneComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2509}}
+                      , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2510}}
+                        , React.createElement(Button, {
+                          id: "zone_modal",
+                          variant: "outline",
+                          role: "combobox",
+                          'aria-expanded': zoneComboboxOpen,
+                          className: "w-full justify-between font-normal h-9 px-3 text-sm"     ,
+                          type: "button", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2511}}
+
+                          , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2520}}
+                            , selectedZoneId
+                              ? (_nullishCoalesce(_nullishCoalesce(_optionalChain([zonesList, 'access', _Z => _Z.find, 'call', _Z2 => _Z2((z) => String(z.id) === selectedZoneId), 'optionalAccess', _Z3 => _Z3.zone_name]), () => (
+                                (editingProject && Number(selectedZoneId) === editingProject.zone ? editingProject.zone_name : null))), () => (
+                                "Select zone")))
+                              : "Select zone"
+                          )
+                          , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2528}} )
+                        )
                       )
-                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2513}}
-                        , zoneOptions.map((z) => (
-                          React.createElement(SelectItem, { key: z, value: z, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2515}}, z )
-                        ))
+                      , React.createElement(PopoverContent, { className: "w-[var(--radix-popover-trigger-width)] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2531}}
+                        , React.createElement(Command, {
+                          filter: (value, search) => {
+                            const q = (search || "").toLowerCase();
+                            if (!q) return 1;
+                            return (value || "").toLowerCase().includes(q) ? 1 : 0;
+                          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2532}}
+
+                          , React.createElement(CommandInput, { placeholder: "Type to search zone…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2539}} )
+                          , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2540}}
+                            , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2541}}, "No zone found."  )
+                            , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2542}}
+                              , zonesList.map((z) => (
+                                React.createElement(CommandItem, {
+                                  key: z.id,
+                                  value: z.zone_name,
+                                  onSelect: () => {
+                                    skipGeographyClearRef.current = false;
+                                    setSelectedZoneId(String(z.id));
+                                    setZoneComboboxOpen(false);
+                                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2544}}
+
+                                  , z.zone_name
+                                )
+                              ))
+                            )
+                          )
+                        )
                       )
                     )
                   )
-                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2517}}
-                    , React.createElement(Label, { htmlFor: "circle_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2518}}, "Circle" )
-                    , React.createElement(Select, { value: circle || "", onValueChange: setCircle, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2519}}
-                      , React.createElement(SelectTrigger, { id: "circle_modal", className: "w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2520}}
-                        , React.createElement(SelectValue, { placeholder: circleOptions.length ? "Select circle" : "No circle options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2521}} )
+                  /* Circle — searchable */
+                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2562}}
+                    , React.createElement(Label, { htmlFor: "circle_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2563}}, "Circle *" )
+                    , React.createElement(Popover, { open: circleComboboxOpen, onOpenChange: setCircleComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2564}}
+                      , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2565}}
+                        , React.createElement(Button, {
+                          id: "circle_modal",
+                          variant: "outline",
+                          role: "combobox",
+                          'aria-expanded': circleComboboxOpen,
+                          disabled: !selectedZoneId,
+                          className: "w-full justify-between font-normal h-9 px-3 text-sm"     ,
+                          type: "button", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2566}}
+
+                          , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2575}}
+                            , selectedCircleId
+                              ? (_nullishCoalesce(_nullishCoalesce(_optionalChain([circlesList, 'access', _C => _C.find, 'call', _C2 => _C2((c) => String(c.id) === selectedCircleId), 'optionalAccess', _C3 => _C3.circle_name]), () => (
+                                (editingProject && Number(selectedCircleId) === editingProject.circle ? editingProject.circle_name : null))), () => (
+                                "Select circle")))
+                              : selectedZoneId ? "Select circle" : "Select zone first"
+                          )
+                          , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2583}} )
+                        )
                       )
-                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2523}}
-                        , circleOptions.map((c) => (
-                          React.createElement(SelectItem, { key: c, value: c, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2525}}, c )
-                        ))
+                      , React.createElement(PopoverContent, { className: "w-[var(--radix-popover-trigger-width)] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2586}}
+                        , React.createElement(Command, {
+                          filter: (value, search) => {
+                            const q = (search || "").toLowerCase();
+                            if (!q) return 1;
+                            return (value || "").toLowerCase().includes(q) ? 1 : 0;
+                          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2587}}
+
+                          , React.createElement(CommandInput, { placeholder: "Type to search circle…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2594}} )
+                          , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2595}}
+                            , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2596}}, "No circle found."  )
+                            , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2597}}
+                              , circlesList.map((c) => (
+                                React.createElement(CommandItem, {
+                                  key: c.id,
+                                  value: c.circle_name,
+                                  onSelect: () => {
+                                    skipGeographyClearRef.current = false;
+                                    setSelectedCircleId(String(c.id));
+                                    setCircleComboboxOpen(false);
+                                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2599}}
+
+                                  , c.circle_name
+                                )
+                              ))
+                            )
+                          )
+                        )
                       )
                     )
                   )

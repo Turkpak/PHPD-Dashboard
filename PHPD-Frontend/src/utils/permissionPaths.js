@@ -10,17 +10,16 @@ export function getPermissionForPath(
 
  = {
     "/": { sidebar_label: "Citywise Progress", sub_label: null },
-    "/comparison": { sidebar_label: "City Comparison", sub_label: null },
     "/finance": { sidebar_label: "Finance & Budget", sub_label: null },
     "/gis": { sidebar_label: "GIS Layers", sub_label: null },
     "/settings": { sidebar_label: "Settings", sub_label: null },
     "/province-management": {
       sidebar_label: "Area Management",
-      sub_label: "Province",
+      sub_label: "Zone",
     },
     "/division-management": {
       sidebar_label: "Area Management",
-      sub_label: "Division",
+      sub_label: "Circle",
     },
     "/district-management": {
       sidebar_label: "Area Management",
