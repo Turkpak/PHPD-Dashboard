@@ -37,10 +37,11 @@ import {
   createProject,
   updateProject,
   deleteProject,
+  listProjectActivities,
 } from "@/api";
 
 import { mediaUrl } from "@/api/config";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 
 /** Format stakeholder for display using API stakeholder_details (names) instead of IDs */
 function formatProjectStakeholder(project) {
@@ -247,6 +248,9 @@ export default function ProjectManagement() {
   const [currentStep, setCurrentStep] = useState(1);
   const [editingProject, setEditingProject] = useState(null);
   const [selectedProjectForView, setSelectedProjectForView] = useState(null);
+  const [selectedProjectActivities, setSelectedProjectActivities] = useState([]);
+  const [selectedProjectActivitiesLoading, setSelectedProjectActivitiesLoading] =
+    useState(false);
   const [projectsPage, setProjectsPage] = useState(1);
   const [locationSearch, setLocationSearch] = useState("");
 
@@ -326,7 +330,14 @@ export default function ProjectManagement() {
 
   const createProjectMutation = useMutation({
     mutationFn: createProject,
-    onSuccess: () => {
+    onSuccess: async (created) => {
+      // Backend can populate ProjectActivity rows by parsing the uploaded XER.
+      // Some setups do this lazily on the first "list activities" call, so we trigger it here.
+      try {
+        if (created?.id != null) await listProjectActivities(created.id);
+      } catch {
+        // Best-effort: project creation succeeded even if parsing failed.
+      }
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast({ title: "Success", description: "Project created successfully." });
       resetForm();
@@ -674,6 +685,32 @@ export default function ProjectManagement() {
       return (_nullishCoalesce(b.id, () => ( 0))) - (_nullishCoalesce(a.id, () => ( 0)));
     });
   }, [projectsData, locationSearch]);
+
+  // When a project is opened in "View" panel, load its activities list.
+  // Backend may parse XER lazily inside list-project-activity, so this doubles as a trigger.
+  useEffect(() => {
+    let cancelled = false;
+    async function run() {
+      const pid = selectedProjectForView?.id;
+      if (!pid) {
+        setSelectedProjectActivities([]);
+        return;
+      }
+      setSelectedProjectActivitiesLoading(true);
+      try {
+        const acts = await listProjectActivities(pid);
+        if (!cancelled) setSelectedProjectActivities(Array.isArray(acts) ? acts : []);
+      } catch {
+        if (!cancelled) setSelectedProjectActivities([]);
+      } finally {
+        if (!cancelled) setSelectedProjectActivitiesLoading(false);
+      }
+    }
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProjectForView]);
 
   const totalProjectsPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE) || 1;
   const paginatedProjects = useMemo(() => {
@@ -1558,7 +1595,69 @@ export default function ProjectManagement() {
                     )
                   )
 
-                  /* Project area map removed */
+                  , (() => {
+                    const latRaw = selectedProjectForView.latitude;
+                    const lngRaw = selectedProjectForView.longitude;
+                    const lat = latRaw != null ? Number(latRaw) : Number.NaN;
+                    const lng = lngRaw != null ? Number(lngRaw) : Number.NaN;
+                    const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
+                    if (!hasCoords) return null;
+                    return (
+                      React.createElement('div', { className: "rounded-lg border overflow-hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2120}}
+                        , React.createElement('div', { className: "px-4 py-3 border-b bg-muted/20", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2121}}
+                          , React.createElement('p', { className: "text-sm font-semibold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2122}}, "Project location")
+                          , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2123}}, "Lat: " , String(latRaw), " · Lng: ", String(lngRaw))
+                        )
+                        , React.createElement('div', { className: "h-[280px] w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2125}}
+                          , React.createElement(MapContainer, {
+                            center: [lat, lng],
+                            zoom: 13,
+                            scrollWheelZoom: false,
+                            style: { height: "100%", width: "100%" }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2126}}
+                            , React.createElement(TileLayer, {
+                              attribution: '&copy; OpenStreetMap contributors',
+                              url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2135}}
+                            )
+                            , React.createElement(Marker, { position: [lat, lng], __self: this, __source: {fileName: _jsxFileName, lineNumber: 2139}}
+                              , React.createElement(Popup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2140}}
+                                , selectedProjectForView.project_name || "Project"
+                              )
+                            )
+                          )
+                        )
+                      )
+                    );
+                  })()
+
+                  , React.createElement('div', { className: "rounded-lg border", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2148}}
+                    , React.createElement('div', { className: "px-4 py-3 border-b bg-muted/20", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2149}}
+                      , React.createElement('p', { className: "text-sm font-semibold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2150}}, "Activities")
+                      , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2151}}, "Imported from XER (via Project Activities API).")
+                    )
+                    , React.createElement('div', { className: "p-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2153}}
+                      , selectedProjectActivitiesLoading ? (
+                        React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2155}}, "Loading activities…")
+                      ) : selectedProjectActivities.length === 0 ? (
+                        React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2157}}, "No activities found for this project.")
+                      ) : (
+                        React.createElement('div', { className: "space-y-2 max-h-[320px] overflow-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2159}}
+                          , selectedProjectActivities.map((a) => (
+                            React.createElement('div', { key: a.id || a.activity_id || a.activity_name, className: "flex items-start justify-between gap-3 rounded-md border p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2161}}
+                              , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2162}}
+                                , React.createElement('p', { className: "text-sm font-medium truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2163}}, a.activity_name || a.label || "—")
+                                , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2164}}
+                                  , (a.start_date || a.start || "—"), " → ", (a.end_date || a.end || "—")
+                                )
+                              )
+                              , React.createElement('div', { className: "text-xs text-muted-foreground shrink-0 tabular-nums", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2168}}
+                                , typeof a.progress === "number" ? `${Math.round(a.progress)}%` : (a.progress ?? "")
+                              )
+                            )
+                          ))
+                        )
+                      )
+                    )
+                  )
                 )
 
                 , React.createElement(TabsContent, { value: "financial", className: "mt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2121}}
@@ -1566,6 +1665,8 @@ export default function ProjectManagement() {
                     const p = selectedProjectForView ;
                     const hasAny = (...vals) =>
                       vals.some((v) => v !== null && v !== undefined && String(v).trim() !== "");
+                    // Core project budget fields (new backend schema)
+                    const showCoreBudget = hasAny(p.total_budget, p.total_consume, p.remaining_budget);
                     const showAllocation = hasAny(p.allocation_capital_cost, p.allocation_revenue_cost, p.allocation_total_cost);
                     const showPd = hasAny(p.pd_release_capital_cost, p.pd_release_cost, p.pd_release_total_cost);
                     const showSpending = hasAny(p.spending_release_capital_cost, p.spending_release_revenue_cost, p.spending_release_total_cost);
@@ -1577,7 +1678,7 @@ export default function ProjectManagement() {
                     );
                     const showPct = hasAny(p.percentage_utilization_capital, p.percentage_utilization_revenue, p.percentage_utilization_total);
 
-                    if (!showAllocation && !showPd && !showSpending && !showPifra && !showPct) {
+                    if (!showCoreBudget && !showAllocation && !showPd && !showSpending && !showPifra && !showPct) {
                       return (
                         React.createElement('div', { className: "rounded-lg border p-6 text-center text-sm text-muted-foreground"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2139}}, "No financial details were provided for this project."
 
@@ -1626,6 +1727,24 @@ export default function ProjectManagement() {
 
                     return (
                       React.createElement('div', { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2185}}
+                        , showCoreBudget && (
+                          React.createElement('div', { className: "rounded-xl border p-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2186}}
+                            , React.createElement('div', { className: "flex items-center gap-2 mb-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2187}}
+                              , React.createElement('div', { className: "h-8 w-8 rounded-lg bg-emerald-600/10 text-emerald-800 dark:text-emerald-300 flex items-center justify-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2188}}
+                                , React.createElement(Wallet, { className: "h-4 w-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2189}} )
+                              )
+                              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2191}}
+                                , React.createElement('p', { className: "text-sm font-semibold leading-tight", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2192}}, "Project Budget")
+                                , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2193}}, "Totals")
+                              )
+                            )
+                            , React.createElement('div', { className: "grid gap-3 sm:grid-cols-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2196}}
+                              , React.createElement(Stat, { label: "Total Budget", value: p.total_budget, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2197}} )
+                              , React.createElement(Stat, { label: "Total Consumed", value: p.total_consume, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2198}} )
+                              , React.createElement(Stat, { label: "Remaining", value: p.remaining_budget, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2199}} )
+                            )
+                          )
+                        )
                         , showAllocation && (
                           React.createElement(Section, {
                             title: "Allocation",

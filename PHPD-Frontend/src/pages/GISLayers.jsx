@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery } from "@tanstack/react-query";
 import {
   listProjects,
+  listProvinces,
   listDivisions,
   listDistricts,
   listTehsils,
@@ -15,7 +16,7 @@ import {
   getProjectGanttAll,
 } from "@/api";
 import { FolderKanban, Loader2, AlertTriangle, CalendarCheck, Filter } from "lucide-react";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 import { cn } from "@/lib/utils";
@@ -192,13 +193,22 @@ export default function GISLayers() {
   const [showLegend, setShowLegend] = useState(true);
   const [mapRef, setMapRef] = useState(null);
   const ganttSectionRef = useRef(null);
-  const [selectedDivisionId, setSelectedDivisionId] = useState("all");
+  const [selectedZoneId, setSelectedZoneId] = useState("all");
+  const [selectedCircleId, setSelectedCircleId] = useState("all");
   const [selectedDistrictId, setSelectedDistrictId] = useState("all");
   const [selectedTehsilId, setSelectedTehsilId] = useState("all");
   const [selectedProjectId, setSelectedProjectId] = useState("all");
 
-  const handleDivisionChange = (value) => {
-    setSelectedDivisionId(value);
+  const handleZoneChange = (value) => {
+    setSelectedZoneId(value);
+    setSelectedCircleId("all");
+    setSelectedDistrictId("all");
+    setSelectedTehsilId("all");
+    setSelectedProjectId("all");
+  };
+
+  const handleCircleChange = (value) => {
+    setSelectedCircleId(value);
     setSelectedDistrictId("all");
     setSelectedTehsilId("all");
     setSelectedProjectId("all");
@@ -215,23 +225,31 @@ export default function GISLayers() {
     setSelectedProjectId("all");
   };
 
-  const divisionNumeric =
-    selectedDivisionId !== "all" ? Number(selectedDivisionId) : null;
+  const zoneNumeric = selectedZoneId !== "all" ? Number(selectedZoneId) : null;
+  const circleNumeric =
+    selectedCircleId !== "all" ? Number(selectedCircleId) : null;
   const districtNumeric =
     selectedDistrictId !== "all" ? Number(selectedDistrictId) : null;
   const selectedProjectNumericId =
     selectedProjectId !== "all" ? Number(selectedProjectId) : null;
 
-  const { data: divisions = [], isLoading: divisionsLoading } = useQuery({
-    queryKey: ["gis", "divisions"],
-    queryFn: () => listDivisions(),
+  const { data: zones = [], isLoading: zonesLoading } = useQuery({
+    queryKey: ["gis", "zones"],
+    queryFn: () => listProvinces(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: circles = [], isFetching: circlesLoading } = useQuery({
+    queryKey: ["gis", "circles", zoneNumeric],
+    queryFn: () => listDivisions(zoneNumeric),
+    enabled: zoneNumeric != null && Number.isFinite(zoneNumeric),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: districts = [], isFetching: districtsLoading } = useQuery({
-    queryKey: ["gis", "districts", divisionNumeric],
-    queryFn: () => listDistricts(divisionNumeric),
-    enabled: divisionNumeric != null && Number.isFinite(divisionNumeric),
+    queryKey: ["gis", "districts", circleNumeric],
+    queryFn: () => listDistricts(circleNumeric),
+    enabled: circleNumeric != null && Number.isFinite(circleNumeric),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -287,8 +305,11 @@ export default function GISLayers() {
 
   const filteredProjects = useMemo(() => {
     let list = projects;
-    if (divisionNumeric != null && Number.isFinite(divisionNumeric)) {
-      list = list.filter((p) => p.division === divisionNumeric);
+    if (zoneNumeric != null && Number.isFinite(zoneNumeric)) {
+      list = list.filter((p) => (_nullishCoalesce(p.zone, () => ( p.province))) === zoneNumeric);
+    }
+    if (circleNumeric != null && Number.isFinite(circleNumeric)) {
+      list = list.filter((p) => (_nullishCoalesce(p.circle, () => ( p.division))) === circleNumeric);
     }
     if (districtNumeric != null && Number.isFinite(districtNumeric)) {
       list = list.filter((p) => p.district === districtNumeric);
@@ -299,7 +320,7 @@ export default function GISLayers() {
       list = list.filter((p) => p.tehsil === tehsilNumeric);
     }
     return list;
-  }, [projects, divisionNumeric, districtNumeric, selectedTehsilId]);
+  }, [projects, zoneNumeric, circleNumeric, districtNumeric, selectedTehsilId]);
 
   const projectStatusById = useMemo(() => {
     const statusByProjectId = new Map();
@@ -350,10 +371,20 @@ export default function GISLayers() {
   const mapView = useMemo(
     () =>
       getMapCenterForArea(
-        selectedDivisionId === "all"
+        selectedCircleId === "all"
           ? ""
-          : _nullishCoalesce(_optionalChain([divisions, 'access', _9 => _9.find, 'call', _10 => _10((d) => String(d.id) === selectedDivisionId)
-, 'optionalAccess', _11 => _11.division_name]), () => ( "")),
+          : _nullishCoalesce(
+              _optionalChain([
+                circles,
+                "access",
+                (_9) => _9.find,
+                "call",
+                (_10) => _10((c) => String(c.id) === selectedCircleId),
+                "optionalAccess",
+                (_11) => _11.circle_name,
+              ]),
+              () => (""),
+            ),
         selectedDistrictId === "all"
           ? undefined
           : _optionalChain([districts, 'access', _12 => _12.find, 'call', _13 => _13((d) => String(d.id) === selectedDistrictId)
@@ -362,7 +393,7 @@ export default function GISLayers() {
           ? undefined
           : _optionalChain([tehsils, 'access', _15 => _15.find, 'call', _16 => _16((t) => String(t.id) === selectedTehsilId), 'optionalAccess', _17 => _17.tehsil_name])
       ),
-    [selectedDivisionId, selectedDistrictId, selectedTehsilId, divisions, districts, tehsils]
+    [selectedCircleId, selectedDistrictId, selectedTehsilId, circles, districts, tehsils]
   );
 
   const selectedProject = useMemo(
@@ -375,6 +406,32 @@ export default function GISLayers() {
 
   // Use selected-project details (from /api/list-project/?id=...) when available.
   const activeSelectedProject = _nullishCoalesce(selectedProjectDetails, () => ( selectedProject));
+
+  // When selecting a project, automatically set Zone/Circle/District/Tehsil filters
+  // to match that project's saved location. This keeps the filter bar in sync.
+  useEffect(() => {
+    if (!activeSelectedProject) return;
+    if (selectedProjectId === "all") return;
+
+    const zoneId = _nullishCoalesce(activeSelectedProject.zone, () => ( activeSelectedProject.province));
+    const circleId = _nullishCoalesce(activeSelectedProject.circle, () => ( activeSelectedProject.division));
+    const districtId = activeSelectedProject.district;
+    const tehsilId = activeSelectedProject.tehsil;
+
+    // Set in parent → child order. Use direct setters (not handlers) to avoid
+    // resetting the selected project to "all".
+    if (zoneId != null && String(zoneId) !== selectedZoneId) setSelectedZoneId(String(zoneId));
+    if (circleId != null && String(circleId) !== selectedCircleId) setSelectedCircleId(String(circleId));
+    if (districtId != null && String(districtId) !== selectedDistrictId) setSelectedDistrictId(String(districtId));
+    if (tehsilId != null && String(tehsilId) !== selectedTehsilId) setSelectedTehsilId(String(tehsilId));
+  }, [
+    activeSelectedProject,
+    selectedProjectId,
+    selectedZoneId,
+    selectedCircleId,
+    selectedDistrictId,
+    selectedTehsilId,
+  ]);
 
   /** Combined GeoJSON of all filtered projects (by division/district/tehsil) — same list API as project-management; shows geojson/shapefile boundaries on map */
   const allFilteredProjectsGeo = useMemo(
@@ -404,18 +461,46 @@ export default function GISLayers() {
               )
                 , React.createElement('div', { className: "grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-wrap sm:items-end sm:justify-center sm:gap-3 min-w-0"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 404}}
                   , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 405}}
-                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 406}}, "Division")
-                    , React.createElement(Select, { value: selectedDivisionId, onValueChange: handleDivisionChange, __self: this, __source: {fileName: _jsxFileName, lineNumber: 407}}
+                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 406}}, "Zone")
+                    , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, __self: this, __source: {fileName: _jsxFileName, lineNumber: 407}}
                       , React.createElement(SelectTrigger, { className: "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 408}}
-                        , React.createElement(SelectValue, { placeholder: divisionsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 409}} )
+                        , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 409}} )
                       )
                       , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 411}}
                         , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 412}}, "All")
-                        , divisions.map((div) => (
-                          React.createElement(SelectItem, { key: div.id, value: String(div.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 414}}
-                            , div.division_name
+                        , zones.map((z) => (
+                          React.createElement(SelectItem, { key: z.id, value: String(z.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 414}}
+                            , _nullishCoalesce(z.zone_name, () => ( z.province_name))
                           )
                         ))
+                      )
+                    )
+                  )
+
+                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 422}}
+                    , React.createElement('label', { className: "text-xs font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "Circle")
+                    , React.createElement(Select, {
+                      value: selectedCircleId,
+                      onValueChange: handleCircleChange,
+                      disabled: selectedZoneId === "all" || circlesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
+
+                      , React.createElement(SelectTrigger, {
+                        className: cn(
+                          "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm",
+                          (selectedZoneId === "all" || circlesLoading) &&
+                            "opacity-60 cursor-not-allowed",
+                        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
+
+                        , React.createElement(SelectValue, { placeholder: circlesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 436}} )
+                      )
+                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 438}}
+                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 439}}, "All")
+                        , selectedZoneId !== "all" &&
+                          circles.map((c) => (
+                            React.createElement(SelectItem, { key: c.id, value: String(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}
+                              , _nullishCoalesce(c.circle_name, () => ( c.division_name))
+                            )
+                          ))
                       )
                     )
                   )
@@ -425,12 +510,12 @@ export default function GISLayers() {
                     , React.createElement(Select, {
                       value: selectedDistrictId,
                       onValueChange: handleDistrictChange,
-                      disabled: selectedDivisionId === "all" || districtsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
+                      disabled: selectedCircleId === "all" || districtsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
 
                       , React.createElement(SelectTrigger, {
                         className: cn(
                           "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm",
-                          (selectedDivisionId === "all" || districtsLoading) &&
+                          (selectedCircleId === "all" || districtsLoading) &&
                             "opacity-60 cursor-not-allowed",
                         ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
 
@@ -438,7 +523,7 @@ export default function GISLayers() {
                       )
                       , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 438}}
                         , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 439}}, "All")
-                        , selectedDivisionId !== "all" &&
+                        , selectedCircleId !== "all" &&
                           districts.map((dist) => (
                             React.createElement(SelectItem, { key: dist.id, value: String(dist.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}
                               , dist.district_name
@@ -454,7 +539,8 @@ export default function GISLayers() {
                       value: selectedTehsilId,
                       onValueChange: handleTehsilChange,
                       disabled: 
-                        selectedDivisionId === "all" ||
+                        selectedZoneId === "all" ||
+                        selectedCircleId === "all" ||
                         selectedDistrictId === "all" ||
                         tehsilsLoading
                       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 452}}
@@ -462,7 +548,8 @@ export default function GISLayers() {
                       , React.createElement(SelectTrigger, {
                         className: cn(
                           "h-8 w-full sm:w-[140px] border-border/60 bg-background rounded-lg shadow-sm",
-                          (selectedDivisionId === "all" ||
+                          (selectedZoneId === "all" ||
+                            selectedCircleId === "all" ||
                             selectedDistrictId === "all" ||
                             tehsilsLoading) && "opacity-60 cursor-not-allowed",
                         ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 461}}
@@ -471,7 +558,8 @@ export default function GISLayers() {
                       )
                       , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 471}}
                         , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 472}}, "All")
-                        , selectedDivisionId !== "all" &&
+                        , selectedZoneId !== "all" &&
+                          selectedCircleId !== "all" &&
                           selectedDistrictId !== "all" &&
                           tehsils.map((teh) => (
                             React.createElement(SelectItem, { key: teh.id, value: String(teh.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 476}}
@@ -499,7 +587,8 @@ export default function GISLayers() {
                     )
                   )
 
-                  , (selectedDivisionId !== "all" ||
+                  , (selectedZoneId !== "all" ||
+                    selectedCircleId !== "all" ||
                     selectedDistrictId !== "all" ||
                     selectedTehsilId !== "all" ||
                     selectedProjectId !== "all") && (
@@ -507,7 +596,8 @@ export default function GISLayers() {
                       variant: "destructive",
                       size: "sm",
                       onClick: () => {
-                        setSelectedDivisionId("all");
+                        setSelectedZoneId("all");
+                        setSelectedCircleId("all");
                         setSelectedDistrictId("all");
                         setSelectedTehsilId("all");
                         setSelectedProjectId("all");
@@ -570,14 +660,14 @@ export default function GISLayers() {
               filterCenter: 
                 !selectedProjectGeo &&
                 !allFilteredProjectsGeo &&
-                selectedDivisionId !== "all"
+                selectedZoneId !== "all"
                   ? mapView.center
                   : undefined
               ,
               filterZoom: 
                 !selectedProjectGeo &&
                 !allFilteredProjectsGeo &&
-                selectedDivisionId !== "all"
+                selectedZoneId !== "all"
                   ? mapView.zoom
                   : undefined
               ,

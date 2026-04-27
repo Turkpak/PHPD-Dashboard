@@ -57,11 +57,8 @@ export async function listProjects() {
     }
     return [];
   } catch {
-    // Temporary fallback so dashboard/maps/pages can render without backend.
-    return mockProjects.map((p) => ({
-      ...p,
-      project_reference_no: p.project_reference_no ?? `REF-${p.id}`,
-    }));
+    // No mock fallback: view page should reflect real backend data only.
+    return [];
   }
 }
 

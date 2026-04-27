@@ -27,11 +27,18 @@ class ListProjectView(viewsets.ViewSet):
                 ).create_response()
 
             else:
-                queryset = Project.objects.select_related(
-                    "province", "division", "district", "tehsil"
-                ).prefetch_related(
-                    "stakeholder", "activities"
-                ).all()
+                # Project model uses Zone/District/Tehsil (no province/division fields).
+                # Pull related geography in one query, and infer circle via district.circle.
+                queryset = (
+                    Project.objects.select_related(
+                        "zone",
+                        "district",
+                        "district__circle",
+                        "tehsil",
+                    )
+                    .prefetch_related("stakeholder", "activities")
+                    .all()
+                )
                 serializer = ProjectSerializer(queryset, many=True)
                 return ApiResponse(
                     status=status.HTTP_200_OK,

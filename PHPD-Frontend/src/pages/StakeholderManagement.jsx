@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Edit2, Trash2, Users, Save, Search, Filter, ShieldCheck, UserX } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Save, Search, ShieldCheck, UserX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -194,14 +194,6 @@ export default function StakeholderManagement() {
             </div>
 
             <div className="flex w-full sm:w-auto items-center gap-3">
-              <Button
-                variant="outline"
-                className="h-[46px] px-6 rounded-full border border-gray-200/70 shadow-sm text-gray-700 bg-white font-semibold hover:bg-gray-50"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </Button>
-
               <Dialog
                 open={isAddDialogOpen}
                 onOpenChange={(open) => {
@@ -210,8 +202,8 @@ export default function StakeholderManagement() {
                 }}
               >
                 <DialogTrigger asChild>
-                  <Button className="h-[46px] px-6 rounded-full bg-[#054332] hover:bg-[#032d21] text-white font-bold shadow-sm whitespace-nowrap transition-all">
-                    <Plus className="w-4 h-4 mr-2" />
+                  <Button className="h-9 px-4 rounded-full bg-[#054332] hover:bg-[#032d21] text-white font-semibold shadow-sm whitespace-nowrap transition-all text-[12px]">
+                    <Plus className="w-3.5 h-3.5 mr-2" />
                     Add Stakeholder
                   </Button>
                 </DialogTrigger>
