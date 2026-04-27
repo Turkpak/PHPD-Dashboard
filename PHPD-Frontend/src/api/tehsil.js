@@ -1,6 +1,5 @@
  function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }
 import { get, post, put, del } from "./client";
-import { filterByDistrict, mockTehsils } from "./mockData";
 
 
 /**
@@ -17,30 +16,19 @@ const DELETE_PATH = "delete-tehsil/";
 
 export async function listTehsils(districtId) {
   const params = districtId != null ? { district: String(districtId) } : undefined;
-  try {
-    const res = await get(LIST, params);
-    const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-    return data.map((row) => ({
-      ...row,
-      province: row.province ?? row.zone,
-      zone: row.zone ?? row.province,
-      division: row.division ?? row.circle,
-      circle: row.circle ?? row.division,
-      province_name: row.province_name ?? row.zone_name,
-      zone_name: row.zone_name ?? row.province_name,
-      division_name: row.division_name ?? row.circle_name,
-      circle_name: row.circle_name ?? row.division_name,
-    }));
-  } catch {
-    const list = filterByDistrict(mockTehsils, districtId);
-    return list.map((t) => ({
-      ...t,
-      province: t.zone,
-      division: t.circle,
-      province_name: t.zone_name,
-      division_name: t.circle_name,
-    }));
-  }
+  const res = await get(LIST, params);
+  const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+  return data.map((row) => ({
+    ...row,
+    province: row.province ?? row.zone,
+    zone: row.zone ?? row.province,
+    division: row.division ?? row.circle,
+    circle: row.circle ?? row.division,
+    province_name: row.province_name ?? row.zone_name,
+    zone_name: row.zone_name ?? row.province_name,
+    division_name: row.division_name ?? row.circle_name,
+    circle_name: row.circle_name ?? row.division_name,
+  }));
 }
 
 export async function getTehsilById(id) {
