@@ -252,10 +252,10 @@ class ProjectSerializer(GeoFeatureModelSerializer):
         fields = [
             'id', 'stakeholder', 'stakeholder_details',
             'project_name', 'project_description',
-            'project_starting_date', 'project_reference_no',
+            'project_starting_date', 'project_reference_no', 'project_category', 'project_category_other',
             'zone', 'zone_name', 'circle', 'circle_name',
             'district', 'district_name',
-            'tehsil', 'tehsil_name',
+            'tehsil', 'tehsil_name', 'latitude', 'longitude',
             'total_budget', 'total_consume', 'remaining_budget',
             'xer_file', 
             'created_at', 'updated_at', "activities"
