@@ -11,7 +11,7 @@ router.register(r'create-user', UserCreateView, basename='create-user')
 router.register(r'login-user', UserLoginDashboardCreateView, basename='login-user')
 router.register(r'get-user', GetUserView, basename='get-user')
 router.register(r'update-user', UserUpdateView, basename='update-user')
-# router.register(r'user-permissions', UserPermissionViewSet, basename='user-permissions')
+router.register(r'user-permissions', UserPermissionViewSet, basename='user-permissions')
 
 #--------------------------------- Zone View ---------------------------------
 router.register(r'create-zone', ZoneCreateView, basename='create-zone')
