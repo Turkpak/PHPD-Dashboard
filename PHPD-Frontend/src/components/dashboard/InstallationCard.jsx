@@ -73,7 +73,7 @@ export function InstallationCard({
   return (
     React.createElement(Card, { className: cn(
       "relative overflow-hidden transition-all duration-300 group flex flex-col items-center justify-center p-6",
-      "rounded-[24px] border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]",
+      "rounded-lg border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]",
       !nonInteractive && "hover:shadow-xl hover:-translate-y-[2px] active:translate-y-0",
       "bg-white",
       onClick && !nonInteractive && "cursor-pointer select-none",

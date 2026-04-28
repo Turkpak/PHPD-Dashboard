@@ -62,7 +62,7 @@ export default function Comparison() {
       targetId,
     ) => {
       for (const n of nodes) {
-        if (String(_nullishCoalesce(_nullishCoalesce(_optionalChain([n, 'optionalAccess', _ => _._id]), () => ( _optionalChain([n, 'optionalAccess', _2 => _2.id]))), () => ( ""))) === targetId) return n;
+        if (String(_nullishCoalesce(_nullishCoalesce(_optionalChain([n, 'optionalAccess', _ => _._id]), () => (_optionalChain([n, 'optionalAccess', _2 => _2.id]))), () => (""))) === targetId) return n;
         const children = Array.isArray(_optionalChain([n, 'optionalAccess', _3 => _3.subtasks])) ? n.subtasks : [];
         const hit = children.length ? findNodeById(children, targetId) : null;
         if (hit) return hit;
@@ -71,11 +71,11 @@ export default function Comparison() {
     };
 
     const map = new Map();
-    for (const s of projectGanttAll ) {
+    for (const s of projectGanttAll) {
       const pid = Number(_optionalChain([s, 'optionalAccess', _4 => _4._id]));
       if (!Number.isFinite(pid)) continue;
       const tasks = Array.isArray(_optionalChain([s, 'optionalAccess', _5 => _5.tasks])) ? s.tasks : [];
-      const root = _nullishCoalesce(_nullishCoalesce(findNodeById(tasks, "1"), () => ( tasks[0])), () => ( null));
+      const root = _nullishCoalesce(_nullishCoalesce(findNodeById(tasks, "1"), () => (tasks[0])), () => (null));
       map.set(pid, toPct(_optionalChain([root, 'optionalAccess', _6 => _6.progress])));
     }
     return map;
@@ -161,15 +161,16 @@ export default function Comparison() {
 
 
   return (
-    React.createElement(Layout, { title: isMobile ? "CITY COMPARISON" : "City Comparison - Smart Safe Cities", __self: this, __source: {fileName: _jsxFileName, lineNumber: 162}}
-      , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 163}}
+    React.createElement(Layout, { title: isMobile ? "CITY COMPARISON" : "City Comparison - Smart Safe Cities", __self: this, __source: { fileName: _jsxFileName, lineNumber: 162 } }
+      , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 163 } }
         /* Header Section */
 
 
         /* City Completion Comparison Chart */
         , React.createElement(CityCompletionChart, {
           cityData: divisionCompletionData,
-          description: "Division Wise Progress"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 168}}
+          description: "Zone Wise Progress", __self: this, __source: { fileName: _jsxFileName, lineNumber: 168 }
+        }
         )
       )
     )

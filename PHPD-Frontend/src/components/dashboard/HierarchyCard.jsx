@@ -115,7 +115,7 @@ export function HierarchyCard({ title, overallProgress, onClick, className, colo
       className: cn(
         "relative overflow-hidden transition-all duration-300 cursor-pointer group",
         "hover:-translate-y-0.5 hover:shadow-lg",
-        "border border-border/60",
+        "rounded-lg border border-border/60",
         className
       ),
       onClick: onClick, __self: this, __source: {fileName: _jsxFileName, lineNumber: 110}}

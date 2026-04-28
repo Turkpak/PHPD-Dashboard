@@ -35,10 +35,10 @@ export function CityCompletionChart({ cityData, description = "District Wise Pro
   const tickLabel = (s) => String(s || "").replace(/\s*Division\s*$/i, "");
 
   return (
-    <Card className="shadow-lg border-border/50 border-2 transition-colors hover:border-primary/60">
+    <Card className="rounded-lg shadow-lg border-border/50 border-2 transition-colors hover:border-primary/60">
       <CardHeader className="pb-4">
         <CardTitle className="font-heading text-lg sm:text-xl font-bold leading-tight">
-          Smart Safe Cities Phase I (Completion %)
+          Sites Phasewise (Completion %)
         </CardTitle>
         <CardDescription className="text-sm">{description}</CardDescription>
       </CardHeader>
@@ -63,9 +63,9 @@ export function CityCompletionChart({ cityData, description = "District Wise Pro
               <XAxis
                 dataKey="city"
                 tickFormatter={tickLabel}
-                angle={isMobile ? -35 : -45}
-                textAnchor="end"
-                height={isMobile ? 80 : isTablet ? 110 : 80}
+                angle={0}
+                textAnchor="middle"
+                height={isMobile ? 40 : isTablet ? 50 : 40}
                 tick={{
                   fontSize: isMobile ? 8 : isTablet ? 10 : 11,
                   fill: "hsl(var(--muted-foreground))",

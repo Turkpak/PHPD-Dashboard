@@ -139,48 +139,48 @@ export default function StakeholderManagement() {
 
         {/* Top Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col justify-between h-[150px]">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-lg p-6 shadow-[0_4px_24px_-8px_rgba(5,67,50,0.12)] border border-emerald-200/60 flex flex-col justify-between h-[150px]">
             <div className="flex justify-between items-start w-full">
-              <div className="w-11 h-11 rounded-xl bg-[#f0fdf4] text-[#054332] flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
                 <Users className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-[#64748b] tracking-widest uppercase">Overview</span>
+              <span className="text-[10px] font-bold text-emerald-700 tracking-widest uppercase">Overview</span>
             </div>
             <div className="mt-4">
-              <div className="text-[26px] leading-none font-bold text-[#101828] mb-1">{stakeholders.length.toLocaleString()}</div>
-              <div className="text-[12px] font-semibold text-[#64748b]">Total Stakeholders</div>
+              <div className="text-[26px] leading-none font-bold text-emerald-900 mb-1">{stakeholders.length.toLocaleString()}</div>
+              <div className="text-[12px] font-semibold text-emerald-700">Total Stakeholders</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col justify-between h-[150px]">
+          <div className="bg-gradient-to-br from-blue-50 to-sky-100 rounded-lg p-6 shadow-[0_4px_24px_-8px_rgba(2,132,199,0.12)] border border-blue-200/60 flex flex-col justify-between h-[150px]">
              <div className="flex justify-between items-start w-full">
-              <div className="w-11 h-11 rounded-xl bg-[#f0f9ff] text-[#0284c7] flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-[#64748b] tracking-widest uppercase">Engagement</span>
+              <span className="text-[10px] font-bold text-blue-700 tracking-widest uppercase">Engagement</span>
             </div>
             <div className="mt-4">
-              <div className="text-[26px] leading-none font-bold text-[#101828] mb-1">{activeCount.toLocaleString()}</div>
-              <div className="text-[12px] font-semibold text-[#64748b]">Active Members</div>
+              <div className="text-[26px] leading-none font-bold text-blue-900 mb-1">{activeCount.toLocaleString()}</div>
+              <div className="text-[12px] font-semibold text-blue-700">Active Members</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col justify-between h-[150px]">
+          <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] border border-gray-200/60 flex flex-col justify-between h-[150px]">
              <div className="flex justify-between items-start w-full">
-              <div className="w-11 h-11 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-slate-500 text-white flex items-center justify-center shadow-sm">
                 <UserX className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-[#64748b] tracking-widest uppercase">Archived</span>
+              <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Archived</span>
             </div>
             <div className="mt-4">
-              <div className="text-[26px] leading-none font-bold text-[#101828] mb-1">{disabledCount.toLocaleString()}</div>
-              <div className="text-[12px] font-semibold text-[#64748b]">Inactive/Disabled</div>
+              <div className="text-[26px] leading-none font-bold text-slate-800 mb-1">{disabledCount.toLocaleString()}</div>
+              <div className="text-[12px] font-semibold text-slate-500">Inactive/Disabled</div>
             </div>
           </div>
         </div>
 
         {/* Main Panel (Toolbar + List) */}
-        <div className="w-full mt-1 bg-white rounded-[24px] border border-gray-200/70 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.08)]">
+        <div className="w-full mt-1 bg-white rounded-lg border border-gray-200/70 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.08)]">
           {/* Toolbar */}
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 sm:p-6 border-b border-gray-100/80">
             <div className="relative w-full max-w-[620px]">
@@ -313,7 +313,7 @@ export default function StakeholderManagement() {
                   return (
                     <div
                       key={stakeholder.id}
-                      className="bg-white rounded-[20px] shadow-sm border border-gray-200/60 py-4 px-5 sm:px-6 grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_100px] gap-4 items-center transition-all hover:-translate-y-0.5 duration-300 hover:shadow-[0_10px_34px_-14px_rgba(0,0,0,0.14)] hover:border-gray-200"
+                      className="bg-white rounded-lg shadow-sm border border-gray-200/60 py-4 px-5 sm:px-6 grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_100px] gap-4 items-center transition-all hover:-translate-y-0.5 duration-300 hover:shadow-[0_10px_34px_-14px_rgba(0,0,0,0.14)] hover:border-gray-200"
                     >
                       {/* Entity Column */}
                       <div className="flex items-center gap-4">
