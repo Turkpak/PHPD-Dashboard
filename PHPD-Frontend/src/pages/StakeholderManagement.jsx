@@ -182,18 +182,18 @@ export default function StakeholderManagement() {
         {/* Main Panel (Toolbar + List) */}
         <div className="w-full mt-1 bg-white rounded-lg border border-gray-200/70 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.08)]">
           {/* Toolbar */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 sm:p-6 border-b border-gray-100/80">
-            <div className="relative w-full max-w-[620px]">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="flex flex-col sm:flex-row items-center gap-3 p-4 sm:p-5 border-b border-gray-100/80">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                className="w-full bg-white border border-gray-200/70 shadow-sm rounded-full h-[46px] pl-[48px] pr-5 text-[13px] placeholder:text-gray-400 focus-visible:ring-[#054332]"
+                className="w-full bg-white border border-gray-200/70 shadow-sm rounded-lg h-10 pl-10 pr-4 text-[13px] placeholder:text-gray-400 focus-visible:ring-[#054332]"
                 placeholder="Search by name, role, or organization..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
-            <div className="flex w-full sm:w-auto items-center gap-3">
+            <div className="flex w-full sm:w-auto items-center shrink-0">
               <Dialog
                 open={isAddDialogOpen}
                 onOpenChange={(open) => {
@@ -202,7 +202,7 @@ export default function StakeholderManagement() {
                 }}
               >
                 <DialogTrigger asChild>
-                  <Button className="h-9 px-4 rounded-full bg-[#054332] hover:bg-[#032d21] text-white font-semibold shadow-sm whitespace-nowrap transition-all text-[12px]">
+                  <Button className="h-10 px-4 rounded-lg bg-[#054332] hover:bg-[#032d21] text-white font-semibold shadow-sm whitespace-nowrap transition-all text-[12px]">
                     <Plus className="w-3.5 h-3.5 mr-2" />
                     Add Stakeholder
                   </Button>
