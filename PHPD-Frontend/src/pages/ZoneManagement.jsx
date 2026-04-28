@@ -110,7 +110,7 @@ export default function ProvinceManagement() {
         </div>
 
         {(canCreate || (canUpdate && editingId !== null)) && (
-          <Card className="border-none shadow-sm overflow-hidden">
+          <Card className="border-none shadow-sm overflow-hidden rounded-lg">
             <div className="h-1 bg-secondary w-full" />
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
@@ -177,14 +177,14 @@ export default function ProvinceManagement() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name .."
-                className="pl-10 h-10"
+                className="pl-10 h-10 rounded-lg"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
 
-          <Card className="border-none shadow-sm overflow-hidden">
+          <Card className="border-none shadow-sm overflow-hidden rounded-lg">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader className="bg-muted/50">

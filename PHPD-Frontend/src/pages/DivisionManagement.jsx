@@ -123,7 +123,7 @@ export default function DivisionManagement() {
           , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 121}}, "Create a new circle or edit an existing one."        )
         )
 
-        , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 124}}
+        , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden rounded-lg"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 124}}
           , React.createElement('div', { className: "h-1 bg-secondary w-full"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 125}} )
           , React.createElement(CardHeader, { className: "pb-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 126}}
             , React.createElement(CardTitle, { className: "text-sm font-bold uppercase tracking-widest text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 127}}, "Basic Information"
@@ -201,14 +201,14 @@ export default function DivisionManagement() {
               , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 199}} )
               , React.createElement(Input, {
                 placeholder: "Search by name .."   ,
-                className: "pl-10 h-10" ,
+                className: "pl-10 h-10 rounded-lg" ,
                 value: searchQuery,
                 onChange: (e) => setSearchQuery(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}
               )
             )
           )
 
-          , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 209}}
+          , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden rounded-lg"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 209}}
             , React.createElement('div', { className: "overflow-x-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 210}}
               , React.createElement(Table, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 211}}
                 , React.createElement(TableHeader, { className: "bg-muted/50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 212}}
