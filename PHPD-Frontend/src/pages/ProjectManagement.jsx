@@ -817,7 +817,8 @@ export default function ProjectManagement() {
                 )
 
                 /* Full wizard form (same handlers/mutations as modal) */
-                , React.createElement('form', { onSubmit: handleSubmit, className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1165}}
+                , React.createElement('div', { className: "rounded-xl border-2 border-green-600 p-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1165}}
+                  , React.createElement('form', { onSubmit: handleSubmit, className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1165}}
                   /* Step 1: Project Details */
                   , currentStep === 1 && (
                     React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1168}}
@@ -1269,6 +1270,7 @@ export default function ProjectManagement() {
                   )
                 )
               )
+            )
             )
           )
         )

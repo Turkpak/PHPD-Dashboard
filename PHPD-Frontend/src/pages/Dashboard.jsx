@@ -998,7 +998,7 @@ export default function Dashboard() {
 
         const completion = Math.round(avg(districtOveralls));
         return {
-          city: `${div.division_name} Division`,
+          city: `${div.division_name} Zone`,
           completion: clamp01(completion),
         };
       })
@@ -1260,7 +1260,7 @@ export default function Dashboard() {
     const flow = [
       {
         key: "all",
-        label: "All Divisions",
+        label: "All Zones",
         clickable: selectedItemType !== null,
       },
     ];
@@ -1268,34 +1268,34 @@ export default function Dashboard() {
     if (selectedItemType === "division" && selectedItemName) {
       flow.push({
         key: "division",
-        label: `${selectedItemName} Division`,
+        label: `${selectedItemName} Zone`,
         clickable: false,
       });
     } else if (selectedItemType === "district" && selectedItemName) {
       if (parentDivisionName) {
         flow.push({
           key: "division",
-          label: `${parentDivisionName} Division`,
+          label: `${parentDivisionName} Zone`,
           clickable: true,
         });
       }
       flow.push({
         key: "district",
-        label: `${selectedItemName} District`,
+        label: `${selectedItemName} Circle`,
         clickable: false,
       });
     } else if (selectedItemType === "tehsil" && selectedItemName) {
       if (parentDivisionName) {
         flow.push({
           key: "division",
-          label: `${parentDivisionName} Division`,
+          label: `${parentDivisionName} Zone`,
           clickable: true,
         });
       }
       if (parentDistrictName) {
         flow.push({
           key: "district",
-          label: `${parentDistrictName} District`,
+          label: `${parentDistrictName} Circle`,
           clickable: true,
         });
       }
@@ -1388,8 +1388,8 @@ export default function Dashboard() {
         percentage: roundPct(districtOverallFromTehsils(d.id)),
       }));
       return {
-        title: "District Progress Distribution",
-        description: "Progress % of all districts within the selected division",
+        title: "Circle Progress Distribution",
+        description: "Progress % of all circles within the selected zone",
         data: rows.sort((a, b) => b.percentage - a.percentage),
       };
     }
@@ -1402,7 +1402,7 @@ export default function Dashboard() {
       }));
       return {
         title: "Tehsil Progress Distribution",
-        description: "Progress % of all tehsils within the selected district",
+        description: "Progress % of all tehsils within the selected circle",
         data: rows.sort((a, b) => b.percentage - a.percentage),
       };
     }
@@ -2365,7 +2365,7 @@ export default function Dashboard() {
                             )
                             , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-muted-foreground px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                               , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                , "Division / District / Tehsil"
+                                , "Zone / Circle / Tehsil"
                                 , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
@@ -2755,8 +2755,8 @@ export default function Dashboard() {
                   className="flex items-center gap-3 flex-nowrap"
                 >
                   {[
-                    { val: "divisions", label: "All Divisions" },
-                    { val: "districts", label: "All Districts" },
+                    { val: "divisions", label: "All Zones" },
+                    { val: "districts", label: "All Circles" },
                     { val: "tehsils", label: "All Tehsils" },
                     { val: "projects", label: "All Projects" },
                   ].map((item) => (
@@ -2782,11 +2782,11 @@ export default function Dashboard() {
                       try {
                         const dataToExport = selectedItemName && singleItemData ? singleItemData : aggregatedData;
                         const exportName =
-                          selectedItemName && selectedItemType === "division" ? `${selectedItemName} Division`
-                            : selectedItemName && selectedItemType === "district" ? `${selectedItemName} District`
+                          selectedItemName && selectedItemType === "division" ? `${selectedItemName} Zone`
+                            : selectedItemName && selectedItemType === "district" ? `${selectedItemName} Circle`
                               : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
-                                : viewType === "divisions" ? "All Punjab Divisions"
-                                  : viewType === "districts" ? "All Punjab Districts"
+                                : viewType === "divisions" ? "All Punjab Zones"
+                                  : viewType === "districts" ? "All Punjab Circles"
                                     : "All Punjab Tehsils";
 
                         if (!dataToExport) {
@@ -2840,11 +2840,11 @@ export default function Dashboard() {
             <div className="flex flex-col">
               {(() => {
                 const titleText =
-                  selectedItemName && selectedItemType === "division" ? `${selectedItemName} Division`
-                    : selectedItemName && selectedItemType === "district" ? `${selectedItemName} District`
+                  selectedItemName && selectedItemType === "division" ? `${selectedItemName} Zone`
+                    : selectedItemName && selectedItemType === "district" ? `${selectedItemName} Circle`
                       : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
-                        : viewType === "divisions" ? "All Punjab Divisions"
-                          : viewType === "districts" ? "All Punjab Districts"
+                        : viewType === "divisions" ? "All Punjab Zones"
+                          : viewType === "districts" ? "All Punjab Circles"
                             : viewType === "tehsils" ? "All Punjab Tehsils"
                               : viewType === "projects" ? "All Projects"
                                 : "PHPD Progress Dashboard";
@@ -2969,11 +2969,11 @@ export default function Dashboard() {
               React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2860 } }
                 , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2861 } }
                   , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2862 } }
-                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2863 } }, "Districts in "
-                      , selectedItemName, " Division"
+                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2863 } }, "Circles in "
+                      , selectedItemName, " Zone"
                     )
                     , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2866 } }
-                      , selectedItemName, " Division"
+                      , selectedItemName, " Zone"
                     )
                   )
 
@@ -2995,10 +2995,10 @@ export default function Dashboard() {
                         setSelectedProjectForDetails(null);
                       }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2871 }
                     }
-                      , "All Divisions")
+                      , "All Zones")
                     , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2886 } }, "›")
                     , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2887 } }
-                      , selectedItemName, " Division"
+                      , selectedItemName, " Zone"
                     )
                   )
                 )
@@ -3027,7 +3027,7 @@ export default function Dashboard() {
 
                     /* Charts for Division */
                     , renderAggregatedCharts(
-                      selectedItemName + " Division",
+                      selectedItemName + " Zone",
                       singleItemData,
                       projectsInSelectedGeography,
                       false,
@@ -3036,8 +3036,8 @@ export default function Dashboard() {
                 ) : (
                   React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2904 } }
                     , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2905 } }
-                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2906 } }, "No districts found for "
-                        , selectedItemName, " Division."
+                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2906 } }, "No circles found for "
+                        , selectedItemName, " Zone."
                       )
                     )
                   )
@@ -3094,11 +3094,11 @@ export default function Dashboard() {
                 , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2961 } }
                   , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2962 } }
                     , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2963 } }, "Tehsils in "
-                      , selectedItemName, " District (", parentDivisionName, " ", "Division)"
+                      , selectedItemName, " Circle (", parentDivisionName, " ", "Zone)"
 
                     )
                     , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2967 } }
-                      , selectedItemName, " District"
+                      , selectedItemName, " Circle"
                     )
                   )
 
@@ -3120,7 +3120,7 @@ export default function Dashboard() {
                         setSelectedProjectForDetails(null);
                       }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2972 }
                     }
-                      , "All Divisions")
+                      , "All Zones")
                     , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2987 } }, "›")
                     , React.createElement(Button, {
                       type: "button",
@@ -3141,10 +3141,10 @@ export default function Dashboard() {
                         setSelectedProjectForDetails(null);
                       }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2988 }
                     }
-                      , _nullishCoalesce(parentDivisionName, () => ("Division")))
+                      , _nullishCoalesce(parentDivisionName, () => ("Zone")))
                     , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3010 } }, "›")
                     , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3011 } }
-                      , selectedItemName, " District"
+                      , selectedItemName, " Circle"
                     )
                   )
                 )
@@ -3173,7 +3173,7 @@ export default function Dashboard() {
 
                     /* Charts for District */
                     , renderAggregatedCharts(
-                      selectedItemName + " District",
+                      selectedItemName + " Circle",
                       singleItemData,
                       projectsInSelectedGeography,
                       false,
@@ -3183,7 +3183,7 @@ export default function Dashboard() {
                   React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3005 } }
                     , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3006 } }
                       , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3007 } }, "No tehsils found for "
-                        , selectedItemName, " District."
+                        , selectedItemName, " Circle."
                       )
                     )
                   )
@@ -3241,7 +3241,7 @@ export default function Dashboard() {
                         setSelectedProjectForDetails(null);
                       }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3049 }
                     }
-                      , "All Divisions")
+                      , "All Zones")
                     , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3064 } }, "›")
                     , React.createElement(Button, {
                       type: "button",
@@ -3262,7 +3262,7 @@ export default function Dashboard() {
                         setSelectedProjectForDetails(null);
                       }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3065 }
                     }
-                      , _nullishCoalesce(parentDivisionName, () => ("Division")))
+                      , _nullishCoalesce(parentDivisionName, () => ("Zone")))
                     , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3087 } }, "›")
                     , React.createElement(Button, {
                       type: "button",
@@ -3282,7 +3282,7 @@ export default function Dashboard() {
                         setSelectedProjectForDetails(null);
                       }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3088 }
                     }
-                      , _nullishCoalesce(parentDistrictName, () => ("District")))
+                      , _nullishCoalesce(parentDistrictName, () => ("Circle")))
                     , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3110 } }, "›")
                     , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3111 } }
                       , selectedItemName, " Tehsil"
@@ -3401,7 +3401,7 @@ export default function Dashboard() {
           React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3156 } }
             , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3157 } }
               , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3158 } }
-                , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3159 } }, "All Punjab Divisions"
+                , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3159 } }, "All Punjab Zones"
 
                 )
               )
@@ -3452,7 +3452,7 @@ export default function Dashboard() {
 
             /* Aggregated Charts Section - Same as detail view */
             , renderAggregatedCharts(
-              "All Punjab Divisions",
+              "All Punjab Zones",
               aggregatedData,
               topProjectsForAggregateViews.length > 0
                 ? topProjectsForAggregateViews
@@ -3487,7 +3487,7 @@ export default function Dashboard() {
           React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3240 } }
             , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3241 } }
               , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3242 } }
-                , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3243 } }, "All Punjab Districts"
+                , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3243 } }, "All Punjab Circles"
 
                 )
               )
@@ -3543,7 +3543,7 @@ export default function Dashboard() {
 
             /* Aggregated Charts Section */
             , renderAggregatedCharts(
-              "All Punjab Districts",
+              "All Punjab Circles",
               aggregatedData,
               topProjectsForAggregateViews.length > 0
                 ? topProjectsForAggregateViews
@@ -3720,7 +3720,7 @@ export default function Dashboard() {
                             , React.createElement('div', { className: "flex items-center justify-between pb-2 border-b border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3469 } }
                               , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3470 } }
                                 , React.createElement('h3', { className: "text-lg font-bold font-heading", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3471 } }
-                                  , districtName, " District"
+                                  , districtName, " Circle"
                                 )
                                 , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3474 } }
                                   , tehsils.length, " tehsil"
@@ -4008,7 +4008,7 @@ export default function Dashboard() {
             )
             , React.createElement(DialogDescription, { className: "text-center pt-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3749 } }
               , !viewType
-                ? "Please select a view type (All Divisions, All Districts, or All Tehsils) to export the presentation."
+                ? "Please select a view type (All Zones, All Circles, or All Tehsils) to export the presentation."
                 : "Error exporting presentation. Please try again."
             )
           )

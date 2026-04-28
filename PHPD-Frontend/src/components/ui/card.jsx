@@ -10,7 +10,7 @@ const Card = React.forwardRef
   React.createElement('div', {
     ref: ref,
     className: cn(
-      "rounded-[2rem] border border-white/50 bg-card/60 backdrop-blur-md text-card-foreground shadow-[0_8px_32px_rgba(0,0,0,0.04)]",
+      "rounded-lg border border-white/50 bg-card/60 backdrop-blur-md text-card-foreground shadow-[0_8px_32px_rgba(0,0,0,0.04)]",
       className
     ),
     ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 9}}

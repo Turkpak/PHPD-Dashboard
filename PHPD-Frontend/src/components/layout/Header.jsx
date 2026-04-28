@@ -4,7 +4,7 @@ import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/contexts/SidebarContext";
 
-export function Header({ title }) {
+export function Header({ title, actions = null }) {
   const { setMobileSidebarOpen } = useSidebar();
 
   return (
@@ -35,7 +35,8 @@ export function Header({ title }) {
           , React.createElement('span', { className: "hidden sm:inline" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 33}}, title)
         )
 
-        , React.createElement('div', { className: "col-start-3 justify-self-end hidden md:flex items-center gap-4"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 36}}
+        , React.createElement('div', { className: "col-start-3 justify-self-end hidden md:flex items-center gap-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 36}}
+          , actions
           , React.createElement(Button, { variant: "ghost", size: "icon", className: "relative", __self: this, __source: {fileName: _jsxFileName, lineNumber: 37}}
             , React.createElement(Bell, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 38}} )
             , React.createElement('span', { className: "absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive animate-pulse"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 39}} )

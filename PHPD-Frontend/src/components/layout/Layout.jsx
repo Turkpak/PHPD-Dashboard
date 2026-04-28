@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 
 
-export function Layout({ children, title = "Dashboard", showHeader = true }) {
+export function Layout({ children, title = "Dashboard", showHeader = true, headerActions = null }) {
   const { isCollapsed } = useSidebar();
 
   return (
@@ -23,7 +23,7 @@ export function Layout({ children, title = "Dashboard", showHeader = true }) {
         "flex flex-col min-h-screen min-w-0 transition-all duration-300",
         isCollapsed ? "md:ml-16" : "md:ml-64"
       ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 18}}
-        , showHeader ? React.createElement(Header, { title: title, __self: this, __source: {fileName: _jsxFileName, lineNumber: 22}} ) : null
+        , showHeader ? React.createElement(Header, { title: title, actions: headerActions, __self: this, __source: {fileName: _jsxFileName, lineNumber: 22}} ) : null
         , React.createElement('main', { className: "flex-1 min-h-0 p-3 sm:p-6 space-y-4 sm:space-y-6 w-full max-w-[1600px] mx-auto min-w-0 box-border"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 23}}
           , children
         )
