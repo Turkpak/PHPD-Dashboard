@@ -51,9 +51,9 @@ const getIncidentIcon = (severity) => L.divIcon({
 
 
 const PROJECT_STATUS_STYLE = {
-  in_progress: { color: "#0F4B3A", fillColor: "#0F4B3A" }, // in-progress
-  in_delay: { color: "#e11d48", fillColor: "#e11d48" }, // rose-600
-  pending: { color: "#d97706", fillColor: "#d97706" }, // amber-600
+  in_progress: { color: "#0F4B3A", fillColor: "#0F4B3A" }, // Dark Green
+  in_delay: { color: "#ef4444", fillColor: "#ef4444" }, // Red
+  pending: { color: "#d97706", fillColor: "#d97706" }, // Amber-600
 };
 
 function getStatusSvg(status) {

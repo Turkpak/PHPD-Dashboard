@@ -834,30 +834,32 @@ export default function Dashboard() {
   );
   const skipNextUrlSyncRef = useRef(false);
 
+  const EMPTY_ARRAY = useMemo(() => [], []);
+
   // API queries
-  const { data: apiDivisions = [] } = useQuery({
+  const { data: apiDivisions = EMPTY_ARRAY } = useQuery({
     queryKey: ["divisions"],
     queryFn: () => listDivisions(),
   });
-  const { data: apiZones = [] } = useQuery({
+  const { data: apiZones = EMPTY_ARRAY } = useQuery({
     queryKey: ["zones"],
     queryFn: () => listProvinces(),
   });
-  const { data: apiDistricts = [] } = useQuery({
+  const { data: apiDistricts = EMPTY_ARRAY } = useQuery({
     queryKey: ["districts"],
     queryFn: () => listDistricts(),
   });
-  const { data: apiTehsils = [] } = useQuery({
+  const { data: apiTehsils = EMPTY_ARRAY } = useQuery({
     queryKey: ["tehsils"],
     queryFn: () => listTehsils(),
   });
-  const { data: apiProjects = [] } = useQuery({
+  const { data: apiProjects = EMPTY_ARRAY } = useQuery({
     queryKey: ["projects"],
     queryFn: () => listProjects(),
   });
 
   // Fetch all gantt schedules once and use root task progress for each project card.
-  const { data: apiProjectGanttAll = [] } = useQuery({
+  const { data: apiProjectGanttAll = EMPTY_ARRAY } = useQuery({
     queryKey: ["project-gantt-all"],
     queryFn: () => getProjectGanttAll(),
   });
@@ -1036,8 +1038,17 @@ export default function Dashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     const level = urlParams.get("level");
     const viewParam = urlParams.get("view");
+
+    // Helper to update state only if it changed, to prevent loops.
+    const safeSet = (setter, current, next) => {
+      if (current !== next) {
+        skipNextUrlSyncRef.current = true;
+        setter(next);
+      }
+    };
+
     if (viewParam === "divisions" || viewParam === "districts" || viewParam === "tehsils" || viewParam === "projects") {
-      setViewType(viewParam);
+      safeSet(setViewType, viewType, viewParam);
     }
 
     const zoneSlug = urlParams.get("zone");
@@ -1045,14 +1056,13 @@ export default function Dashboard() {
     if (level === "zone" && zoneSlug) {
       const foundZone = apiZones.find((z) => toSlug(z.zone_name || z.province_name) === zoneSlug);
       if (foundZone) {
-        skipNextUrlSyncRef.current = true;
-        setSelectedItemType("zone");
-        setSelectedItemId(foundZone.id);
-        setSelectedItemName(foundZone.zone_name || foundZone.province_name);
-        setParentDivisionId(null);
-        setParentDivisionName(null);
-        setParentDistrictId(null);
-        setParentDistrictName(null);
+        safeSet(setSelectedItemType, selectedItemType, "zone");
+        safeSet(setSelectedItemId, selectedItemId, foundZone.id);
+        safeSet(setSelectedItemName, selectedItemName, foundZone.zone_name || foundZone.province_name);
+        safeSet(setParentDivisionId, parentDivisionId, null);
+        safeSet(setParentDivisionName, parentDivisionName, null);
+        safeSet(setParentDistrictId, parentDistrictId, null);
+        safeSet(setParentDistrictName, parentDistrictName, null);
       }
       return;
     }
@@ -1069,14 +1079,13 @@ export default function Dashboard() {
         return true;
       });
       if (foundTehsil) {
-        skipNextUrlSyncRef.current = true;
-        setSelectedItemType("tehsil");
-        setSelectedItemId(foundTehsil.id);
-        setSelectedItemName(foundTehsil.tehsil_name);
-        setParentDistrictId(foundTehsil.district);
-        setParentDistrictName(foundTehsil.district_name);
-        setParentDivisionId(foundTehsil.division);
-        setParentDivisionName(foundTehsil.division_name);
+        safeSet(setSelectedItemType, selectedItemType, "tehsil");
+        safeSet(setSelectedItemId, selectedItemId, foundTehsil.id);
+        safeSet(setSelectedItemName, selectedItemName, foundTehsil.tehsil_name);
+        safeSet(setParentDistrictId, parentDistrictId, foundTehsil.district);
+        safeSet(setParentDistrictName, parentDistrictName, foundTehsil.district_name);
+        safeSet(setParentDivisionId, parentDivisionId, foundTehsil.division);
+        safeSet(setParentDivisionName, parentDivisionName, foundTehsil.division_name);
       }
       return;
     }
@@ -1089,14 +1098,13 @@ export default function Dashboard() {
         return true;
       });
       if (foundDistrict) {
-        skipNextUrlSyncRef.current = true;
-        setSelectedItemType("district");
-        setSelectedItemId(foundDistrict.id);
-        setSelectedItemName(foundDistrict.district_name);
-        setParentDivisionId(foundDistrict.division);
-        setParentDivisionName(foundDistrict.division_name);
-        setParentDistrictId(null);
-        setParentDistrictName(null);
+        safeSet(setSelectedItemType, selectedItemType, "district");
+        safeSet(setSelectedItemId, selectedItemId, foundDistrict.id);
+        safeSet(setSelectedItemName, selectedItemName, foundDistrict.district_name);
+        safeSet(setParentDivisionId, parentDivisionId, foundDistrict.division);
+        safeSet(setParentDivisionName, parentDivisionName, foundDistrict.division_name);
+        safeSet(setParentDistrictId, parentDistrictId, null);
+        safeSet(setParentDistrictName, parentDistrictName, null);
       }
       return;
     }
@@ -1104,14 +1112,13 @@ export default function Dashboard() {
     if (level === "division" && divisionSlug) {
       const foundDivision = apiDivisions.find((d) => toSlug(d.division_name) === divisionSlug);
       if (foundDivision) {
-        skipNextUrlSyncRef.current = true;
-        setSelectedItemType("division");
-        setSelectedItemId(foundDivision.id);
-        setSelectedItemName(foundDivision.division_name);
-        setParentDivisionId(foundDivision.zone || foundDivision.province || null);
-        setParentDivisionName(foundDivision.zone_name || foundDivision.province_name || null);
-        setParentDistrictId(null);
-        setParentDistrictName(null);
+        safeSet(setSelectedItemType, selectedItemType, "division");
+        safeSet(setSelectedItemId, selectedItemId, foundDivision.id);
+        safeSet(setSelectedItemName, selectedItemName, foundDivision.division_name);
+        safeSet(setParentDivisionId, parentDivisionId, foundDivision.zone || foundDivision.province || null);
+        safeSet(setParentDivisionName, parentDivisionName, foundDivision.zone_name || foundDivision.province_name || null);
+        safeSet(setParentDistrictId, parentDistrictId, null);
+        safeSet(setParentDistrictName, parentDistrictName, null);
       }
       return;
     }
@@ -1123,17 +1130,16 @@ export default function Dashboard() {
         (t) => t.tehsil_name.toLowerCase() === decodeURIComponent(tehsilParam).toLowerCase(),
       );
       if (found) {
-        skipNextUrlSyncRef.current = true;
-        setSelectedItemName(found.tehsil_name);
-        setSelectedItemType("tehsil");
-        setSelectedItemId(found.id);
-        setParentDistrictId(found.district);
-        setParentDistrictName(found.district_name);
-        setParentDivisionId(found.division);
-        setParentDivisionName(found.division_name);
+        safeSet(setSelectedItemName, selectedItemName, found.tehsil_name);
+        safeSet(setSelectedItemType, selectedItemType, "tehsil");
+        safeSet(setSelectedItemId, selectedItemId, found.id);
+        safeSet(setParentDistrictId, parentDistrictId, found.district);
+        safeSet(setParentDistrictName, parentDistrictName, found.district_name);
+        safeSet(setParentDivisionId, parentDivisionId, found.division);
+        safeSet(setParentDivisionName, parentDivisionName, found.division_name);
       }
     }
-  }, [location, apiZones, apiDivisions, apiDistricts, apiTehsils]);
+  }, [window.location.search, apiZones, apiDivisions, apiDistricts, apiTehsils]);
 
   // Keep URL in sync with drilldown selection.
   useEffect(() => {
@@ -1172,8 +1178,17 @@ export default function Dashboard() {
     }
 
     const nextUrl = params.toString() ? `/?${params.toString()}` : "/";
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
-    if (currentUrl !== nextUrl) {
+    const currentParams = new URLSearchParams(window.location.search);
+    
+    // Sort both to ensure consistent comparison regardless of order
+    params.sort();
+    currentParams.sort();
+    
+    const isDifferent = 
+      window.location.pathname !== "/" || 
+      params.toString() !== currentParams.toString();
+
+    if (isDifferent) {
       setLocation(nextUrl);
     }
   }, [
@@ -1199,11 +1214,10 @@ export default function Dashboard() {
 
   // Reset pagination when switching to projects view or when the list changes.
   useEffect(() => {
-    if (viewType === "projects") setProjectsPage(1);
-  }, [viewType, apiProjects.length]);
-
-  useEffect(() => {
-    if (viewType === "projects") setProjectsTablePage(1);
+    if (viewType === "projects") {
+      setProjectsPage((prev) => (prev !== 1 ? 1 : prev));
+      setProjectsTablePage((prev) => (prev !== 1 ? 1 : prev));
+    }
   }, [viewType]);
 
   // clear project selection when leaving tehsil view or projects view
@@ -1603,17 +1617,70 @@ export default function Dashboard() {
     return count > 0 ? sum / count : 0;
   }, [apiDistricts, apiProjects]);
 
+  // Overall for All Punjab Circles (average of circle overalls)
+  const allCirclesOverall = useMemo(() => {
+    if (apiDivisions.length === 0) return 0;
+    let sum = 0;
+    let count = 0;
+    for (const circle of apiDivisions) {
+      const projects = apiProjects.filter((p) => p.division === circle.id);
+      sum += calcProjectsOverall(projects);
+      count++;
+    }
+    return count > 0 ? sum / count : 0;
+  }, [apiDivisions, apiProjects]);
+
+  // Financial utilization (average of unit utilizations)
+  const allZonesFinancialOverall = useMemo(() => {
+    if (apiZones.length === 0) return 0;
+    let sum = 0;
+    let count = 0;
+    for (const zone of apiZones) {
+      const zoneCircleIds = apiDivisions
+        .filter((c) => Number(c.zone ?? c.province) === Number(zone.id))
+        .map((c) => Number(c.id));
+      const projects = apiProjects.filter((p) => zoneCircleIds.includes(Number(p.division)));
+      sum += calcOverallProgress(projects);
+      count++;
+    }
+    return count > 0 ? sum / count : 0;
+  }, [apiZones, apiDivisions, apiProjects]);
+
+  const allCirclesFinancialOverall = useMemo(() => {
+    if (apiDivisions.length === 0) return 0;
+    let sum = 0;
+    let count = 0;
+    for (const circle of apiDivisions) {
+      const projects = apiProjects.filter((p) => p.division === circle.id);
+      sum += calcOverallProgress(projects);
+      count++;
+    }
+    return count > 0 ? sum / count : 0;
+  }, [apiDivisions, apiProjects]);
+
+  const allDistrictsFinancialOverall = useMemo(() => {
+    if (apiDistricts.length === 0) return 0;
+    let sum = 0;
+    let count = 0;
+    for (const dist of apiDistricts) {
+      const projects = apiProjects.filter((p) => p.district === dist.id);
+      sum += calcOverallProgress(projects);
+      count++;
+    }
+    return count > 0 ? sum / count : 0;
+  }, [apiDistricts, apiProjects]);
+
   // Context theme: follow the currently visible/selected area overall %
   const contextOverall = useMemo(() => {
     if (selectedItemName && singleItemData) return _nullishCoalesce(singleItemData.overall, () => (0));
     if (viewType === "projects" && !selectedItemName && !selectedItemType)
       return allProjectsOverallFromGantt;
     if (viewType === "tehsils" && !selectedItemName && !selectedItemType)
-      return allProjectsOverallFromGantt;
+      return allDistrictsOverall;
     if (viewType === "divisions" && !selectedItemName && !selectedItemType)
       return allDivisionsOverall;
     if (viewType === "districts" && !selectedItemName && !selectedItemType)
-      return allDistrictsOverall;
+      return allCirclesOverall;
     return _nullishCoalesce(_optionalChain([aggregatedData, 'optionalAccess', _21 => _21.overall]), () => (0));
   }, [
     selectedItemName,
@@ -1624,6 +1691,7 @@ export default function Dashboard() {
     allProjectsOverallFromGantt,
     allDivisionsOverall,
     allDistrictsOverall,
+    allCirclesOverall,
   ]);
 
   const contextTheme = useMemo(() => {
@@ -1884,34 +1952,29 @@ export default function Dashboard() {
     const getActivityProgress = (a) =>
       clamp01(num(_nullishCoalesce(_nullishCoalesce(_optionalChain([a, 'optionalAccess', _22 => _22.progress]), () => (_optionalChain([a, 'optionalAccess', _23 => _23.percent_complete]))), () => (0))));
 
-    // Financial utilization % (All divisions / scoped)
-    const sumBudgetAllocated = scopeProjects.reduce(
-      (acc, p) => acc + num(_optionalChain([(p), 'optionalAccess', _24 => _24.total_budget_allocated])),
-      0,
-    );
-    const sumBudgetUtilized = scopeProjects.reduce(
-      (acc, p) => acc + num(_optionalChain([(p), 'optionalAccess', _25 => _25.budget_utilized])),
-      0,
-    );
-    const utilizationPct =
-      sumBudgetAllocated > 0 ? clamp01((sumBudgetUtilized / sumBudgetAllocated) * 100) : 0;
+    // Donut chart values must match the header cards:
+    // - For drilldown (zone/circle/district/tehsil selection) -> compute directly from filtered projects.
+    // - For aggregated tabs (All Zones/Circles/Districts) -> compute average-of-groups (same as header).
+    let utilizationPct = 0; // financial actual %
+    let physicalPct = 0; // physical actual %
 
-    // Physical progress %: average of activity progresses (project-level avg, then avg across projects)
-    const physicalPct = (() => {
-      if (!scopeProjects.length) return 0;
-      let sum = 0;
-      for (const p of scopeProjects) {
-        const acts = Array.isArray(_optionalChain([(p), 'optionalAccess', _26 => _26.activities])) ? (p).activities : [];
-        if (acts.length === 0) {
-          sum += 0;
-          continue;
-        }
-        const projAvg =
-          acts.reduce((acc, a) => acc + getActivityProgress(a), 0) / Math.max(1, acts.length);
-        sum += projAvg;
+    if (isAggregatedView) {
+      if (viewType === "divisions") {
+        physicalPct = allDivisionsOverall;
+        utilizationPct = allZonesFinancialOverall;
+      } else if (viewType === "districts") {
+        physicalPct = allCirclesOverall;
+        utilizationPct = allCirclesFinancialOverall;
+      } else if (viewType === "tehsils") {
+        // Note: in this UI, `viewType==="tehsils"` corresponds to "All Punjab Districts" level.
+        physicalPct = allDistrictsOverall;
+        utilizationPct = allDistrictsFinancialOverall;
       }
-      return clamp01(sum / Math.max(1, scopeProjects.length));
-    })();
+    } else {
+      // For zone/circle/district/tehsil drilldown views, `projectsInGeography` should already be filtered.
+      physicalPct = calcProjectsOverall(scopeProjects);
+      utilizationPct = calcOverallProgress(scopeProjects);
+    }
 
     // Calculate overall planned and actual from all phases
     let totalPlanned = 0;
@@ -2987,9 +3050,9 @@ export default function Dashboard() {
               const overall =
                 selectedItemName && singleItemData ? singleItemData.overall
                   : viewType === "projects" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
-                    : viewType === "tehsils" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
+                    : viewType === "tehsils" && !selectedItemName && !selectedItemType ? allDistrictsOverall
                       : viewType === "divisions" && !selectedItemName && !selectedItemType ? allDivisionsOverall
-                        : viewType === "districts" && !selectedItemName && !selectedItemType ? allDistrictsOverall
+                        : viewType === "districts" && !selectedItemName && !selectedItemType ? allCirclesOverall
                           : aggregatedData?.overall || 0;
 
               const overallLabel =
@@ -2997,9 +3060,16 @@ export default function Dashboard() {
                   ? overall.toFixed(2)
                   : Math.round(overall).toString();
 
-              const financialScopeProjects =
-                selectedItemName && selectedItemType ? projectsInSelectedGeography : apiProjects;
-              const financialPct = calcOverallProgress(financialScopeProjects);
+              const financialPct =
+                selectedItemName && selectedItemType
+                  ? calcOverallProgress(projectsInSelectedGeography)
+                  : viewType === "divisions"
+                    ? allZonesFinancialOverall
+                    : viewType === "districts"
+                      ? allCirclesFinancialOverall
+                      : viewType === "tehsils"
+                        ? allDistrictsFinancialOverall
+                        : calcOverallProgress(apiProjects);
               const financialLabel =
                 !selectedItemName && !selectedItemType ? financialPct.toFixed(2) : financialPct.toFixed(1);
 
