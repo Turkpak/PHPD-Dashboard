@@ -50,9 +50,7 @@ SECRET_KEY = 'django-insecure-xfg45)2$253-9o8ts*_006iv7o%=3og$sx(@q9x9^vhv_(_7d_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    # "sdasurvey.cloud", "www.sdasurvey.cloud", "72.61.229.127",
-      "localhost", "127.0.0.1" ]
+ALLOWED_HOSTS = ["*"]
 
 AUTH_PROFILE_MODULE = "api.MyUser"
 # Default user model
