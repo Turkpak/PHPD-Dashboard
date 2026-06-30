@@ -731,7 +731,21 @@ function geometryBboxCenter(geometry) {
 function buildProjectsFeatureCollection(projects, statusByProjectId) {
   const features = [];
   for (const p of projects) {
-    const normalized = normalizeProjectGeom(p.geom);
+    let normalized = normalizeProjectGeom(p.geom);
+
+    // Fallback to lat/lng if geom is missing
+    if (!normalized && p.latitude && p.longitude) {
+      const lat = Number(p.latitude);
+      const lng = Number(p.longitude);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        normalized = {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [lng, lat] },
+          properties: {},
+        };
+      }
+    }
+
     if (!normalized) continue;
     const n = normalized;
     const baseProps = {
@@ -2502,39 +2516,39 @@ export default function Dashboard() {
 
             return (
               React.createElement('div', { className: "grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                , React.createElement(Card, { className: "rounded-lg border border-border/60 shadow-sm overflow-hidden min-h-[420px] h-[55vh] max-h-[720px] flex flex-col", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                  , React.createElement(CardHeader, { className: "py-3 px-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                , React.createElement(Card, { className: "rounded-xl border border-[#e2e8f0] shadow-[0_4px_24px_-8px_rgba(5,67,50,0.10)] overflow-hidden min-h-[420px] h-[55vh] max-h-[720px] flex flex-col bg-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                  , React.createElement(CardHeader, { className: "py-3 px-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-[#f0fdf4] to-white border-b border-[#dcfce7]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                     , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                      , React.createElement(CardTitle, { className: "text-base font-heading", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Latest Projects")
-                      , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Sorted by highest overall progress")
+                      , React.createElement(CardTitle, { className: "text-base font-heading text-[#054332]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Latest Projects")
+                      , React.createElement('p', { className: "text-xs text-[#6b7280]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Sorted by highest overall progress")
                     )
                     , React.createElement('div', { className: "flex items-center gap-1 justify-end", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                      , React.createElement('span', { className: "text-[10px] text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, safePage, "/", totalPages)
-                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-5 w-5 p-0 text-[13px] text-muted-foreground hover:text-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "<")
-                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-5 w-5 p-0 text-[13px] text-muted-foreground hover:text-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, ">")
+                      , React.createElement('span', { className: "text-[10px] font-semibold text-[#166534] bg-[#dcfce7] px-2 py-0.5 rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, safePage, "/", totalPages)
+                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "<")
+                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, ">")
                     )
                   )
                   , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                     , React.createElement('div', { className: "w-full h-full overflow-auto", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                       , React.createElement('table', { className: "w-full text-sm", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                        , React.createElement('thead', { className: "bg-background/95 supports-[backdrop-filter]:bg-background/70 sticky top-0 z-10 backdrop-blur border-b border-border/60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                        , React.createElement('thead', { className: "bg-[#f8fafc] sticky top-0 z-10 border-b border-[#e2e8f0]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                           , React.createElement('tr', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-muted-foreground px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                               , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                 , "Project"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-muted-foreground px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                               , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                 , "Overall Progress"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-muted-foreground px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                               , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                 , "Zone / Circle / Tehsil"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
                           )
@@ -2553,55 +2567,55 @@ export default function Dashboard() {
                               Home,
                             ];
                             const colorSet = [
-                              "bg-fuchsia-500/10 text-fuchsia-700 border-fuchsia-500/25",
-                              "bg-emerald-500/10 text-emerald-700 border-emerald-500/25",
-                              "bg-sky-500/10 text-sky-700 border-sky-500/25",
-                              "bg-amber-500/10 text-amber-800 border-amber-500/25",
-                              "bg-rose-500/10 text-rose-700 border-rose-500/25",
-                              "bg-violet-500/10 text-violet-700 border-violet-500/25",
-                              "bg-cyan-500/10 text-cyan-700 border-cyan-500/25",
-                              "bg-lime-500/10 text-lime-800 border-lime-500/25",
+                              "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200",
+                              "bg-emerald-50 text-emerald-600 border-emerald-200",
+                              "bg-sky-50 text-sky-600 border-sky-200",
+                              "bg-amber-50 text-amber-600 border-amber-200",
+                              "bg-rose-50 text-rose-600 border-rose-200",
+                              "bg-violet-50 text-violet-600 border-violet-200",
+                              "bg-cyan-50 text-cyan-600 border-cyan-200",
+                              "bg-lime-50 text-lime-600 border-lime-200",
                             ];
                             const rowKey = Number(row.id) || 0;
                             const iconIdx = Math.abs(rowKey) % iconSet.length;
                             const colorIdx = Math.abs(rowKey) % colorSet.length;
                             const RowIcon = iconSet[iconIdx];
                             const colorClass = colorSet[colorIdx];
+                            const progressColor = pct >= 75 ? "from-[#16a34a] to-[#054332]" : pct >= 40 ? "from-[#3b82f6] to-[#1d4ed8]" : "from-[#f59e0b] to-[#d97706]";
+                            const badgeColor = pct >= 75 ? "bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]" : pct >= 40 ? "bg-[#dbeafe] text-[#1d4ed8] border-[#bfdbfe]" : "bg-[#fef3c7] text-[#b45309] border-[#fde68a]";
+                            const dotColor = pct >= 75 ? "bg-[#16a34a]" : pct >= 40 ? "bg-[#3b82f6]" : "bg-[#f59e0b]";
                             return (
                               React.createElement('tr', {
                                 key: row.id,
-                                className: "border-t border-border/60 hover:bg-muted/30 cursor-pointer transition-colors odd:bg-muted/10",
-                                onClick: () => {
-                                  const p = apiProjects.find((x) => Number(x.id) === Number(row.id));
-                                  if (p) setSelectedProjectForDetails(p);
-                                }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
+                                className: "border-b border-[#f1f5f9] even:bg-[#fafafa]",
+                                __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                               }
-                                , React.createElement('td', { className: "px-2 py-2 font-semibold text-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                , React.createElement('td', { className: "px-3 py-2.5 font-semibold text-[#1e293b]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                   , React.createElement('div', { className: "flex items-center gap-3 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                     , React.createElement('div', {
-                                      className: `h-8 w-8 rounded-lg flex items-center justify-center border shadow-sm shrink-0 ${colorClass}`,
+                                      className: `h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${colorClass}`,
                                       __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                                     }
                                       , React.createElement(RowIcon, { className: "h-4 w-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                     )
                                     , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                      , React.createElement('div', { className: "truncate font-semibold", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.name)
-                                      , React.createElement('div', { className: "text-[10px] text-muted-foreground truncate", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "ID: ", row.id)
+                                      , React.createElement('div', { className: "truncate font-semibold text-[13px] text-[#1e293b]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.name)
+                                      , React.createElement('div', { className: "text-[10px] text-[#94a3b8] truncate font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "ID: ", row.id)
                                     )
                                   )
                                 )
-                                , React.createElement('td', { className: "px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                  , React.createElement('div', { className: "flex items-center gap-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                    , React.createElement('span', { className: "inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary border border-border/60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                      , React.createElement('span', { className: "h-1.5 w-1.5 rounded-full bg-emerald-500", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                , React.createElement('td', { className: "px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                  , React.createElement('div', { className: "flex items-center gap-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                    , React.createElement('span', { className: `inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums border ${badgeColor}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                      , React.createElement('span', { className: `h-1.5 w-1.5 rounded-full ${dotColor}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                       , pct.toFixed(2), "%"
                                     )
-                                    , React.createElement('div', { className: "flex-1 h-2.5 rounded-full bg-muted overflow-hidden border border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                      , React.createElement('div', { className: "h-full bg-gradient-to-r from-secondary to-primary", style: { width: `${pct}%` }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                    , React.createElement('div', { className: "flex-1 h-2 rounded-full bg-[#f1f5f9] overflow-hidden", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                      , React.createElement('div', { className: `h-full bg-gradient-to-r ${progressColor} rounded-full transition-all duration-700`, style: { width: `${pct}%` }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                     )
                                   )
                                 )
-                                , React.createElement('td', { className: "px-2 py-2 text-[11px] text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.locationLabel)
+                                , React.createElement('td', { className: "px-3 py-2.5 text-[11px] text-[#64748b] font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.locationLabel)
                               )
                             );
                           })
@@ -2609,7 +2623,7 @@ export default function Dashboard() {
                       )
                     )
                     , total === 0 && (
-                      React.createElement('div', { className: "p-6 text-center text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "No projects found.")
+                      React.createElement('div', { className: "p-8 text-center text-sm text-[#94a3b8]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "No projects found.")
                     )
                   )
                 )
@@ -2941,54 +2955,7 @@ export default function Dashboard() {
                 </RadioGroup>
               </div>
 
-              {/* Export Button */}
-              {((selectedItemName && singleItemData) || aggregatedData) && viewType && (
-                <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0 p-0.5">
-                  <Button
-                    className="w-full md:w-auto bg-white hover:bg-[#f0fdf4] text-[#054332] rounded-lg px-3 py-2 h-[40px] font-bold shadow-sm border border-[#e5efe9] flex items-center justify-center gap-2 transition-all whitespace-nowrap"
-                    onClick={async () => {
-                      try {
-                        const dataToExport = selectedItemName && singleItemData ? singleItemData : aggregatedData;
-                        const exportName =
-                          selectedItemName && selectedItemType === "zone" ? `${selectedItemName} Zone`
-                            : selectedItemName && selectedItemType === "division" ? `${selectedItemName} Circle`
-                              : selectedItemName && selectedItemType === "district" ? `${selectedItemName} District`
-                              : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
-                                : viewType === "divisions" ? "All Punjab Zones"
-                                  : viewType === "districts" ? "All Punjab Circles"
-                                    : viewType === "tehsils" ? "All Punjab Districts"
-                                      : "All Projects";
 
-                        if (!dataToExport) {
-                          setShowErrorDialog(true);
-                          return;
-                        }
-
-                        await exportDashboardToPPTX({
-                          cityName: exportName,
-                          cityData: dataToExport,
-                          installationPhases: installationPhases.map(
-                            (phase) => ({
-                              key: phase.key,
-                              title: phase.title,
-                              percentage: getProgressValue(
-                                dataToExport[phase.key],
-                              ),
-                            }),
-                          ),
-                        });
-                        setShowSuccessDialog(true);
-                      } catch (error) {
-                        console.error("Error exporting to PPTX:", error);
-                        setShowErrorDialog(true);
-                      }
-                    }}
-                  >
-                    <FileDown className="h-4 w-4 opacity-90" />
-                    <span className="text-[12px] sm:text-[13px]">Export Operation</span>
-                  </Button>
-                </div>
-              )}
             </div>
           ) : (
             <div className="w-full flex items-center">
@@ -3075,32 +3042,28 @@ export default function Dashboard() {
 
               return (
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="bg-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.10)] border border-gray-200/70 min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                  {/* Overall Progress Card */}
+                  <div className="bg-gradient-to-br from-[#f0fdf4] to-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(5,67,50,0.18)] border border-[#bbf7d0] min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_32px_-10px_rgba(5,67,50,0.22)]">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[11px] text-[#475467] font-semibold">Overall Progress</span>
-                      <span className="text-[10px] text-[#054332] font-bold tracking-wide">+0.00% Today</span>
+                      <span className="text-[11px] text-[#166534] font-semibold tracking-wide uppercase">Overall Progress</span>
+                      <span className="text-[10px] bg-[#dcfce7] text-[#15803d] font-bold tracking-wide px-2 py-0.5 rounded-full">+0.00% Today</span>
                     </div>
                     <div className="text-[24px] sm:text-[28px] font-extrabold text-[#054332] tracking-tight mb-2.5">{overallLabel}%</div>
-                    <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden mb-2 shadow-inner">
-                      <div className="h-full bg-[#e2e8f0] rounded-full w-full relative">
-                        <div className="absolute top-0 left-0 h-full bg-[#cbd5e1] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, overall))}%` }} />
-                      </div>
+                    <div className="h-2 w-full bg-[#dcfce7] rounded-full overflow-hidden shadow-inner">
+                      <div className="h-full bg-gradient-to-r from-[#16a34a] to-[#054332] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, overall))}%` }} />
                     </div>
-
                   </div>
 
-                  <div className="bg-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.10)] border border-gray-200/70 min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                  {/* Financial Progress Card */}
+                  <div className="bg-gradient-to-br from-[#eff6ff] to-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(29,78,216,0.18)] border border-[#bfdbfe] min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_32px_-10px_rgba(29,78,216,0.22)]">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[11px] text-[#475467] font-semibold">Financial Progress</span>
-                      <span className="text-[10px] text-[#0f766e] font-bold tracking-wide">Budget Utilization</span>
+                      <span className="text-[11px] text-[#1e40af] font-semibold tracking-wide uppercase">Financial Progress</span>
+                      <span className="text-[10px] bg-[#dbeafe] text-[#1d4ed8] font-bold tracking-wide px-2 py-0.5 rounded-full">Budget Utilization</span>
                     </div>
-                    <div className="text-[24px] sm:text-[28px] font-extrabold text-[#0f766e] tracking-tight mb-2.5">{financialLabel}%</div>
-                    <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden mb-2 shadow-inner">
-                      <div className="h-full bg-[#e2e8f0] rounded-full w-full relative">
-                        <div className="absolute top-0 left-0 h-full bg-[#14b8a6] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, financialPct))}%` }} />
-                      </div>
+                    <div className="text-[24px] sm:text-[28px] font-extrabold text-[#1e3a8a] tracking-tight mb-2.5">{financialLabel}%</div>
+                    <div className="h-2 w-full bg-[#dbeafe] rounded-full overflow-hidden shadow-inner">
+                      <div className="h-full bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, financialPct))}%` }} />
                     </div>
-
                   </div>
                 </div>
               );
