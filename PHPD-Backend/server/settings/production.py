@@ -5,9 +5,6 @@ import os
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "sdasurvey.cloud",
-    "www.sdasurvey.cloud",
-    "72.61.229.127",
     "localhost",
     "127.0.0.1"
 ]
@@ -19,10 +16,10 @@ SECRET_KEY = secrets.get("SECRET_KEY", "dev-secret-key")
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": secrets.get("DB_NAME", "skardusurvey_db"),
-        "USER": secrets.get("DB_USER", "skardusurvey_user"),
-        "PASSWORD": secrets.get("DB_PASSWORD", "skardusurvey123"),
-        "HOST": "72.61.229.127",
+        "NAME": secrets.get("DB_NAME", "phpd"),
+        "USER": secrets.get("DB_USER", "postgres"),
+        "PASSWORD": secrets.get("DB_PASSWORD", "postgres"),
+        "HOST": "localhost",
         "PORT": "5432",
     }
 }
