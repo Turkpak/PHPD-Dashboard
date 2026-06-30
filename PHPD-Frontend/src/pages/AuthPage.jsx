@@ -110,7 +110,6 @@ export default function AuthPage() {
                         <div className="space-y-2">
                             <div className="flex items-center justify-between mx-1">
                                 <Label className="text-[13px] font-bold text-slate-700">Password</Label>
-                                <a href="#" className="flex-shrink-0 text-[12px] font-bold text-[#054332] hover:underline">Forgot?</a>
                             </div>
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#054332] transition-colors" />

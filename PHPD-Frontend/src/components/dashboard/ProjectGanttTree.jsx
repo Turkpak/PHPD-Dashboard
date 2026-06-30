@@ -27,6 +27,7 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateTaskActual, createProgressImage, addDelayLog, listStakeholders } from "@/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 
@@ -137,6 +138,7 @@ export function ProjectGanttTree({
   });
   const { toast } = useToast();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Restore expanded state when project changes (tab switching can remount the component).
   useEffect(() => {
@@ -853,6 +855,13 @@ export function ProjectGanttTree({
                     issue: delayIssue.trim(),
                     recommended_action: delayRecommendedAction.trim(),
                   });
+                  // Refresh Dashboard hierarchy rollups (project -> tehsil -> district -> circle -> zone)
+                  // derived from backend gantt rollups.
+                  queryClient.invalidateQueries({ queryKey: ["project-gantt-all"] });
+                  // Keep financial/utilization cards consistent if they rely on project data.
+                  queryClient.invalidateQueries({ queryKey: ["projects"] });
+                  // GIS page uses its own cache namespace.
+                  queryClient.invalidateQueries({ queryKey: ["gis", "project-gantt-all"] });
                   toast({
                     title: "Delay log saved",
                     description: `Delay ${delayDays} day(s) • ${delayCategory} • "${delayRow.label}".`,
@@ -1101,6 +1110,13 @@ export function ProjectGanttTree({
                     // ✅ ADD THIS
                     progress_date: progressDate,
                   });
+                  // Refresh Dashboard hierarchy rollups (project -> tehsil -> district -> circle -> zone)
+                  // derived from backend gantt rollups.
+                  queryClient.invalidateQueries({ queryKey: ["project-gantt-all"] });
+                  // Keep financial/utilization cards consistent if they rely on project data.
+                  queryClient.invalidateQueries({ queryKey: ["projects"] });
+                  // GIS page uses its own cache namespace.
+                  queryClient.invalidateQueries({ queryKey: ["gis", "project-gantt-all"] });
 
                   toast({
                     title: "Progress saved",

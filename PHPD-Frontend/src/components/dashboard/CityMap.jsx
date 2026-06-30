@@ -51,9 +51,9 @@ const getIncidentIcon = (severity) => L.divIcon({
 
 
 const PROJECT_STATUS_STYLE = {
-  in_progress: { color: "#0F4B3A", fillColor: "#0F4B3A" }, // in-progress
-  in_delay: { color: "#e11d48", fillColor: "#e11d48" }, // rose-600
-  pending: { color: "#d97706", fillColor: "#d97706" }, // amber-600
+  in_progress: { color: "#047857", fillColor: "#047857" }, // Emerald-700 (Matches card)
+  in_delay: { color: "#e11d48", fillColor: "#e11d48" }, // Rose-600 (Matches card / Red-ish Warning)
+  pending: { color: "#d97706", fillColor: "#d97706" }, // Amber-600 (Matches card)
 };
 
 function getStatusSvg(status) {
@@ -550,7 +550,8 @@ export function CityMap({
                         onProjectSelect(idNum);
                       });
                     }
-                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 504}}
+                  }, 
+                  pointToLayer: () => null, __self: this, __source: {fileName: _jsxFileName, lineNumber: 504}}
                 )
 
                 /* One status marker per project (center of boundary) */

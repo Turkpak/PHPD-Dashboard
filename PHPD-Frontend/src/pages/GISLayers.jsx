@@ -150,9 +150,23 @@ function buildProjectsFeatureCollection(
 ) {
   const features = [];
   for (const p of projects) {
-    const normalized = normalizeProjectGeom(p.geom);
+    let normalized = normalizeProjectGeom(p.geom);
+
+    // Fallback to lat/lng if geom is missing
+    if (!normalized && p.latitude && p.longitude) {
+      const lat = Number(p.latitude);
+      const lng = Number(p.longitude);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        normalized = {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [lng, lat] },
+          properties: {},
+        };
+      }
+    }
+
     if (!normalized) continue;
-    const n = normalized ;
+    const n = normalized;
     const baseProps = {
       id: p.id,
       project_name: _nullishCoalesce(p.project_name, () => ( `Project #${p.id}`)),
