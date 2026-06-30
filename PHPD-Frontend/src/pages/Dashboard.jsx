@@ -11,7 +11,6 @@ import { CityMap } from "@/components/dashboard/CityMap";
 import { CityCompletionChart } from "@/components/comparison/CityCompletionChart";
 
 import { MilestoneDetailsPanel } from "@/components/dashboard/MilestoneDetailsPanel";
-import { exportDashboardToPPTX } from "@/utils/exportToPPTX";
 import {
   PieChart,
   Pie,
@@ -41,7 +40,6 @@ import {
   Home,
   Radio,
   TrendingUp,
-  FileDown,
   Filter,
   ChevronDown,
   ChevronUp,
@@ -55,14 +53,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
@@ -798,9 +788,7 @@ export default function Dashboard() {
   const [selectedItemName, setSelectedItemName] = useState(null);
   const [selectedItemType, setSelectedItemType] = useState
 
-    (null);
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [showErrorDialog, setShowErrorDialog] = useState(false);
+(null);
   const [expandedDivisions, setExpandedDivisions] = useState(false);
   const [expandedDistricts, setExpandedDistricts] = useState(false);
   const [expandedTehsilGroups, setExpandedTehsilGroups] = useState
@@ -2955,7 +2943,6 @@ export default function Dashboard() {
                 </RadioGroup>
               </div>
 
-
             </div>
           ) : (
             <div className="w-full flex items-center">
@@ -4046,76 +4033,6 @@ export default function Dashboard() {
         ))
       )
 
-      /* Success Dialog */
-      , React.createElement(Dialog, { open: showSuccessDialog, onOpenChange: setShowSuccessDialog, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3700 } }
-        , React.createElement(DialogContent, { className: "sm:max-w-md", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3701 } }
-          , React.createElement(DialogHeader, { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3702 } }
-            , React.createElement('div', { className: "flex flex-col items-center gap-4 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3703 } }
-              , React.createElement('img', {
-                src: "/Assets/PHPD.png",
-                alt: "PHPD Logo",
-                className: "h-16 w-16 object-contain", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3704 }
-              }
-              )
-              , React.createElement('div', { className: "flex items-center gap-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3709 } }
-                , React.createElement(CheckCircle2, { className: "h-6 w-6 text-emerald-500", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3710 } })
-                , React.createElement(DialogTitle, { className: "text-xl font-bold", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3711 } }, "Export Successful!"
-
-                )
-              )
-            )
-            , React.createElement(DialogDescription, { className: "text-center pt-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3716 } }, "PowerPoint presentation exported successfully!"
-
-              , React.createElement('br', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3718 } })
-              , React.createElement('br', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3719 } }), "The PPTX file includes all KPIs with proper icons and all charts based on your current filter selection."
-
-
-            )
-          )
-          , React.createElement(DialogFooter, { className: "sm:justify-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3724 } }
-            , React.createElement(Button, {
-              onClick: () => setShowSuccessDialog(false),
-              className: "w-full sm:w-auto", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3725 }
-            }
-              , "OK"
-
-            )
-          )
-        )
-      )
-
-      /* Error Dialog */
-      , React.createElement(Dialog, { open: showErrorDialog, onOpenChange: setShowErrorDialog, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3736 } }
-        , React.createElement(DialogContent, { className: "sm:max-w-md", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3737 } }
-          , React.createElement(DialogHeader, { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3738 } }
-            , React.createElement('div', { className: "flex flex-col items-center gap-4 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3739 } }
-              , React.createElement('img', {
-                src: "/Assets/PHPD.png",
-                alt: "PHPD Logo",
-                className: "h-16 w-16 object-contain", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3740 }
-              }
-              )
-              , React.createElement(DialogTitle, { className: "text-xl font-bold", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3745 } }, "Export Error"
-
-              )
-            )
-            , React.createElement(DialogDescription, { className: "text-center pt-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3749 } }
-              , !viewType
-                ? "Please select a view type (All Zones, All Circles, or All Tehsils) to export the presentation."
-                : "Error exporting presentation. Please try again."
-            )
-          )
-          , React.createElement(DialogFooter, { className: "sm:justify-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3755 } }
-            , React.createElement(Button, {
-              onClick: () => setShowErrorDialog(false),
-              className: "w-full sm:w-auto", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3756 }
-            }
-              , "OK"
-
-            )
-          )
-        )
-      )
     )
   );
 }
