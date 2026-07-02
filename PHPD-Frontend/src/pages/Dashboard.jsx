@@ -623,7 +623,7 @@ function buildProjectsFeatureCollection(projects, statusByProjectId) {
 }
 
 export default function Dashboard() {
-  const { isCollapsed, setCollapsed } = useSidebar();
+  const { isCollapsed, setCollapsed, setMobileSidebarOpen } = useSidebar();
   const sidebarPrevCollapsedRef = useRef(null);
   const [location, setLocation] = useLocation();
   const [viewType, setViewType] = useState
@@ -1947,7 +1947,7 @@ export default function Dashboard() {
                 )
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3" }
+            , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3" }
               , useProjectCards
                 ? projectsInGeography.map((project, index) => {
                   const percentage = Math.round(
@@ -2361,7 +2361,7 @@ export default function Dashboard() {
                     )
                   )
                   , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0" }
-                    , React.createElement('div', { className: "w-full h-full overflow-auto" }
+                    , React.createElement('div', { className: "w-full h-full overflow-x-auto overflow-y-auto" }
                       , React.createElement('table', { className: "w-full text-sm" }
                         , React.createElement('thead', { className: "bg-[#f8fafc] sticky top-0 z-10 border-b border-[#e2e8f0]" }
                           , React.createElement('tr', {}
@@ -2730,6 +2730,20 @@ export default function Dashboard() {
           {isFilterBarExpanded ? (
             <div className="w-full bg-[#f6faf7] rounded-[18px] p-1.5 flex flex-col md:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-0.5 scrollbar-hide">
+                {/* Mobile hamburger — opens sidebar on small screens */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  aria-label="Open sidebar menu"
+                  className="md:hidden h-[40px] w-[40px] shrink-0 rounded-lg bg-white hover:bg-[#054332] hover:text-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)] transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </Button>
+
                 {/* Expand/Collapse toggle (left) */}
                 <Button
                   type="button"
@@ -2776,7 +2790,7 @@ export default function Dashboard() {
                       <RadioGroupItem value={item.val} id={item.val} className="peer sr-only" />
                       <Label
                         htmlFor={item.val}
-                        className="flex items-center justify-center px-3 py-2 bg-white text-[#054332] font-semibold text-[12px] sm:text-[13px] rounded-lg cursor-pointer border border-[#e5efe9] hover:bg-[#054332] hover:text-white peer-data-[state=checked]:bg-[#054332] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#054332] transition-all whitespace-nowrap select-none min-w-[120px]"
+                        className="flex items-center justify-center px-2 sm:px-3 py-2 bg-white text-[#054332] font-semibold text-[11px] sm:text-[13px] rounded-lg cursor-pointer border border-[#e5efe9] hover:bg-[#054332] hover:text-white peer-data-[state=checked]:bg-[#054332] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#054332] transition-all whitespace-nowrap select-none min-w-[80px] sm:min-w-[120px]"
                       >
                         <span>{item.label}</span>
                       </Label>
@@ -2787,7 +2801,21 @@ export default function Dashboard() {
 
             </div>
           ) : (
-            <div className="w-full flex items-center">
+            <div className="w-full flex items-center gap-2">
+              {/* Mobile hamburger — always visible when filter bar is collapsed too */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileSidebarOpen(true)}
+                aria-label="Open sidebar menu"
+                className="md:hidden h-[40px] w-[40px] shrink-0 rounded-lg bg-white hover:bg-[#054332] hover:text-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)] transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </Button>
+
               <Button
                 type="button"
                 variant="ghost"

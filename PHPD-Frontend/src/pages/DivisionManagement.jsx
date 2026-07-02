@@ -242,18 +242,22 @@ export default function DivisionManagement() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEdit(division)}
-                              className="h-8 border border-muted hover:bg-muted whitespace-nowrap"
+                              className="table-action-btn h-9 w-9 sm:w-auto sm:px-3 border border-muted hover:bg-muted"
+                              aria-label="Edit circle"
                             >
-                              <Edit2 className="h-3.5 w-3.5 mr-1" /> Edit
+                              <Edit2 className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline ml-1">Edit</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDelete(division.id)}
                               disabled={deleteMutation.isPending}
-                              className="h-8 border border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700 whitespace-nowrap"
+                              className="table-action-btn h-9 w-9 sm:w-auto sm:px-3 border border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700"
+                              aria-label="Delete circle"
                             >
-                              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline ml-1">Delete</span>
                             </Button>
                           </div>
                         </TableCell>

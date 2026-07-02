@@ -429,10 +429,10 @@ export default function Finance() {
     React.createElement(Layout, { title: isMobile ? "FINANCIAL ANALYTICS" : "Financial & Budget Analytics", headerActions: financeHeaderActions}
       , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     }
         /* Filters */
-        , React.createElement('div', { className: "flex items-center gap-3 min-w-0"    }
-          , React.createElement(Filter, { className: "h-4 w-4 text-muted-foreground shrink-0"   , 'aria-hidden': true} )
-          , React.createElement('div', { className: "flex w-full flex-nowrap items-end gap-3 overflow-x-auto pr-1 min-w-0"         }
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        }
+        , React.createElement('div', { className: "flex items-start gap-2 min-w-0" }
+          , React.createElement(Filter, { className: "h-4 w-4 text-muted-foreground shrink-0 mt-7", 'aria-hidden': true })
+          , React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-3 w-full min-w-0" }
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[140px] lg:w-auto lg:shrink-0"        }
               , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Zone")
               , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, disabled: zonesLoading}
                 , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     }
@@ -449,7 +449,7 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        }
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[140px] lg:w-auto lg:shrink-0"        }
               , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Circle")
               , React.createElement(Select, {
                 value: selectedCircleId,
@@ -476,7 +476,7 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        }
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[140px] lg:w-auto lg:shrink-0"        }
               , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "District")
               , React.createElement(Select, {
                 value: selectedDistrictId,
@@ -503,7 +503,7 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        }
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[140px] lg:w-auto lg:shrink-0"        }
               , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Tehsil")
               , React.createElement(Select, {
                 value: selectedTehsilId,
@@ -536,7 +536,7 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[160px] shrink-0"        }
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[160px] lg:w-auto lg:shrink-0"        }
               , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Project")
               , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId}
                 , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     }

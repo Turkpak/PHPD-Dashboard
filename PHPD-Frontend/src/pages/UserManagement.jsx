@@ -652,13 +652,13 @@ export default function UserManagement() {
                   , React.createElement(Table, {}
                     , React.createElement(TableHeader, {}
                       , React.createElement(TableRow, {}
-                        , React.createElement(TableHead, { className: "w-[80px]"}, "#")
+                        , React.createElement(TableHead, { className: "w-10"}, "#")
                         , React.createElement(TableHead, {}, "Email")
-                        , React.createElement(TableHead, {}, "Full name" )
+                        , React.createElement(TableHead, { className: "hidden sm:table-cell"}, "Full name")
                         , React.createElement(TableHead, {}, "Role")
-                        , React.createElement(TableHead, {}, "Stakeholder")
-                        , React.createElement(TableHead, {}, "Status")
-                        , React.createElement(TableHead, { className: "w-[120px] text-right" }, "Page permissions" )
+                        , React.createElement(TableHead, { className: "hidden md:table-cell"}, "Stakeholder")
+                        , React.createElement(TableHead, { className: "hidden lg:table-cell"}, "Status")
+                        , React.createElement(TableHead, { className: "text-right"}, "Permissions")
                       )
                     )
                     , React.createElement(TableBody, {}
@@ -667,19 +667,18 @@ export default function UserManagement() {
                         const isSuperAdminUser = (_nullishCoalesce(u.role, () => ( ""))).trim().toLowerCase() === "super_admin";
                         return (
                           React.createElement(TableRow, { key: u.id}
-                            , React.createElement(TableCell, { className: "font-mono text-muted-foreground" }, rowNumber)
-                            , React.createElement(TableCell, {}, u.email)
-                            , React.createElement(TableCell, {}, u.full_name)
-                            , React.createElement(TableCell, { className: "capitalize"}, formatRole(u.role))
-                            , React.createElement(TableCell, {}, getStakeholderLabel(u.stakeholder))
-                            , React.createElement(TableCell, {}
+                            , React.createElement(TableCell, { className: "font-mono text-muted-foreground text-xs"}, rowNumber)
+                            , React.createElement(TableCell, { className: "max-w-[140px] truncate text-xs"}, u.email)
+                            , React.createElement(TableCell, { className: "hidden sm:table-cell"}, u.full_name)
+                            , React.createElement(TableCell, { className: "capitalize text-xs"}, formatRole(u.role))
+                            , React.createElement(TableCell, { className: "hidden md:table-cell text-xs"}, getStakeholderLabel(u.stakeholder))
+                            , React.createElement(TableCell, { className: "hidden lg:table-cell"}
                               , React.createElement('span', {
-                                className: 
+                                className:
                                   u.is_active
-                                    ? "text-green-600 dark:text-green-400 font-medium"
-                                    : "text-muted-foreground"
-                                }
-
+                                    ? "text-green-600 dark:text-green-400 font-medium text-xs"
+                                    : "text-muted-foreground text-xs"
+                              }
                                 , u.is_active ? "Active" : "Inactive"
                               )
                             )
