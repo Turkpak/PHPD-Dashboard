@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }
 import { Layout } from "@/components/layout/Layout";
 import { useState } from "react";
@@ -228,39 +228,43 @@ export default function DivisionManagement() {
                     )
                   ) : (
                     filteredDivisions.map((division, index) => (
-                      React.createElement(TableRow, { key: division.id, __self: this, __source: {fileName: _jsxFileName, lineNumber: 229}}
-                        , React.createElement(TableCell, { className: "font-medium", __self: this, __source: {fileName: _jsxFileName, lineNumber: 230}}, index + 1)
-                        , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 231}}
-                          , React.createElement('div', { className: "flex items-center gap-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 232}}
-                            , React.createElement('div', { className: "h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs uppercase shrink-0"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 233}}
-                              , (division.province_name || "").substring(0, 2)
-                            )
-                            , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 236}}, _nullishCoalesce(division.province_name, () => ( "")))
-                          )
-                        )
-                        , React.createElement(TableCell, { className: "font-semibold text-primary" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 239}}, division.division_name)
-                        , React.createElement(TableCell, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 240}}
-                          , React.createElement('div', { className: "flex justify-end gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 241}}
-                            , React.createElement(Button, {
-                              variant: "ghost",
-                              size: "sm",
-                              onClick: () => handleEdit(division),
-                              className: "h-8 border border-muted hover:bg-muted whitespace-nowrap"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 242}}
-
-                              , React.createElement(Edit2, { className: "h-3.5 w-3.5 mr-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 248}} ), " Edit"
-                            )
-                            , React.createElement(Button, {
-                              variant: "ghost",
-                              size: "sm",
-                              onClick: () => handleDelete(division.id),
-                              disabled: deleteMutation.isPending,
-                              className: "h-8 border border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700 whitespace-nowrap"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 250}}
-
-                              , React.createElement(Trash2, { className: "h-3.5 w-3.5 mr-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 257}} ), " Delete"
-                            )
-                          )
-                        )
-                      )
+                      <TableRow key={division.id}>
+                        <TableCell className="font-medium">{index + 1}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                              {(division.province_name || "").substring(0, 2)}
+                            </div>
+                            <span className="truncate">{division.province_name ?? ""}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-semibold text-primary">{division.division_name}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(division)}
+                              className="table-action-btn h-9 w-9 sm:w-auto sm:px-3 border border-muted hover:bg-muted"
+                              aria-label="Edit circle"
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline ml-1">Edit</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(division.id)}
+                              disabled={deleteMutation.isPending}
+                              className="table-action-btn h-9 w-9 sm:w-auto sm:px-3 border border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700"
+                              aria-label="Delete circle"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline ml-1">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     ))
                   )
                   , !isLoading && filteredDivisions.length === 0 && (

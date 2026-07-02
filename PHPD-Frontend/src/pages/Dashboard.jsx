@@ -22,7 +22,7 @@ import {
 } from "recharts";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { CardHeader, CardTitle, } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listProvinces,
   getProjectGanttAll,
@@ -779,8 +779,10 @@ function buildProjectsFeatureCollection(projects, statusByProjectId) {
 }
 
 export default function Dashboard() {
-  const { isCollapsed, setCollapsed } = useSidebar();
+  const { isCollapsed, setCollapsed, setMobileSidebarOpen } = useSidebar();
   const sidebarPrevCollapsedRef = useRef(null);
+  const skipSidebarCollapseRef = useRef(false);
+  const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
   const [viewType, setViewType] = useState
 
@@ -1281,12 +1283,17 @@ export default function Dashboard() {
     // Only auto-collapse once on open. Do NOT keep forcing it closed,
     // so the user can expand/collapse via the sidebar icon while Gantt is open.
     if (detailsOpen) {
+      if (skipSidebarCollapseRef.current) {
+        skipSidebarCollapseRef.current = false;
+        return;
+      }
       if (sidebarPrevCollapsedRef.current == null) {
         sidebarPrevCollapsedRef.current = isCollapsed;
         setCollapsed(true);
       }
       return;
     }
+    skipSidebarCollapseRef.current = false;
     if (sidebarPrevCollapsedRef.current != null) {
       setCollapsed(sidebarPrevCollapsedRef.current);
       sidebarPrevCollapsedRef.current = null;
@@ -2103,7 +2110,7 @@ export default function Dashboard() {
                 )
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1685 } }
+            , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3" }
               , useProjectCards
                 ? projectsInGeography.map((project, index) => {
                   const percentage = Math.round(
@@ -2516,13 +2523,13 @@ export default function Dashboard() {
                       , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, ">")
                     )
                   )
-                  , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                    , React.createElement('div', { className: "w-full h-full overflow-auto", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                      , React.createElement('table', { className: "w-full text-sm", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                        , React.createElement('thead', { className: "bg-[#f8fafc] sticky top-0 z-10 border-b border-[#e2e8f0]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                          , React.createElement('tr', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                  , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0" }
+                    , React.createElement('div', { className: "w-full h-full overflow-x-auto overflow-y-auto" }
+                      , React.createElement('table', { className: "w-full text-sm" }
+                        , React.createElement('thead', { className: "bg-[#f8fafc] sticky top-0 z-10 border-b border-[#e2e8f0]" }
+                          , React.createElement('tr', {}
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5" }
+                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none" }
                                 , "Project"
                                 , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
@@ -2530,12 +2537,6 @@ export default function Dashboard() {
                             , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                               , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                 , "Overall Progress"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
-                              )
-                            )
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                , "Zone / Circle / Tehsil"
                                 , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
@@ -2564,9 +2565,13 @@ export default function Dashboard() {
                               "bg-cyan-50 text-cyan-600 border-cyan-200",
                               "bg-lime-50 text-lime-600 border-lime-200",
                             ];
-                            const rowKey = Number(row.id) || 0;
-                            const iconIdx = Math.abs(rowKey) % iconSet.length;
-                            const colorIdx = Math.abs(rowKey) % colorSet.length;
+                            const nameStr = row.name || "";
+                            let nameHash = 0;
+                            for (let i = 0; i < nameStr.length; i++) {
+                              nameHash = nameStr.charCodeAt(i) + ((nameHash << 5) - nameHash);
+                            }
+                            const iconIdx = Math.abs(nameHash) % iconSet.length;
+                            const colorIdx = Math.abs(nameHash) % colorSet.length;
                             const RowIcon = iconSet[iconIdx];
                             const colorClass = colorSet[colorIdx];
                             const progressColor = pct >= 75 ? "from-[#16a34a] to-[#054332]" : pct >= 40 ? "from-[#3b82f6] to-[#1d4ed8]" : "from-[#f59e0b] to-[#d97706]";
@@ -2603,7 +2608,6 @@ export default function Dashboard() {
                                     )
                                   )
                                 )
-                                , React.createElement('td', { className: "px-3 py-2.5 text-[11px] text-[#64748b] font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.locationLabel)
                               )
                             );
                           })
@@ -2627,10 +2631,14 @@ export default function Dashboard() {
                     legendProjects: mapScopeProjects,
                     geoData: dashboardMapGeoData,
                     showGeoBoundary: false,
-                    projectMarkerVariant: "green",
+                    projectMarkerVariant: "table",
                     onProjectSelect: (projectId) => {
                       const p = apiProjects.find((x) => Number(x.id) === Number(projectId));
-                      if (p) setSelectedProjectForDetails(p);
+                      if (p) {
+                        skipSidebarCollapseRef.current = true;
+                        setSelectedProjectForDetails(p);
+                        queryClient.invalidateQueries();
+                      }
                     }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                   }
                   )
@@ -2888,6 +2896,20 @@ export default function Dashboard() {
           {isFilterBarExpanded ? (
             <div className="w-full bg-[#f6faf7] rounded-[18px] p-1.5 flex flex-col md:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-0.5 scrollbar-hide">
+                {/* Mobile hamburger — opens sidebar on small screens */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  aria-label="Open sidebar menu"
+                  className="md:hidden h-[40px] w-[40px] shrink-0 rounded-lg bg-white hover:bg-[#054332] hover:text-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)] transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </Button>
+
                 {/* Expand/Collapse toggle (left) */}
                 <Button
                   type="button"
@@ -2934,7 +2956,7 @@ export default function Dashboard() {
                       <RadioGroupItem value={item.val} id={item.val} className="peer sr-only" />
                       <Label
                         htmlFor={item.val}
-                        className="flex items-center justify-center px-3 py-2 bg-white text-[#054332] font-semibold text-[12px] sm:text-[13px] rounded-lg cursor-pointer border border-[#e5efe9] hover:bg-[#054332] hover:text-white peer-data-[state=checked]:bg-[#054332] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#054332] transition-all whitespace-nowrap select-none min-w-[120px]"
+                        className="flex items-center justify-center px-2 sm:px-3 py-2 bg-white text-[#054332] font-semibold text-[11px] sm:text-[13px] rounded-lg cursor-pointer border border-[#e5efe9] hover:bg-[#054332] hover:text-white peer-data-[state=checked]:bg-[#054332] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#054332] transition-all whitespace-nowrap select-none min-w-[80px] sm:min-w-[120px]"
                       >
                         <span>{item.label}</span>
                       </Label>
@@ -2945,7 +2967,21 @@ export default function Dashboard() {
 
             </div>
           ) : (
-            <div className="w-full flex items-center">
+            <div className="w-full flex items-center gap-2">
+              {/* Mobile hamburger — always visible when filter bar is collapsed too */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileSidebarOpen(true)}
+                aria-label="Open sidebar menu"
+                className="md:hidden h-[40px] w-[40px] shrink-0 rounded-lg bg-white hover:bg-[#054332] hover:text-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)] transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </Button>
+
               <Button
                 type="button"
                 variant="ghost"

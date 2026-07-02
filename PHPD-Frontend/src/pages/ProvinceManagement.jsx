@@ -1,4 +1,4 @@
-const _jsxFileName = "";
+﻿const _jsxFileName = "";
 import React from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useState } from "react";
@@ -213,44 +213,48 @@ export default function ProvinceManagement() {
                     )
                   ) : (
                     filteredProvinces.map((province, index) => (
-                      React.createElement(TableRow, { key: province.id, __self: this, __source: {fileName: _jsxFileName, lineNumber: 214}}
-                        , React.createElement(TableCell, { className: "font-medium", __self: this, __source: {fileName: _jsxFileName, lineNumber: 215}}, index + 1)
-                        , React.createElement(TableCell, { className: "text-muted-foreground font-mono text-sm"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 216}}, province.id)
-                        , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 217}}
-                          , React.createElement('div', { className: "flex items-center gap-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 218}}
-                            , React.createElement('div', { className: "h-8 w-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center font-bold text-xs shrink-0"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}
-                              , province.province_name.substring(0, 2).toUpperCase()
-                            )
-                            , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 222}}, province.province_name)
-                          )
-                        )
-                        , React.createElement(TableCell, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 225}}
-                          , React.createElement('div', { className: "flex justify-end gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 226}}
-                            , canUpdate && (
-                              React.createElement(Button, {
-                                variant: "ghost",
-                                size: "sm",
-                                onClick: () => handleEdit(province),
-                                className: "h-8 border border-muted hover:bg-muted whitespace-nowrap"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 228}}
-
-                                , React.createElement(Edit2, { className: "h-3.5 w-3.5 mr-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 234}} ), " Edit"
-                              )
-                            )
-                            , canDelete && (
-                              React.createElement(Button, {
-                                variant: "ghost",
-                                size: "sm",
-                                onClick: () => handleDelete(province.id),
-                                disabled: deleteMutation.isPending,
-                                className: "h-8 border border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700 whitespace-nowrap"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 238}}
-
-                                , React.createElement(Trash2, { className: "h-3.5 w-3.5 mr-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 245}} ), " Delete"
-                              )
-                            )
-                            , !canUpdate && !canDelete && React.createElement('span', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 248}}, "—")
-                          )
-                        )
-                      )
+                      <TableRow key={province.id}>
+                        <TableCell className="font-medium">{index + 1}</TableCell>
+                        <TableCell className="text-muted-foreground font-mono text-sm">{province.id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center font-bold text-xs shrink-0">
+                              {province.province_name.substring(0, 2).toUpperCase()}
+                            </div>
+                            <span className="truncate">{province.province_name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            {canUpdate && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(province)}
+                                className="table-action-btn h-9 w-9 sm:w-auto sm:px-3 border border-muted hover:bg-muted"
+                                aria-label="Edit zone"
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline ml-1">Edit</span>
+                              </Button>
+                            )}
+                            {canDelete && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(province.id)}
+                                disabled={deleteMutation.isPending}
+                                className="table-action-btn h-9 w-9 sm:w-auto sm:px-3 border border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                aria-label="Delete zone"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline ml-1">Delete</span>
+                              </Button>
+                            )}
+                            {!canUpdate && !canDelete && <span className="text-muted-foreground text-sm">—</span>}
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     ))
                   )
                 )

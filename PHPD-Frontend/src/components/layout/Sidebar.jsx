@@ -2,7 +2,6 @@ import React from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import {
-  BarChart3,
   LucideBanknote,
   LayoutDashboard,
   Map as MapIcon,
@@ -16,6 +15,7 @@ import {
   UserCog,
   Plus,
   Eye,
+  X,
 } from "lucide-react";
 import {
   Accordion,
@@ -81,13 +81,26 @@ export function Sidebar() {
   const { isCollapsed, toggleSidebar, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
   const [accordionValue, setAccordionValue] = useState(undefined);
 
+  // Only close the mobile sidebar when navigating to a genuinely different page
+  // (pathname change). Query-string-only changes on "/" (e.g. ?view=divisions&zone=...)
+  // are drilldown updates on the same Dashboard page and must NOT close the sidebar.
+  const locationPathname = location.split("?")[0];
+  const prevPathnameRef = React.useRef(locationPathname);
+
   useEffect(() => {
-    setMobileSidebarOpen(false);
+    const prevPathname = prevPathnameRef.current;
+    prevPathnameRef.current = locationPathname;
+
+    // Only close + update accordion when the pathname itself changed
+    if (prevPathname !== locationPathname) {
+      setMobileSidebarOpen(false);
+    }
+
     const itemWithSelectedSub = NAV_ITEMS.find((item) =>
-      item.subItems?.some((sub) => location === sub.href)
+      item.subItems?.some((sub) => locationPathname === sub.href)
     );
     if (itemWithSelectedSub) setAccordionValue(itemWithSelectedSub.label);
-  }, [location]);
+  }, [locationPathname]);
 
   const visibleNavItems = useMemo(() => {
     return NAV_ITEMS.filter((item) => {
@@ -122,7 +135,7 @@ export function Sidebar() {
     });
   }, [userRole, canView, isSuperAdmin]);
 
-  const NavContent = ({ collapsed }) => (
+  const NavContent = ({ collapsed, onClose }) => (
     <div className="flex h-full flex-col gap-2">
 
       {/* ── HEADER ─────────────────────────────────── */}
@@ -131,7 +144,7 @@ export function Sidebar() {
         collapsed ? "px-2 justify-center" : "px-3 justify-between"
       )}>
         {!collapsed && (
-          <Link href="/" className="flex items-center h-full">
+          <Link href="/" className="flex items-center h-full" onClick={onClose}>
             <img
               src="/Assets/PHPD.png"
               alt="PHPD Logo"
@@ -140,7 +153,7 @@ export function Sidebar() {
           </Link>
         )}
         {collapsed && (
-          <Link href="/" className="flex items-center justify-center">
+          <Link href="/" className="flex items-center justify-center" onClick={onClose}>
             <img
               src="/Assets/PHPD.png"
               alt="PHPD Logo"
@@ -149,23 +162,39 @@ export function Sidebar() {
           </Link>
         )}
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleSidebar}
-                className="h-8 w-8 text-slate-400 hover:text-[#054332] hover:bg-[#054332]/8 hidden md:flex flex-shrink-0"
-              >
-                {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{collapsed ? "Expand sidebar" : "Collapse sidebar"}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {/* Mobile close button — shown only inside the Sheet */}
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close sidebar"
+            className="h-9 w-9 rounded-xl text-slate-400 hover:text-[#054332] hover:bg-[#054332]/8 flex-shrink-0"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        )}
+
+        {/* Desktop collapse/expand toggle */}
+        {!onClose && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleSidebar}
+                  className="h-8 w-8 text-slate-400 hover:text-[#054332] hover:bg-[#054332]/8 hidden md:flex flex-shrink-0"
+                >
+                  {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>{collapsed ? "Expand sidebar" : "Collapse sidebar"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
 
       {/* ── NAV ITEMS ──────────────────────────────── */}
@@ -344,12 +373,23 @@ export function Sidebar() {
         "hidden border-r border-[#054332]/20 bg-sidebar md:block fixed inset-y-0 left-0 z-30 shadow-[2px_0_20px_rgba(5,67,50,0.06)] transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
       )}>
-        <NavContent collapsed={isCollapsed} />
+        <NavContent collapsed={isCollapsed} onClose={null} />
       </div>
 
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent side="left" className="w-64 p-0 bg-sidebar border-none">
-          <NavContent collapsed={false} />
+        {/*
+         * [&>button]:hidden suppresses the default Shadcn Sheet close button
+         * (absolute top-4 right-4) which overflows on narrow screens.
+         * We render our own close button inside NavContent instead.
+         */}
+        <SheetContent
+          side="left"
+          className="w-[80vw] max-w-[280px] p-0 bg-sidebar border-none [&>button]:hidden"
+        >
+          <NavContent
+            collapsed={false}
+            onClose={() => setMobileSidebarOpen(false)}
+          />
         </SheetContent>
       </Sheet>
     </>

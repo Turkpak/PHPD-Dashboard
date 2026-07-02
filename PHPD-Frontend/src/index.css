@@ -1,21 +1,41 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "tw-animate-css";
 
-/* Global overflow guard: prevents accidental horizontal scroll on small screens */
+/* â”€â”€â”€ GLOBAL RESET & OVERFLOW GUARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html,
 body {
   width: 100%;
   overflow-x: hidden;
 }
 
-/* Cross-browser font sizing consistency (Edge/Chromium) */
+/* Cross-browser font sizing & zoom consistency */
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Safe area support for notched/curved phones (iOS, Android) */
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
 }
 
-/* Hide scrollbar for horizontal scroll */
+/* Ensure tap targets meet WCAG 2.5.5 (min 44Ã—44 logical px) */
+button,
+[role="button"],
+a,
+input[type="checkbox"],
+input[type="radio"],
+select {
+  min-height: 44px;
+}
+
+/* Exception: icon-only small buttons inside tables (size="sm") keep 32 px height */
+.table-action-btn {
+  min-height: 32px !important;
+}
+
+/* â”€â”€â”€ SCROLLBAR UTILITIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -24,93 +44,79 @@ html {
   display: none;
 }
 
-/* Momentum scrolling for horizontal regions (tables, breadcrumbs) on touch devices */
+/* Momentum scrolling for horizontal regions on touch devices */
 .overflow-x-touch {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Grid pattern background */
+/* Thin styled scrollbar for desktop sidebar / panels */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+}
+
+/* â”€â”€â”€ GRID PATTERN BACKGROUND â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bg-grid-pattern {
-  background-image: 
+  background-image:
     linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
     linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
-/* Shimmer animation for progress bars */
+/* â”€â”€â”€ ANIMATIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
+.animate-shimmer { animation: shimmer 2s infinite; }
 
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
-
-/* Slow spin animation for splash screen circles */
 @keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
+.animate-spin-slow         { animation: spin-slow 3s linear infinite; }
+.animate-spin-slow-reverse { animation: spin-slow 2.5s linear infinite reverse; }
 
-.animate-spin-slow {
-  animation: spin-slow 3s linear infinite;
-}
-
-.animate-spin-slow-reverse {
-  animation: spin-slow 2.5s linear infinite reverse;
-}
-
-/* Slow pulse animation for logo */
 @keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.8; }
 }
+.animate-pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }
 
-.animate-pulse-slow {
-  animation: pulse-slow 2s ease-in-out infinite;
-}
-
-/* Heartbeat pulse animation for logo */
 @keyframes logo-heartbeat {
-  0% {
-    transform: scale(1);
-  }
-  14% {
-    transform: scale(1.1);
-  }
-  28% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.15);
-  }
-  70% {
-    transform: scale(1);
-  }
+  0%   { transform: scale(1); }
+  14%  { transform: scale(1.1); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.15); }
+  70%  { transform: scale(1); }
+}
+.animate-heartbeat { animation: logo-heartbeat 1.8s ease-in-out infinite; }
+
+/* â”€â”€â”€ RESPONSIVE TABLE HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/*
+ * .responsive-table wraps tables so they scroll horizontally on small
+ * screens while the rest of the page stays static.
+ */
+.responsive-table {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.animate-heartbeat {
-  animation: logo-heartbeat 1.8s ease-in-out infinite;
-}
-
-/* Leaflet / GIS: project status boundary markers (delay/pending/in-progress) */
-.project-status-icon {
-  /* Leaflet adds its own wrapper; keep it predictable */
-}
+/* â”€â”€â”€ LEAFLET / GIS MARKER ANIMATIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.project-status-icon { /* Leaflet adds its own wrapper; keep it predictable */ }
 
 .project-status-icon__wrap {
   position: relative;
@@ -128,44 +134,19 @@ html {
   pointer-events: none;
 }
 
-/* Delayed: strong pulse + expanding ring to catch attention */
+/* Delayed: strong pulse + expanding ring */
 @keyframes projectDelayPulse {
-  0% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(225, 29, 72, 0));
-  }
-  20% {
-    transform: scale(1.12);
-    filter: drop-shadow(0 0 10px rgba(225, 29, 72, 0.55));
-  }
-  40% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(225, 29, 72, 0));
-  }
-  100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(225, 29, 72, 0));
-  }
+  0%  { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(225, 29, 72, 0)); }
+  20% { transform: scale(1.12); filter: drop-shadow(0 0 10px rgba(225, 29, 72, 0.55)); }
+  40% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(225, 29, 72, 0)); }
+  100%{ transform: scale(1);    filter: drop-shadow(0 0 0 rgba(225, 29, 72, 0)); }
 }
-
 @keyframes projectDelayRing {
-  0% {
-    transform: scale(0.75);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.55;
-  }
-  65% {
-    transform: scale(1.55);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1.55);
-    opacity: 0;
-  }
+  0%  { transform: scale(0.75); opacity: 0; }
+  15% { opacity: 0.55; }
+  65% { transform: scale(1.55); opacity: 0; }
+  100%{ transform: scale(1.55); opacity: 0; }
 }
-
 .project-status-icon--delay .project-status-icon__dot {
   animation: projectDelayPulse 1.35s ease-in-out infinite;
 }
@@ -175,33 +156,16 @@ html {
   animation: projectDelayRing 1.35s ease-out infinite;
 }
 
-/* Pending: gentle bob + soft glow (visible, but not alarming) */
+/* Pending: gentle bob + soft glow */
 @keyframes projectPendingBob {
-  0%,
-  100% {
-    transform: translateY(0);
-    filter: drop-shadow(0 0 0 rgba(217, 119, 6, 0));
-  }
-  50% {
-    transform: translateY(-2px);
-    filter: drop-shadow(0 0 8px rgba(217, 119, 6, 0.35));
-  }
+  0%, 100% { transform: translateY(0);    filter: drop-shadow(0 0 0 rgba(217, 119, 6, 0)); }
+  50%       { transform: translateY(-2px); filter: drop-shadow(0 0 8px rgba(217, 119, 6, 0.35)); }
 }
-
 @keyframes projectPendingRing {
-  0% {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.25;
-  }
-  100% {
-    transform: scale(1.25);
-    opacity: 0;
-  }
+  0%  { transform: scale(0.9); opacity: 0; }
+  30% { opacity: 0.25; }
+  100%{ transform: scale(1.25); opacity: 0; }
 }
-
 .project-status-icon--pending .project-status-icon__dot {
   animation: projectPendingBob 2.1s ease-in-out infinite;
 }
@@ -210,29 +174,27 @@ html {
   animation: projectPendingRing 2.1s ease-out infinite;
 }
 
-/* In progress: subtle breathe so it's not static */
+/* In progress: subtle breathe */
 @keyframes projectProgressBreathe {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.95;
-  }
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%       { transform: scale(1.05); opacity: 0.95; }
 }
 .project-status-icon--progress .project-status-icon__dot {
   animation: projectProgressBreathe 2.4s ease-in-out infinite;
 }
 
-/* Respect reduced motion */
+/* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   .project-status-icon--delay .project-status-icon__dot,
   .project-status-icon--delay .project-status-icon__ring,
   .project-status-icon--pending .project-status-icon__dot,
   .project-status-icon--pending .project-status-icon__ring,
-  .project-status-icon--progress .project-status-icon__dot {
+  .project-status-icon--progress .project-status-icon__dot,
+  .animate-shimmer,
+  .animate-spin-slow,
+  .animate-spin-slow-reverse,
+  .animate-pulse-slow,
+  .animate-heartbeat {
     animation: none !important;
   }
 }
@@ -244,41 +206,41 @@ html {
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-  
+
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
-  
+
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
-  
+
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-  
+
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-  
+
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-  
+
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-  
+
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
-  
+
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  
+
   --color-chart-1: hsl(var(--chart-1));
   --color-chart-2: hsl(var(--chart-2));
   --color-chart-3: hsl(var(--chart-3));
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
-  
+
   --color-sidebar: hsl(var(--sidebar));
   --color-sidebar-foreground: hsl(var(--sidebar-foreground));
   --color-sidebar-primary: hsl(var(--sidebar-primary));
@@ -288,55 +250,50 @@ html {
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  /* Use robust stacks so Edge still looks good if Google Fonts are blocked. */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
-  --font-heading: 'Rajdhani', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+  --font-heading: 'Rajdhani', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* PHPD palette (from logo): dark green + white (with neutrals for readability) */
+/* â”€â”€â”€ DESIGN TOKEN PALETTE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
-  /* AuthPage gradient colors converted to HSL-ish for compatibility */
-  --background: 0 0% 100%; /* white */
+  --background: 0 0% 100%;
   --foreground: 215 25% 20%;
-  
+
   --card: 0 0% 100%;
   --card-foreground: 215 25% 20%;
-  
+
   --popover: 0 0% 100%;
   --popover-foreground: 215 25% 20%;
-  
-  /* Logo Dark Green (PHPD Premium) */
-  --primary: 163 86% 14%; /* #054332 */
+
+  --primary: 163 86% 14%;         /* #054332 PHPD dark green */
   --primary-foreground: 0 0% 100%;
-  
-  /* Slightly lighter green for buttons/accents */
-  --secondary: 163 92% 11%; /* #024a35 */
+
+  --secondary: 163 92% 11%;       /* #024a35 */
   --secondary-foreground: 0 0% 100%;
-  
+
   --muted: 210 16% 94%;
   --muted-foreground: 0 0% 46%;
-  
-  /* Pure white surfaces (remove any tint) */
+
   --accent: 0 0% 100%;
   --accent-foreground: 163 66% 16%;
-  
+
   --destructive: 354 81% 47%;
   --destructive-foreground: 210 40% 98%;
 
   --border: 220 20% 90%;
   --input: 220 20% 90%;
   --ring: 163 66% 19%;
-  
+
   --radius: 0.5rem;
-  
-  /* chart palette: green shades (avoid blues) */
-  --chart-1: 163 66% 19%; /* dark green */
-  --chart-2: 162 55% 26%; /* medium green */
-  --chart-3: 160 38% 40%; /* muted green */
+
+  --chart-1: 163 66% 19%;
+  --chart-2: 162 55% 26%;
+  --chart-3: 160 38% 40%;
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
-  
-  /* Sidebar uses clean white with dark text */
+
   --sidebar: 0 0% 100%;
   --sidebar-foreground: 163 66% 12%;
   --sidebar-primary: 163 66% 19%;
@@ -350,32 +307,32 @@ html {
 .dark {
   --background: 163 40% 6%;
   --foreground: 210 40% 98%;
-  
+
   --card: 163 35% 9%;
   --card-foreground: 210 40% 98%;
-  
+
   --popover: 163 35% 9%;
   --popover-foreground: 210 40% 98%;
-  
-  --primary: 162 55% 34%; /* green */
+
+  --primary: 162 55% 34%;
   --primary-foreground: 0 0% 100%;
-  
+
   --secondary: 160 38% 40%;
   --secondary-foreground: 0 0% 100%;
-  
+
   --muted: 163 28% 16%;
   --muted-foreground: 0 0% 75%;
-  
+
   --accent: 215 18% 16%;
   --accent-foreground: 210 40% 96%;
-  
+
   --destructive: 354 81% 47%;
   --destructive-foreground: 210 40% 98%;
-  
+
   --border: 163 22% 15%;
   --input: 163 22% 15%;
   --ring: 162 55% 34%;
-  
+
   --sidebar: 163 40% 6%;
   --sidebar-foreground: 240 4.8% 95.9%;
   --sidebar-primary: 162 55% 34%;
