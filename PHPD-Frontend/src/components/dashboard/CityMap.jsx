@@ -6,7 +6,8 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
-import { Camera, AlertTriangle, Activity, Construction, Upload, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Camera, AlertTriangle, Activity, Construction, Upload, Info, ChevronDown, ChevronUp, FolderKanban, Building2, Zap, Radio, ClipboardCheck, TrendingUp, Home } from "lucide-react";
+import { renderToString } from "react-dom/server";
 import { Button } from "@/components/ui/button";
 
 
@@ -112,15 +113,65 @@ function getGreenDotProjectIcon() {
   return L.divIcon({
     className: "project-green-dot",
     html: `<span style="
-      width: 12px; height: 12px;
+      width: 18px; height: 18px;
       border-radius: 9999px;
-      background: #22c55e;
-      border: 2px solid rgba(255,255,255,0.95);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+      background: #16a34a;
+      border: 2.5px solid rgba(255,255,255,0.98);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.28), 0 0 0 3px rgba(22,163,74,0.22);
       display: block;
     "></span>`,
-    iconSize: [12, 12],
-    iconAnchor: [6, 6],
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  });
+}
+
+const tableIconSet = [
+  FolderKanban,
+  Building2,
+  Zap,
+  Camera,
+  Radio,
+  ClipboardCheck,
+  TrendingUp,
+  Home,
+];
+
+const tableColorSet = [
+  "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200",
+  "bg-emerald-50 text-emerald-600 border-emerald-200",
+  "bg-sky-50 text-sky-600 border-sky-200",
+  "bg-amber-50 text-amber-600 border-amber-200",
+  "bg-rose-50 text-rose-600 border-rose-200",
+  "bg-violet-50 text-violet-600 border-violet-200",
+  "bg-cyan-50 text-cyan-600 border-cyan-200",
+  "bg-lime-50 text-lime-600 border-lime-200",
+];
+
+function getProjectTableIcon(name) {
+  const nameStr = name || "";
+  let nameHash = 0;
+  for (let i = 0; i < nameStr.length; i++) {
+    nameHash = nameStr.charCodeAt(i) + ((nameHash << 5) - nameHash);
+  }
+  const iconIdx = Math.abs(nameHash) % tableIconSet.length;
+  const colorIdx = Math.abs(nameHash) % tableColorSet.length;
+  const RowIcon = tableIconSet[iconIdx];
+  const colorClass = tableColorSet[colorIdx];
+
+  const htmlString = renderToString(
+    React.createElement('div', { 
+      className: `h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm ${colorClass}`,
+      style: { backgroundColor: 'white' } 
+    }, 
+      React.createElement(RowIcon, { className: "h-5 w-5" })
+    )
+  );
+
+  return L.divIcon({
+    className: "custom-table-icon bg-transparent border-none",
+    html: htmlString,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
   });
 }
 
@@ -568,7 +619,7 @@ export function CityMap({
                         React.createElement(Marker, {
                           key: `proj-center-${_nullishCoalesce(_optionalChain([f, 'optionalAccess', _22 => _22.properties, 'optionalAccess', _23 => _23.id]), () => ( idx))}`,
                           position: center,
-                          icon: projectMarkerVariant === "green" ? greenDotIconRef.current : getProjectStatusIcon(status),
+                          icon: projectMarkerVariant === "table" ? getProjectTableIcon(name) : (projectMarkerVariant === "green" ? greenDotIconRef.current : getProjectStatusIcon(status)),
                           eventHandlers: 
                             onProjectSelect && Number.isFinite(idNum)
                               ? {
@@ -576,20 +627,6 @@ export function CityMap({
                                 }
                               : undefined
                           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 545}}
-
-                          , React.createElement(Popup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 557}}
-                            , React.createElement('div', { className: "p-2 text-xs font-sans"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 558}}
-                              , React.createElement('p', { className: "font-bold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 559}}, String(name))
-                              , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 560}}, "Status:"
-                                , " "
-                                , status === "in_progress"
-                                  ? "In Progress"
-                                  : status === "in_delay"
-                                    ? "Delayed"
-                                    : "Pending"
-                              )
-                            )
-                          )
                         )
                       );
                     })

@@ -471,8 +471,7 @@ export default function GISLayers() {
         /* Filters — card panel with clear hierarchy */
         , React.createElement(Card, { className: "border border-border/60 bg-card shadow-sm overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 394}}
           , React.createElement(CardContent, { className: cn("transition-all", hasActiveFilters ? "p-3 sm:p-4" : "p-4 sm:p-5") , __self: this, __source: {fileName: _jsxFileName, lineNumber: 395}}
-            , React.createElement('div', { className: "mx-auto w-full max-w-6xl"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 396}}
-              , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 397}}
+            , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4 w-full"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 397}}
                 , React.createElement('div', { className: "flex items-center gap-2 shrink-0 justify-center sm:justify-start"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 398}}
                 , React.createElement('div', { className: cn("flex items-center justify-center rounded-lg bg-primary/10 text-primary", hasActiveFilters ? "h-7 w-7" : "h-8 w-8")       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 399}}
                   , React.createElement(Filter, { className: cn("shrink-0", hasActiveFilters ? "h-3 w-3" : "h-3.5 w-3.5") , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 400}} )
@@ -630,7 +629,6 @@ export default function GISLayers() {
                     )
                   )
                 )
-              )
             )
           )
         )

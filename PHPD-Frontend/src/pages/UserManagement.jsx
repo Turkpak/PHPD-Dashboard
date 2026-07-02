@@ -631,17 +631,17 @@ export default function UserManagement() {
               React.createElement('p', { className: "text-muted-foreground py-8 text-center"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 630}}, "No users yet. Click \"Add New User\" to create one."         )
             ) : (
               React.createElement(React.Fragment, null
-                , React.createElement('div', { className: "rounded-md border overflow-x-auto"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 633}}
-                  , React.createElement(Table, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 634}}
-                    , React.createElement(TableHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 635}}
-                      , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 636}}
-                        , React.createElement(TableHead, { className: "w-[80px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 637}}, "#")
-                        , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 638}}, "Email")
-                        , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 639}}, "Full name" )
-                        , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 640}}, "Role")
-                        , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 641}}, "Stakeholder")
-                        , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 642}}, "Status")
-                        , React.createElement(TableHead, { className: "w-[120px] text-right" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 643}}, "Page permissions" )
+                , React.createElement('div', { className: "rounded-md border overflow-x-auto"  }
+                  , React.createElement(Table, {}
+                    , React.createElement(TableHeader, {}
+                      , React.createElement(TableRow, {}
+                        , React.createElement(TableHead, { className: "w-10 p-0.5"}, "#")
+                        , React.createElement(TableHead, { className: "p-0.5"}, "Email")
+                        , React.createElement(TableHead, { className: "hidden sm:table-cell p-0.5"}, "Full name")
+                        , React.createElement(TableHead, { className: "p-0.5"}, "Role")
+                        , React.createElement(TableHead, { className: "hidden md:table-cell p-0.5"}, "Stakeholder")
+                        , React.createElement(TableHead, { className: "hidden lg:table-cell p-0.5"}, "Status")
+                        , React.createElement(TableHead, { className: "text-right p-0.5"}, "Permissions")
                       )
                     )
                     , React.createElement(TableBody, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 646}}
@@ -649,24 +649,23 @@ export default function UserManagement() {
                         const rowNumber = (usersPage - 1) * USERS_PER_PAGE + index + 1;
                         const isSuperAdminUser = (_nullishCoalesce(u.role, () => ( ""))).trim().toLowerCase() === "super_admin";
                         return (
-                          React.createElement(TableRow, { key: u.id, __self: this, __source: {fileName: _jsxFileName, lineNumber: 651}}
-                            , React.createElement(TableCell, { className: "font-mono text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 652}}, rowNumber)
-                            , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 653}}, u.email)
-                            , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 654}}, u.full_name)
-                            , React.createElement(TableCell, { className: "capitalize", __self: this, __source: {fileName: _jsxFileName, lineNumber: 655}}, formatRole(u.role))
-                            , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 656}}, getStakeholderLabel(u.stakeholder))
-                            , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 657}}
+                          React.createElement(TableRow, { key: u.id, className: "h-8"}
+                            , React.createElement(TableCell, { className: "font-mono text-muted-foreground text-xs p-0.5"}, rowNumber)
+                            , React.createElement(TableCell, { className: "max-w-[140px] truncate text-xs p-0.5"}, u.email)
+                            , React.createElement(TableCell, { className: "hidden sm:table-cell p-0.5"}, u.full_name)
+                            , React.createElement(TableCell, { className: "capitalize text-xs p-0.5"}, formatRole(u.role))
+                            , React.createElement(TableCell, { className: "hidden md:table-cell text-xs p-0.5"}, getStakeholderLabel(u.stakeholder))
+                            , React.createElement(TableCell, { className: "hidden lg:table-cell p-0.5"}
                               , React.createElement('span', {
-                                className: 
+                                className:
                                   u.is_active
-                                    ? "text-green-600 dark:text-green-400 font-medium"
-                                    : "text-muted-foreground"
-                                , __self: this, __source: {fileName: _jsxFileName, lineNumber: 658}}
-
+                                    ? "text-green-600 dark:text-green-400 font-medium text-xs"
+                                    : "text-muted-foreground text-xs"
+                              }
                                 , u.is_active ? "Active" : "Inactive"
                               )
                             )
-                            , React.createElement(TableCell, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 668}}
+                            , React.createElement(TableCell, { className: "text-right p-0.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 668}}
                               , !isSuperAdminUser && (
                                 React.createElement(Button, {
                                   variant: "ghost",

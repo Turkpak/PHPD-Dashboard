@@ -38,7 +38,7 @@ export function CityCompletionChart({ cityData, description = "District Wise Pro
     <Card className="rounded-lg shadow-lg border-border/50 border-2 transition-colors hover:border-primary/60">
       <CardHeader className="pb-4">
         <CardTitle className="font-heading text-lg sm:text-xl font-bold leading-tight">
-          Sites Phasewise (Completion %)
+          Zone Phasewise (Completion %)
         </CardTitle>
         <CardDescription className="text-sm">{description}</CardDescription>
       </CardHeader>
