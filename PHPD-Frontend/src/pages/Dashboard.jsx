@@ -1,22 +1,5 @@
 ﻿import React from "react";
-
-// Transpiler-compatibility helpers (nullish coalesce + optional chain)
-const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
-const _optionalChain = (ops) => {
-  let lastAccessLHS;
-  let value = ops[0];
-  let i = 1;
-  while (i < ops.length) {
-    const op = ops[i];
-    const fn = ops[i + 1];
-    i += 2;
-    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
-    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
-    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
-  }
-  return value;
-};
-
+const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { InstallationCard } from "@/components/dashboard/InstallationCard";
 
@@ -81,7 +64,47 @@ import { listProjects, } from "@/api/project";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
 
-// Installation progress data
+// Enhanced installation progress data with sub-projects and planned vs actual
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -394,6 +417,139 @@ const hasDetailedProgress = (
   progress,
 ) => {
   return typeof progress !== "number";
+};
+
+// Generate sub-projects for a phase
+const generateSubProjects = (
+  phaseKey,
+  actualProgress,
+  plannedProgress,
+  division,
+  district,
+  tehsil,
+) => {
+  // Backend progress logic not implemented yet — show 0% everywhere (no synthetic subprojects).
+  return [];
+  const subProjectTemplates
+
+
+    = {
+    surveys: {
+      names: [
+        "Site Survey & Assessment",
+        "Technical Feasibility Study",
+        "Site Selection & Approval",
+        "Environmental Clearance",
+      ],
+      weights: [0.3, 0.25, 0.25, 0.2],
+    },
+    foundations: {
+      names: [
+        "Excavation Work",
+        "Foundation Pouring",
+        "Curing & Quality Check",
+        "Backfilling & Compaction",
+      ],
+      weights: [0.25, 0.35, 0.2, 0.2],
+    },
+    cabinet: {
+      names: [
+        "Cabinet Installation",
+        "Electrical Connections",
+        "Network Setup",
+        "Equipment Mounting",
+      ],
+      weights: [0.3, 0.25, 0.25, 0.2],
+    },
+    cable: {
+      names: [
+        "Cable Trenching",
+        "Fiber Optic Laying",
+        "Power Cable Installation",
+        "Cable Termination & Testing",
+      ],
+      weights: [0.25, 0.3, 0.25, 0.2],
+    },
+    controlRoom: {
+      names: [
+        "Room Renovation",
+        "Server Installation",
+        "Display Systems",
+        "Control Systems Integration",
+      ],
+      weights: [0.25, 0.3, 0.25, 0.2],
+    },
+    ppic3: {
+      names: [
+        "System Integration",
+        "Software Deployment",
+        "Testing & Commissioning",
+        "Go-Live Preparation",
+      ],
+      weights: [0.3, 0.25, 0.25, 0.2],
+    },
+  };
+
+  const template = subProjectTemplates[phaseKey] || {
+    names: ["Sub-Project 1", "Sub-Project 2", "Sub-Project 3"],
+    weights: [0.33, 0.33, 0.34],
+  };
+
+  // Generate sub-projects with variance based on parent progress (only for non-Bahawalpur)
+  const variance = actualProgress - plannedProgress;
+
+  return template.names.map((name, index) => {
+    const weight = template.weights[index];
+    const baseActual = actualProgress * (0.8 + Math.random() * 0.4); // Vary around parent
+    const basePlanned = plannedProgress * (0.8 + Math.random() * 0.4);
+
+    return {
+      id: `${phaseKey}-${index}`,
+      name,
+      actualProgress: Math.min(100, Math.max(0, baseActual)),
+      plannedProgress: Math.min(100, Math.max(0, basePlanned)),
+      weight,
+    };
+  });
+};
+
+// Helper to convert legacy data to new format
+const convertToPhaseProgress = (
+  currentValue,
+  phaseKey,
+  timelineData,
+  division,
+  district,
+  tehsil,
+) => {
+  // Backend progress logic not implemented yet — keep everything at 0%.
+  const plannedProgress = 0;
+
+  // Generate timeline if not provided
+  const timeline =
+    _optionalChain([timelineData, 'optionalAccess', _5 => _5.map, 'call', _6 => _6((point) => {
+      const actual = 0;
+      const planned = 0;
+      return {
+        month: point.month,
+        actual,
+        planned,
+      };
+    })]) || [];
+
+  return {
+    actual: 0,
+    planned: plannedProgress,
+    subProjects: generateSubProjects(
+      phaseKey,
+      0,
+      plannedProgress,
+      division,
+      district,
+      tehsil,
+    ),
+    timeline: timeline.length > 0 ? timeline : undefined,
+  };
 };
 
 // ---- API helpers (file-level, no component dependencies) ----
@@ -795,15 +951,15 @@ export default function Dashboard() {
     const rows = apiProjects.map((p) => {
       const pid = Number(p.id);
       const progressPct = _nullishCoalesce(ganttProgressByProjectId.get(pid), () => (0));
-      const circleName = divisionNameById.get(Number(p.division)) || "â€”";
+      const circleName = divisionNameById.get(Number(p.division)) || "—";
       const circle = apiDivisions.find((d) => Number(d.id) === Number(p.division));
       const zoneName =
         zoneNameById.get(Number(circle?.zone ?? circle?.province)) ||
         circle?.zone_name ||
         circle?.province_name ||
-        "â€”";
-      const distName = districtNameById.get(Number(p.district)) || "â€”";
-      const tehName = tehsilNameById.get(Number(p.tehsil)) || "â€”";
+        "—";
+      const distName = districtNameById.get(Number(p.district)) || "—";
+      const tehName = tehsilNameById.get(Number(p.tehsil)) || "—";
       return {
         id: pid,
         name: _nullishCoalesce(p.project_name, () => (`Project #${pid}`)),
@@ -1646,68 +1802,68 @@ export default function Dashboard() {
 
   // Skeleton loader component
   const renderSkeletonLoader = () => (
-    React.createElement('div', { className: "space-y-6" }
+    React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1379 } }
       /* Installation Phase Cards Skeleton */
-      , React.createElement('div', { className: "w-full" }
-        , React.createElement('div', { className: "mb-3" }
-          , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-          , React.createElement(Skeleton, { className: "h-4 w-64" })
+      , React.createElement('div', { className: "w-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1381 } }
+        , React.createElement('div', { className: "mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1382 } }
+          , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1383 } })
+          , React.createElement(Skeleton, { className: "h-4 w-64", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1384 } })
         )
-        , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3" }
+        , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1386 } }
           , Array.from({ length: 6 }).map((_, i) => (
-            React.createElement(Card, { key: i, className: "p-4" }
-              , React.createElement(Skeleton, { className: "h-5 w-24 mb-3" })
-              , React.createElement(Skeleton, { className: "h-8 w-16 mb-2" })
-              , React.createElement(Skeleton, { className: "h-2 w-full rounded-full" })
+            React.createElement(Card, { key: i, className: "p-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1388 } }
+              , React.createElement(Skeleton, { className: "h-5 w-24 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1389 } })
+              , React.createElement(Skeleton, { className: "h-8 w-16 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1390 } })
+              , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1391 } })
             )
           ))
         )
       )
 
       /* Overall Progress Card Skeleton */
-      , React.createElement(Card, { className: "p-6" }
-        , React.createElement('div', { className: "flex flex-col md:flex-row md:items-center justify-between gap-4" }
-          , React.createElement('div', { className: "space-y-3 flex-1" }
-            , React.createElement('div', { className: "flex items-center gap-3" }
-              , React.createElement(Skeleton, { className: "h-14 w-14 rounded-xl" })
-              , React.createElement('div', { className: "space-y-2" }
-                , React.createElement(Skeleton, { className: "h-7 w-48" })
-                , React.createElement(Skeleton, { className: "h-4 w-64" })
+      , React.createElement(Card, { className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1398 } }
+        , React.createElement('div', { className: "flex flex-col md:flex-row md:items-center justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1399 } }
+          , React.createElement('div', { className: "space-y-3 flex-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1400 } }
+            , React.createElement('div', { className: "flex items-center gap-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1401 } }
+              , React.createElement(Skeleton, { className: "h-14 w-14 rounded-xl", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1402 } })
+              , React.createElement('div', { className: "space-y-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1403 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1404 } })
+                , React.createElement(Skeleton, { className: "h-4 w-64", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1405 } })
               )
             )
           )
-          , React.createElement('div', { className: "text-center md:text-right" }
-            , React.createElement(Skeleton, { className: "h-16 w-24 mb-2" })
-            , React.createElement(Skeleton, { className: "h-8 w-32 rounded-full" })
+          , React.createElement('div', { className: "text-center md:text-right", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1409 } }
+            , React.createElement(Skeleton, { className: "h-16 w-24 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1410 } })
+            , React.createElement(Skeleton, { className: "h-8 w-32 rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1411 } })
           )
         )
-        , React.createElement('div', { className: "mt-6" }
-          , React.createElement(Skeleton, { className: "h-5 w-full rounded-full mb-3" })
-          , React.createElement('div', { className: "flex items-center justify-between" }
-            , React.createElement(Skeleton, { className: "h-3 w-8" })
-            , React.createElement(Skeleton, { className: "h-3 w-20" })
-            , React.createElement(Skeleton, { className: "h-3 w-8" })
+        , React.createElement('div', { className: "mt-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1414 } }
+          , React.createElement(Skeleton, { className: "h-5 w-full rounded-full mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1415 } })
+          , React.createElement('div', { className: "flex items-center justify-between", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1416 } }
+            , React.createElement(Skeleton, { className: "h-3 w-8", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1417 } })
+            , React.createElement(Skeleton, { className: "h-3 w-20", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1418 } })
+            , React.createElement(Skeleton, { className: "h-3 w-8", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1419 } })
           )
         )
       )
 
       /* Pie Charts Skeleton */
-      , React.createElement('div', { className: "grid gap-6 md:grid-cols-2" }
+      , React.createElement('div', { className: "grid gap-6 md:grid-cols-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1425 } }
         , Array.from({ length: 2 }).map((_, i) => (
-          React.createElement(Card, { key: i, className: "p-6" }
-            , React.createElement(Skeleton, { className: "h-6 w-48 mb-2" })
-            , React.createElement(Skeleton, { className: "h-4 w-64 mb-6" })
-            , React.createElement(Skeleton, { className: "h-80 w-full rounded-lg" })
+          React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1427 } }
+            , React.createElement(Skeleton, { className: "h-6 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1428 } })
+            , React.createElement(Skeleton, { className: "h-4 w-64 mb-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1429 } })
+            , React.createElement(Skeleton, { className: "h-80 w-full rounded-lg", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1430 } })
           )
         ))
       )
 
       /* Phase Distribution Chart Skeleton (drilldown only) */
       , selectedItemName && selectedItemType ? (
-        React.createElement(Card, { className: "p-6" }
-          , React.createElement(Skeleton, { className: "h-6 w-48 mb-2" })
-          , React.createElement(Skeleton, { className: "h-4 w-64 mb-6" })
-          , React.createElement(Skeleton, { className: "h-80 w-full rounded-lg" })
+        React.createElement(Card, { className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1437 } }
+          , React.createElement(Skeleton, { className: "h-6 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1438 } })
+          , React.createElement(Skeleton, { className: "h-4 w-64 mb-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1439 } })
+          , React.createElement(Skeleton, { className: "h-80 w-full rounded-lg", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1440 } })
         )
       ) : null
     )
@@ -1778,7 +1934,7 @@ export default function Dashboard() {
     title,
     data,
     projectsInGeography,
-    /** When false (division/district drill-down), project cards are display-only â€” no Gantt fetch. */
+    /** When false (division/district drill-down), project cards are display-only — no Gantt fetch. */
     projectCardsInteractive = true,
   ) => {
     const isAggregatedView = title.startsWith("All Punjab");
@@ -1922,10 +2078,10 @@ export default function Dashboard() {
       React.createElement(React.Fragment, null
         /* Best Performing Projects (hide inside selected division/district/tehsil views) */
         , showBestPerformingSection && (
-          React.createElement('div', { className: "w-full" }
-            , React.createElement('div', { className: "mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 min-w-0" }
-              , React.createElement('div', { className: "min-w-0 flex-1" }
-                , React.createElement('h2', { className: "text-xl font-bold font-heading text-[#0f172a] dark:text-white" }, "Best Performing Projects"
+          React.createElement('div', { className: "w-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1662 } }
+            , React.createElement('div', { className: "mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1663 } }
+              , React.createElement('div', { className: "min-w-0 flex-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1664 } }
+                , React.createElement('h2', { className: "text-xl font-bold font-heading text-[#0f172a] dark:text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1665 } }, "Best Performing Projects"
 
                 )
 
@@ -1940,7 +2096,7 @@ export default function Dashboard() {
                       setSelectedProjectForDetails(null);
                     }
                   },
-                  className: "h-8 px-3 rounded-lg text-xs font-medium text-white bg-red-600 hover:bg-red-700 border-0 transition-colors whitespace-nowrap flex-shrink-0"
+                  className: "h-8 px-3 rounded-lg text-xs font-medium text-white bg-red-600 hover:bg-red-700 border-0 transition-colors whitespace-nowrap flex-shrink-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1671 }
                 }
                   , "Clear"
 
@@ -1979,7 +2135,7 @@ export default function Dashboard() {
                             );
                           }
                           : undefined
-                      
+                      , __self: this, __source: { fileName: _jsxFileName, lineNumber: 1694 }
                     }
                     )
                   );
@@ -2005,7 +2161,7 @@ export default function Dashboard() {
                         setSelectedMilestoneKey((prev) =>
                           prev === phase.key ? null : phase.key,
                         );
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1729 }
                     }
                     )
                   );
@@ -2014,7 +2170,7 @@ export default function Dashboard() {
 
             /* Selected project details (Gantt / WBS) for Division/District views */
             , isSelectedProjectInThisScope && (
-              React.createElement('div', { className: "mt-6" }
+              React.createElement('div', { className: "mt-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1750 } }
                 , React.createElement(MilestoneDetailsPanel, {
                   milestoneTitle: `${selectedProjectForDetails.project_name || `Project ${selectedProjectForDetails.id}`} - Project Gantt`,
                   phase: selectedProjectPhase,
@@ -2022,7 +2178,7 @@ export default function Dashboard() {
                   flatGanttTasks: selectedProjectGanttTasks,
                   ganttProjectId: selectedProjectForDetails.id,
                   onProjectGanttRefresh: refetchSelectedProjectGantt,
-                  onClear: () => setSelectedProjectForDetails(null)
+                  onClear: () => setSelectedProjectForDetails(null), __self: this, __source: { fileName: _jsxFileName, lineNumber: 1751 }
                 }
                 )
               )
@@ -2032,25 +2188,25 @@ export default function Dashboard() {
 
         /* Donut charts: hide when a milestone KPI or a single project is selected */
         , !selectedMilestoneKey && !isSelectedProjectInThisScope && (
-          React.createElement('div', { className: "grid gap-4 md:grid-cols-2" }
+          React.createElement('div', { className: "grid gap-4 md:grid-cols-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1767 } }
             /* Financial Progress Donut Chart */
-            , React.createElement(Card, { className: "overflow-hidden rounded-lg border border-border/80 bg-card shadow-lg shadow-primary/5 transition-shadow hover:shadow-xl hover:shadow-primary/10" }
-              , React.createElement(CardHeader, { className: "py-3 px-4 pb-1" }
-                , React.createElement(CardTitle, { className: "text-base font-heading" }, "Financial Progress Overview"
+            , React.createElement(Card, { className: "overflow-hidden rounded-lg border border-border/80 bg-card shadow-lg shadow-primary/5 transition-shadow hover:shadow-xl hover:shadow-primary/10", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1769 } }
+              , React.createElement(CardHeader, { className: "py-3 px-4 pb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1770 } }
+                , React.createElement(CardTitle, { className: "text-base font-heading", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1771 } }, "Financial Progress Overview"
 
                 )
               )
-              , React.createElement(CardContent, { className: "pt-0 px-4 pb-4" }
+              , React.createElement(CardContent, { className: "pt-0 px-4 pb-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1775 } }
                 , React.createElement('div', {
                   className: "relative w-full",
                   style: {
                     height: isMobile ? "200px" : isTablet ? "220px" : "260px",
-                  }
+                  }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1776 }
                 }
 
-                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%" }
+                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1782 } }
                     , React.createElement(PieChart, {
-                      margin: { top: 2, right: 2, bottom: 32, left: 2 }
+                      margin: { top: 2, right: 2, bottom: 32, left: 2 }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1783 }
                     }
 
                       , React.createElement(Pie, {
@@ -2084,7 +2240,7 @@ export default function Dashboard() {
                         strokeWidth: 2,
                         isAnimationActive: true,
                         animationDuration: 800,
-                        animationBegin: 0
+                        animationBegin: 0, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1786 }
                       }
 
                         , React.createElement(RechartsLabel, {
@@ -2093,14 +2249,14 @@ export default function Dashboard() {
                             const cy = _nullishCoalesce(_optionalChain([viewBox, 'optionalAccess', _30 => _30.cy]), () => (0));
                             const valueText = `${financialActual.toFixed(1)}%`;
                             return (
-                              React.createElement('g', {}
+                              React.createElement('g', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 1825 } }
                                 , React.createElement('text', {
                                   x: cx,
                                   y: cy - (isMobile ? 2 : 3),
                                   textAnchor: "middle",
                                   dominantBaseline: "central",
                                   className: "font-heading font-bold tabular-nums fill-foreground",
-                                  style: { fontSize: isMobile ? 14 : 18 }
+                                  style: { fontSize: isMobile ? 14 : 18 }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1826 }
                                 }
 
                                   , valueText
@@ -2111,14 +2267,14 @@ export default function Dashboard() {
                                   textAnchor: "middle",
                                   dominantBaseline: "central",
                                   className: "font-medium uppercase tracking-wider fill-muted-foreground",
-                                  style: { fontSize: isMobile ? 9 : 10 }
+                                  style: { fontSize: isMobile ? 9 : 10 }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1836 }
                                 }
                                   , "Actual"
 
                                 )
                               )
                             );
-                          }
+                          }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1819 }
                         }
                         )
                         , ["#2F8F6C", "#8BC34A", "#ef4444"].map((fill, index) => (
@@ -2126,7 +2282,7 @@ export default function Dashboard() {
                             key: `cell-f-${index}`,
                             fill: fill,
                             stroke: "rgba(255,255,255,0.9)",
-                            strokeWidth: 2
+                            strokeWidth: 2, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1851 }
                           }
                           )
                         ))
@@ -2147,7 +2303,7 @@ export default function Dashboard() {
                           const originalValue =
                             _nullishCoalesce(_optionalChain([props, 'access', _31 => _31.payload, 'optionalAccess', _32 => _32.originalValue]), () => (value));
                           return [`${originalValue.toFixed(1)}%`, name];
-                        }
+                        }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1859 }
                       }
                       )
                       , React.createElement(Legend, {
@@ -2168,14 +2324,14 @@ export default function Dashboard() {
                           else if (value === "Variance")
                             itemValue = absFinancialVariance;
                           return (
-                            React.createElement('span', { className: "text-muted-foreground font-medium" }
+                            React.createElement('span', { className: "text-muted-foreground font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1895 } }
                               , value, " "
-                              , React.createElement('span', { className: "font-semibold text-foreground" }
+                              , React.createElement('span', { className: "font-semibold text-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1897 } }
                                 , itemValue.toFixed(1), "%"
                               )
                             )
                           );
-                        }
+                        }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1877 }
                       }
                       )
                     )
@@ -2185,23 +2341,23 @@ export default function Dashboard() {
             )
 
             /* Overall Progress Donut Chart */
-            , React.createElement(Card, { className: "overflow-hidden rounded-lg border border-border/80 bg-card shadow-lg shadow-primary/5 transition-shadow hover:shadow-xl hover:shadow-primary/10" }
-              , React.createElement(CardHeader, { className: "py-3 px-4 pb-1" }
-                , React.createElement(CardTitle, { className: "text-base font-heading" }, "Overall Progress"
+            , React.createElement(Card, { className: "overflow-hidden rounded-lg border border-border/80 bg-card shadow-lg shadow-primary/5 transition-shadow hover:shadow-xl hover:shadow-primary/10", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1911 } }
+              , React.createElement(CardHeader, { className: "py-3 px-4 pb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1912 } }
+                , React.createElement(CardTitle, { className: "text-base font-heading", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1913 } }, "Overall Progress"
 
                 )
               )
-              , React.createElement(CardContent, { className: "pt-0 px-4 pb-4" }
+              , React.createElement(CardContent, { className: "pt-0 px-4 pb-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1917 } }
                 , React.createElement('div', {
                   className: "relative w-full",
                   style: {
                     height: isMobile ? "200px" : isTablet ? "220px" : "260px",
-                  }
+                  }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1918 }
                 }
 
-                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%" }
+                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1924 } }
                     , React.createElement(PieChart, {
-                      margin: { top: 2, right: 2, bottom: 32, left: 2 }
+                      margin: { top: 2, right: 2, bottom: 32, left: 2 }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1925 }
                     }
 
                       , React.createElement(Pie, {
@@ -2235,7 +2391,7 @@ export default function Dashboard() {
                         strokeWidth: 2,
                         isAnimationActive: true,
                         animationDuration: 800,
-                        animationBegin: 0
+                        animationBegin: 0, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1928 }
                       }
 
                         , React.createElement(RechartsLabel, {
@@ -2244,14 +2400,14 @@ export default function Dashboard() {
                             const cy = _nullishCoalesce(_optionalChain([viewBox, 'optionalAccess', _34 => _34.cy]), () => (0));
                             const valueText = `${overallActualPct.toFixed(1)}%`;
                             return (
-                              React.createElement('g', {}
+                              React.createElement('g', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 1967 } }
                                 , React.createElement('text', {
                                   x: cx,
                                   y: cy - (isMobile ? 2 : 3),
                                   textAnchor: "middle",
                                   dominantBaseline: "central",
                                   className: "font-heading font-bold tabular-nums fill-foreground",
-                                  style: { fontSize: isMobile ? 14 : 18 }
+                                  style: { fontSize: isMobile ? 14 : 18 }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1968 }
                                 }
 
                                   , valueText
@@ -2262,14 +2418,14 @@ export default function Dashboard() {
                                   textAnchor: "middle",
                                   dominantBaseline: "central",
                                   className: "font-medium uppercase tracking-wider fill-muted-foreground",
-                                  style: { fontSize: isMobile ? 9 : 10 }
+                                  style: { fontSize: isMobile ? 9 : 10 }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1978 }
                                 }
                                   , "Actual"
 
                                 )
                               )
                             );
-                          }
+                          }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1961 }
                         }
                         )
                         , ["#2F8F6C", "#8BC34A", "#ef4444"].map((fill, index) => (
@@ -2277,7 +2433,7 @@ export default function Dashboard() {
                             key: `cell-o-${index}`,
                             fill: fill,
                             stroke: "rgba(255,255,255,0.9)",
-                            strokeWidth: 2
+                            strokeWidth: 2, __self: this, __source: { fileName: _jsxFileName, lineNumber: 1993 }
                           }
                           )
                         ))
@@ -2298,7 +2454,7 @@ export default function Dashboard() {
                           const originalValue =
                             _nullishCoalesce(_optionalChain([props, 'access', _35 => _35.payload, 'optionalAccess', _36 => _36.originalValue]), () => (value));
                           return [`${originalValue.toFixed(1)}%`, name];
-                        }
+                        }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2001 }
                       }
                       )
                       , React.createElement(Legend, {
@@ -2317,14 +2473,14 @@ export default function Dashboard() {
                           else if (value === "Actual") itemValue = overallActualPct;
                           else if (value === "Variance") itemValue = overallVariancePct;
                           return (
-                            React.createElement('span', { className: "text-muted-foreground font-medium" }
+                            React.createElement('span', { className: "text-muted-foreground font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2035 } }
                               , value, " "
-                              , React.createElement('span', { className: "font-semibold text-foreground" }
+                              , React.createElement('span', { className: "font-semibold text-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2037 } }
                                 , itemValue.toFixed(1), "%"
                               )
                             )
                           );
-                        }
+                        }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2019 }
                       }
                       )
                     )
@@ -2335,7 +2491,7 @@ export default function Dashboard() {
           )
         )
 
-        /* Table + Map side-by-side (Table left, Map right) â€” ONLY for /?view=divisions */
+        /* Table + Map side-by-side (Table left, Map right) — ONLY for /?view=divisions */
         , viewType === "divisions" && !selectedItemName && !selectedItemType ? (
           (() => {
             const total = projectsForTable.length;
@@ -2347,17 +2503,17 @@ export default function Dashboard() {
             const canNext = safePage < totalPages;
 
             return (
-              React.createElement('div', { className: "grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch" }
-                , React.createElement(Card, { className: "rounded-xl border border-[#e2e8f0] shadow-[0_4px_24px_-8px_rgba(5,67,50,0.10)] overflow-hidden min-h-[420px] h-[55vh] max-h-[720px] flex flex-col bg-white" }
-                  , React.createElement(CardHeader, { className: "py-3 px-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-[#f0fdf4] to-white border-b border-[#dcfce7]" }
-                    , React.createElement('div', {}
-                      , React.createElement(CardTitle, { className: "text-base font-heading text-[#054332]" }, "Latest Projects")
-                      , React.createElement('p', { className: "text-xs text-[#6b7280]" }, "Sorted by highest overall progress")
+              React.createElement('div', { className: "grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                , React.createElement(Card, { className: "rounded-xl border border-[#e2e8f0] shadow-[0_4px_24px_-8px_rgba(5,67,50,0.10)] overflow-hidden min-h-[420px] h-[55vh] max-h-[720px] flex flex-col bg-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                  , React.createElement(CardHeader, { className: "py-3 px-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-[#f0fdf4] to-white border-b border-[#dcfce7]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                    , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                      , React.createElement(CardTitle, { className: "text-base font-heading text-[#054332]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Latest Projects")
+                      , React.createElement('p', { className: "text-xs text-[#6b7280]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Sorted by highest overall progress")
                     )
-                    , React.createElement('div', { className: "flex items-center gap-1 justify-end" }
-                      , React.createElement('span', { className: "text-[10px] font-semibold text-[#166534] bg-[#dcfce7] px-2 py-0.5 rounded-full" }, safePage, "/", totalPages)
-                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30" }, "<")
-                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30" }, ">")
+                    , React.createElement('div', { className: "flex items-center gap-1 justify-end", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                      , React.createElement('span', { className: "text-[10px] font-semibold text-[#166534] bg-[#dcfce7] px-2 py-0.5 rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, safePage, "/", totalPages)
+                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "<")
+                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, ">")
                     )
                   )
                   , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0" }
@@ -2368,24 +2524,24 @@ export default function Dashboard() {
                             , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5" }
                               , React.createElement('div', { className: "flex items-center gap-1.5 select-none" }
                                 , "Project"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50" })
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5" }
-                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none" }
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                 , "Overall Progress"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50" })
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5" }
-                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none" }
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                 , "Zone / Circle / Tehsil"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50" })
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
                           )
                         )
-                        , React.createElement('tbody', {}
+                        , React.createElement('tbody', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                           , pageRows.map((row) => {
                             const pct = Math.max(0, Math.min(100, Number(row.progressPct) || 0));
                             const iconSet = [
@@ -2419,33 +2575,35 @@ export default function Dashboard() {
                             return (
                               React.createElement('tr', {
                                 key: row.id,
-                                className: "border-b border-[#f1f5f9] even:bg-[#fafafa]"
+                                className: "border-b border-[#f1f5f9] even:bg-[#fafafa]",
+                                __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                               }
-                                , React.createElement('td', { className: "px-3 py-2.5 font-semibold text-[#1e293b]" }
-                                  , React.createElement('div', { className: "flex items-center gap-3 min-w-0" }
+                                , React.createElement('td', { className: "px-3 py-2.5 font-semibold text-[#1e293b]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                  , React.createElement('div', { className: "flex items-center gap-3 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                     , React.createElement('div', {
-                                      className: `h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${colorClass}`
+                                      className: `h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${colorClass}`,
+                                      __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                                     }
-                                      , React.createElement(RowIcon, { className: "h-4 w-4" })
+                                      , React.createElement(RowIcon, { className: "h-4 w-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                     )
-                                    , React.createElement('div', { className: "min-w-0" }
-                                      , React.createElement('div', { className: "truncate font-semibold text-[13px] text-[#1e293b]" }, row.name)
-                                      , React.createElement('div', { className: "text-[10px] text-[#94a3b8] truncate font-medium" }, "ID: ", row.id)
+                                    , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                      , React.createElement('div', { className: "truncate font-semibold text-[13px] text-[#1e293b]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.name)
+                                      , React.createElement('div', { className: "text-[10px] text-[#94a3b8] truncate font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "ID: ", row.id)
                                     )
                                   )
                                 )
-                                , React.createElement('td', { className: "px-3 py-2.5" }
-                                  , React.createElement('div', { className: "flex items-center gap-2.5" }
-                                    , React.createElement('span', { className: `inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums border ${badgeColor}` }
-                                      , React.createElement('span', { className: `h-1.5 w-1.5 rounded-full ${dotColor}` })
+                                , React.createElement('td', { className: "px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                  , React.createElement('div', { className: "flex items-center gap-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                    , React.createElement('span', { className: `inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums border ${badgeColor}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                      , React.createElement('span', { className: `h-1.5 w-1.5 rounded-full ${dotColor}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                       , pct.toFixed(2), "%"
                                     )
-                                    , React.createElement('div', { className: "flex-1 h-2 rounded-full bg-[#f1f5f9] overflow-hidden" }
-                                      , React.createElement('div', { className: `h-full bg-gradient-to-r ${progressColor} rounded-full transition-all duration-700`, style: { width: `${pct}%` } })
+                                    , React.createElement('div', { className: "flex-1 h-2 rounded-full bg-[#f1f5f9] overflow-hidden", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                      , React.createElement('div', { className: `h-full bg-gradient-to-r ${progressColor} rounded-full transition-all duration-700`, style: { width: `${pct}%` }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                     )
                                   )
                                 )
-                                , React.createElement('td', { className: "px-3 py-2.5 text-[11px] text-[#64748b] font-medium" }, row.locationLabel)
+                                , React.createElement('td', { className: "px-3 py-2.5 text-[11px] text-[#64748b] font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.locationLabel)
                               )
                             );
                           })
@@ -2453,12 +2611,12 @@ export default function Dashboard() {
                       )
                     )
                     , total === 0 && (
-                      React.createElement('div', { className: "p-8 text-center text-sm text-[#94a3b8]" }, "No projects found.")
+                      React.createElement('div', { className: "p-8 text-center text-sm text-[#94a3b8]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "No projects found.")
                     )
                   )
                 )
 
-                , React.createElement('div', { className: "w-full min-h-[420px] h-[55vh] max-h-[720px] rounded-lg overflow-hidden border border-border/60 shadow-sm" }
+                , React.createElement('div', { className: "w-full min-h-[420px] h-[55vh] max-h-[720px] rounded-lg overflow-hidden border border-border/60 shadow-sm", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                   , React.createElement(CityMap, {
                     city: "lahore",
                     activeLayers: new Set(),
@@ -2473,7 +2631,7 @@ export default function Dashboard() {
                     onProjectSelect: (projectId) => {
                       const p = apiProjects.find((x) => Number(x.id) === Number(projectId));
                       if (p) setSelectedProjectForDetails(p);
-                    }
+                    }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                   }
                   )
                 )
@@ -2482,10 +2640,10 @@ export default function Dashboard() {
           })()
         ) : null
 
-        /* Division-wise completion chart â€” beneath Latest Projects + Map */
+        /* Division-wise completion chart — beneath Latest Projects + Map */
         , viewType === "divisions" && !selectedItemName && !selectedItemType ? (
-          React.createElement('div', { className: "mt-4" }
-            , React.createElement(CityCompletionChart, { cityData: divisionCompletionData, description: "Zone Wise Progress" })
+          React.createElement('div', { className: "mt-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+            , React.createElement(CityCompletionChart, { cityData: divisionCompletionData, description: "Zone Wise Progress", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
           )
         ) : null
 
@@ -2494,29 +2652,29 @@ export default function Dashboard() {
         selectedPhaseMeta &&
         selectedProgress &&
         hasDetailedProgress(selectedProgress) && (
-          React.createElement('div', { className: "space-y-4" }
+          React.createElement('div', { className: "space-y-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2057 } }
             /* Header with Toggle - Right side where charts are shown */
-            , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0" }
-              , React.createElement('div', { className: "min-w-0" }
-                , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1" }
+            , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2059 } }
+              , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2060 } }
+                , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2061 } }
                   , progressType === "financial"
                     ? `${selectedPhaseMeta.title} - Financial Progress`
                     : `${selectedPhaseMeta.title} - Milestone KPIs`
                 )
-                , React.createElement('p', { className: "text-sm text-muted-foreground" }
+                , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2066 } }
                   , progressType === "financial"
                     ? "Financial progress charts and analysis"
                     : "Gantt chart and WBS breakdown"
                 )
               )
               /* Progress Type Toggle - Right side */
-              , React.createElement('div', { className: "flex items-center gap-2 px-3 py-2 sm:px-4 rounded-lg border-2 border-primary/20 bg-background shadow-sm hover:border-primary/40 transition-colors flex-shrink-0 w-full sm:w-auto justify-center sm:justify-start" }
+              , React.createElement('div', { className: "flex items-center gap-2 px-3 py-2 sm:px-4 rounded-lg border-2 border-primary/20 bg-background shadow-sm hover:border-primary/40 transition-colors flex-shrink-0 w-full sm:w-auto justify-center sm:justify-start", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2073 } }
                 , React.createElement(TrendingUp, {
-                  className: `h-4 w-4 ${progressType === "physical" ? "text-primary" : "text-muted-foreground"}`
+                  className: `h-4 w-4 ${progressType === "physical" ? "text-primary" : "text-muted-foreground"}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2074 }
                 }
                 )
                 , React.createElement('span', {
-                  className: `text-sm font-semibold ${progressType === "physical" ? "text-foreground" : "text-muted-foreground"}`
+                  className: `text-sm font-semibold ${progressType === "physical" ? "text-foreground" : "text-muted-foreground"}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2077 }
                 }
                   , "Physical"
 
@@ -2530,23 +2688,23 @@ export default function Dashboard() {
                   ,
                   className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${progressType === "financial" ? "bg-primary" : "bg-muted"
                     }`,
-                  'aria-label': "Toggle between Physical and Financial Progress"
+                  'aria-label': "Toggle between Physical and Financial Progress", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2082 }
                 }
 
                   , React.createElement('span', {
                     className: `inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${progressType === "financial"
                       ? "translate-x-6"
                       : "translate-x-1"
-                      }`
+                      }`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2094 }
                   }
                   )
                 )
                 , React.createElement(DollarSign, {
-                  className: `h-4 w-4 ${progressType === "financial" ? "text-primary" : "text-muted-foreground"}`
+                  className: `h-4 w-4 ${progressType === "financial" ? "text-primary" : "text-muted-foreground"}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2102 }
                 }
                 )
                 , React.createElement('span', {
-                  className: `text-sm font-semibold ${progressType === "financial" ? "text-foreground" : "text-muted-foreground"}`
+                  className: `text-sm font-semibold ${progressType === "financial" ? "text-foreground" : "text-muted-foreground"}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2105 }
                 }
                   , "Financial"
 
@@ -2575,7 +2733,7 @@ export default function Dashboard() {
                   }
               ,
               phaseColor: colorMap[selectedPhaseMeta.color] || "#6b7280",
-              onClear: () => setSelectedMilestoneKey(null)
+              onClear: () => setSelectedMilestoneKey(null), __self: this, __source: { fileName: _jsxFileName, lineNumber: 2112 }
             }
             )
           )
@@ -2583,23 +2741,23 @@ export default function Dashboard() {
 
         /* Charts Grid (drilldown only; hide in All Divisions/Districts/Tehsils views and when a single project is selected) */
         , !selectedMilestoneKey && !isAggregatedView && !isSelectedProjectInThisScope && (
-          React.createElement('div', { className: "space-y-4" }
-            , React.createElement('div', {}
-              , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1" }, "Analytics & Insights"
+          React.createElement('div', { className: "space-y-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2141 } }
+            , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 2142 } }
+              , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2143 } }, "Analytics & Insights"
 
               )
-              , React.createElement('p', { className: "text-sm text-muted-foreground" }, "Detailed progress analysis for "
+              , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2146 } }, "Detailed progress analysis for "
                 , title
               )
             )
 
-            , React.createElement('div', { className: "grid gap-4 lg:grid-cols-12" }
+            , React.createElement('div', { className: "grid gap-4 lg:grid-cols-12", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2151 } }
               /* (Removed) Installation Progress Timeline + Phase Breakdown charts */
             )
 
             /* Phase Distribution Pie Chart */
-            , React.createElement('div', { className: "grid gap-4 lg:grid-cols-12" }
-              , React.createElement('div', { className: "lg:col-span-12" }
+            , React.createElement('div', { className: "grid gap-4 lg:grid-cols-12", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2156 } }
+              , React.createElement('div', { className: "lg:col-span-12", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2157 } }
                 , React.createElement(PhaseDistributionChart, {
                   title: _optionalChain([distributionChart, 'optionalAccess', _37 => _37.title]),
                   description: _optionalChain([distributionChart, 'optionalAccess', _38 => _38.description]),
@@ -2609,7 +2767,7 @@ export default function Dashboard() {
                         phase: phase.title,
                         percentage: getProgressValue(data[phase.key]),
                       }))))
-                  
+                  , __self: this, __source: { fileName: _jsxFileName, lineNumber: 2158 }
                 }
                 )
               )
@@ -2617,17 +2775,17 @@ export default function Dashboard() {
 
             /* Planned vs Actual Charts for Each Phase - Only show when specific item is selected (not aggregated view) */
             , title.startsWith("All Punjab") ? null : (
-              React.createElement('div', { className: "space-y-4" }
-                , React.createElement('div', {}
-                  , React.createElement('h3', { className: "text-lg font-bold font-heading mb-2" }, "Planned vs Actual Progress"
+              React.createElement('div', { className: "space-y-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2174 } }
+                , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 2175 } }
+                  , React.createElement('h3', { className: "text-lg font-bold font-heading mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2176 } }, "Planned vs Actual Progress"
 
                   )
-                  , React.createElement('p', { className: "text-sm text-muted-foreground" }, "Compare actual progress against planned milestones for each project phase"
+                  , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2179 } }, "Compare actual progress against planned milestones for each project phase"
 
 
                   )
                 )
-                , React.createElement('div', { className: "grid gap-4 lg:grid-cols-2" }
+                , React.createElement('div', { className: "grid gap-4 lg:grid-cols-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2184 } }
                   , installationPhases.map((phase) => {
                     const progress = data[phase.key];
                     if (!hasDetailedProgress(progress) || !progress.timeline)
@@ -2647,7 +2805,7 @@ export default function Dashboard() {
                         key: `planned-actual-${phase.key}`,
                         phaseName: phase.title,
                         timelineData: progress.timeline,
-                        color: colorMap[phase.color] || "#6b7280"
+                        color: colorMap[phase.color] || "#6b7280", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2200 }
                       }
                       )
                     );
@@ -2657,11 +2815,11 @@ export default function Dashboard() {
             )
 
             /* Phase Timeline Chart */
-            , React.createElement('div', { className: "grid gap-4 lg:grid-cols-12" }
-              , React.createElement('div', { className: "lg:col-span-12" }
+            , React.createElement('div', { className: "grid gap-4 lg:grid-cols-12", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2213 } }
+              , React.createElement('div', { className: "lg:col-span-12", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2214 } }
                 , React.createElement(PhaseTimelineChart, {
                   timelineData: data.timeline,
-                  cityKey: title
+                  cityKey: title, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2215 }
                 }
                 )
               )
@@ -2712,7 +2870,7 @@ export default function Dashboard() {
   ];
 
   return (
-    React.createElement(Layout, { title: "PHPD Progress Dashboard", showHeader: false }
+    React.createElement(Layout, { title: "PHPD Progress Dashboard", showHeader: false, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2267 } }
       , React.createElement('div', {
         className: "flex flex-col gap-4",
         style: {
@@ -2721,7 +2879,7 @@ export default function Dashboard() {
           ["--progress-accent-soft"]: contextTheme.accentSoft,
           ["--progress-accent-border"]: contextTheme.accentBorder,
           ["--progress-accent-glow"]: contextTheme.accentGlow,
-        }
+        }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2268 }
       }
 
         /* Top Header Section - Enhanced Design with Filter Bar */
@@ -2933,20 +3091,20 @@ export default function Dashboard() {
         , selectedItemName &&
         selectedItemType === "zone" &&
         (isLoading ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex items-center gap-4" }
-              , React.createElement(Skeleton, { className: "h-10 w-32" })
-              , React.createElement('div', {}
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-                , React.createElement(Skeleton, { className: "h-4 w-64" })
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2833 } }
+            , React.createElement('div', { className: "flex items-center gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2834 } }
+              , React.createElement(Skeleton, { className: "h-10 w-32", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2835 } })
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 2836 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2837 } })
+                , React.createElement(Skeleton, { className: "h-4 w-64", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2838 } })
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2841 } }
               , Array.from({ length: 4 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6" }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3" })
-                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2" })
-                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full" })
+                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2843 } }
+                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2844 } })
+                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2845 } })
+                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2846 } })
                 )
               ))
             )
@@ -2960,18 +3118,18 @@ export default function Dashboard() {
             );
 
             return (
-              React.createElement('div', { className: "space-y-6" }
-                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0" }
-                  , React.createElement('div', { className: "min-w-0" }
-                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words" }, "Circles in "
+              React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2860 } }
+                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2861 } }
+                  , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2862 } }
+                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2863 } }, "Circles in "
                       , selectedItemName, " Zone"
                     )
-                    , React.createElement('p', { className: "text-sm text-muted-foreground" }
+                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2866 } }
                       , selectedItemName, " Zone"
                     )
                   )
 
-                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end" }
+                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2870 } }
                     , React.createElement(Button, {
                       type: "button",
                       variant: "ghost",
@@ -2987,11 +3145,11 @@ export default function Dashboard() {
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2871 }
                     }
                       , "All Zones")
-                    , React.createElement('span', { className: "text-[#98a2b3]" }, "â€º")
-                    , React.createElement('span', { className: "font-semibold text-[#344054]" }
+                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2886 } }, "›")
+                    , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2887 } }
                       , selectedItemName, " Zone"
                     )
                   )
@@ -3000,7 +3158,7 @@ export default function Dashboard() {
                 /* Circle Cards */
                 , zoneCirclesData.length > 0 ? (
                   React.createElement(React.Fragment, null
-                    , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+                    , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2877 } }
                       , zoneCirclesData.map((circle) => (
                         React.createElement(HierarchyCard, {
                           key: circle.id,
@@ -3013,7 +3171,7 @@ export default function Dashboard() {
                             setSelectedItemId(circle.id);
                             setSelectedItemName(circle.name);
                             setSelectedItemType("division");
-                          }
+                          }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2879 }
                         }
                         )
                       ))
@@ -3028,9 +3186,9 @@ export default function Dashboard() {
                     )
                   )
                 ) : (
-                  React.createElement(Card, { className: "border-border/50" }
-                    , React.createElement(CardContent, { className: "p-8 text-center" }
-                    , React.createElement('p', { className: "text-muted-foreground" }, "No circles found for "
+                  React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2904 } }
+                    , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2905 } }
+                    , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2906 } }, "No circles found for "
                         , selectedItemName, " Zone."
                       )
                     )
@@ -3045,20 +3203,20 @@ export default function Dashboard() {
         , selectedItemName &&
         selectedItemType === "division" &&
         (isLoading ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex items-center gap-4" }
-              , React.createElement(Skeleton, { className: "h-10 w-32" })
-              , React.createElement('div', {}
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-                , React.createElement(Skeleton, { className: "h-4 w-64" })
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2921 } }
+            , React.createElement('div', { className: "flex items-center gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2922 } }
+              , React.createElement(Skeleton, { className: "h-10 w-32", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2923 } })
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 2924 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2925 } })
+                , React.createElement(Skeleton, { className: "h-4 w-64", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2926 } })
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2929 } }
               , Array.from({ length: 4 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6" }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3" })
-                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2" })
-                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full" })
+                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2931 } }
+                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2932 } })
+                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2933 } })
+                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2934 } })
                 )
               ))
             )
@@ -3082,19 +3240,19 @@ export default function Dashboard() {
               .sort((a, b) => b.overall - a.overall);
 
             return (
-              React.createElement('div', { className: "space-y-6" }
-                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0" }
-                  , React.createElement('div', { className: "min-w-0" }
-                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words" }, "Districts in "
+              React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2960 } }
+                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2961 } }
+                  , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2962 } }
+                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2963 } }, "Districts in "
                       , selectedItemName, " Circle"
 
                     )
-                    , React.createElement('p', { className: "text-sm text-muted-foreground" }
+                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2967 } }
                       , selectedItemName, " Circle"
                     )
                   )
 
-                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end" }
+                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2971 } }
                     , React.createElement(Button, {
                       type: "button",
                       variant: "ghost",
@@ -3110,10 +3268,10 @@ export default function Dashboard() {
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2972 }
                     }
                       , "All Zones")
-                    , React.createElement('span', { className: "text-[#98a2b3]" }, "â€º")
+                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2987 } }, "›")
                     , React.createElement(Button, {
                       type: "button",
                       variant: "ghost",
@@ -3131,11 +3289,11 @@ export default function Dashboard() {
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2988 }
                     }
                       , _nullishCoalesce(parentDivisionName, () => ("Zone")))
-                    , React.createElement('span', { className: "text-[#98a2b3]" }, "â€º")
-                    , React.createElement('span', { className: "font-semibold text-[#344054]" }
+                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3010 } }, "›")
+                    , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3011 } }
                       , selectedItemName, " Circle"
                     )
                   )
@@ -3144,7 +3302,7 @@ export default function Dashboard() {
                 /* District Cards */
                 , circleDistrictsData.length > 0 ? (
                   React.createElement(React.Fragment, null
-                    , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+                    , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2978 } }
                       , circleDistrictsData.map((dist) => (
                         React.createElement(HierarchyCard, {
                           key: dist.id,
@@ -3159,7 +3317,7 @@ export default function Dashboard() {
                             setSelectedItemId(dist.id);
                             setSelectedItemName(dist.name);
                             setSelectedItemType("district");
-                          }
+                          }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2980 }
                         }
                         )
                       ))
@@ -3174,9 +3332,9 @@ export default function Dashboard() {
                     )
                   )
                 ) : (
-                  React.createElement(Card, { className: "border-border/50" }
-                    , React.createElement(CardContent, { className: "p-8 text-center" }
-                      , React.createElement('p', { className: "text-muted-foreground" }, "No districts found for "
+                  React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3005 } }
+                    , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3006 } }
+                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3007 } }, "No districts found for "
                         , selectedItemName, " Circle."
                       )
                     )
@@ -3191,20 +3349,20 @@ export default function Dashboard() {
         , selectedItemName &&
         selectedItemType === "district" &&
         (isLoading ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex items-center gap-4" }
-              , React.createElement(Skeleton, { className: "h-10 w-32" })
-              , React.createElement('div', {}
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-                , React.createElement(Skeleton, { className: "h-4 w-64" })
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2921 } }
+            , React.createElement('div', { className: "flex items-center gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2922 } }
+              , React.createElement(Skeleton, { className: "h-10 w-32", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2923 } })
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 2924 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2925 } })
+                , React.createElement(Skeleton, { className: "h-4 w-64", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2926 } })
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2929 } }
               , Array.from({ length: 4 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6" }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3" })
-                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2" })
-                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full" })
+                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2931 } }
+                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2932 } })
+                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2933 } })
+                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2934 } })
                 )
               ))
             )
@@ -3227,18 +3385,18 @@ export default function Dashboard() {
               .sort((a, b) => b.overall - a.overall);
 
             return (
-              React.createElement('div', { className: "space-y-6" }
-                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0" }
-                  , React.createElement('div', { className: "min-w-0" }
-                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words" }, "Tehsils in "
+              React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2960 } }
+                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2961 } }
+                  , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2962 } }
+                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2963 } }, "Tehsils in "
                       , selectedItemName, " District"
                     )
-                    , React.createElement('p', { className: "text-sm text-muted-foreground" }
+                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2967 } }
                       , selectedItemName, " District"
                     )
                   )
 
-                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end" }
+                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2971 } }
                     , React.createElement(Button, {
                       type: "button",
                       variant: "ghost",
@@ -3254,10 +3412,10 @@ export default function Dashboard() {
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2972 }
                     }
                       , "All Zones")
-                    , React.createElement('span', { className: "text-[#98a2b3]" }, "â€º")
+                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2987 } }, "›")
                     , React.createElement(Button, {
                       type: "button",
                       variant: "ghost",
@@ -3273,18 +3431,18 @@ export default function Dashboard() {
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2988 }
                     }
                       , _nullishCoalesce(parentDivisionName, () => ("Circle")))
-                    , React.createElement('span', { className: "text-[#98a2b3]" }, "â€º")
-                    , React.createElement('span', { className: "font-semibold text-[#344054]" }
+                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3010 } }, "›")
+                    , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3011 } }
                       , selectedItemName, " District"
                     )
                   )
                 )
                 , districtTehsilsData.length > 0 ? (
                   React.createElement(React.Fragment, null
-                    , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+                    , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2978 } }
                       , districtTehsilsData.map((teh) => (
                         React.createElement(HierarchyCard, {
                           key: teh.id,
@@ -3297,7 +3455,7 @@ export default function Dashboard() {
                             setSelectedItemId(teh.id);
                             setSelectedItemName(teh.name);
                             setSelectedItemType("tehsil");
-                          }
+                          }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2980 }
                         }
                         )
                       ))
@@ -3310,9 +3468,9 @@ export default function Dashboard() {
                     )
                   )
                 ) : (
-                  React.createElement(Card, { className: "border-border/50" }
-                    , React.createElement(CardContent, { className: "p-8 text-center" }
-                      , React.createElement('p', { className: "text-muted-foreground" }, "No tehsils found for "
+                  React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3005 } }
+                    , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3006 } }
+                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3007 } }, "No tehsils found for "
                         , selectedItemName, " District."
                       )
                     )
@@ -3327,12 +3485,12 @@ export default function Dashboard() {
         , selectedItemName &&
         selectedItemType === "tehsil" &&
         (isLoading ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex items-center gap-4" }
-              , React.createElement(Skeleton, { className: "h-10 w-32" })
-              , React.createElement('div', {}
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-                , React.createElement(Skeleton, { className: "h-4 w-64" })
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3022 } }
+            , React.createElement('div', { className: "flex items-center gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3023 } }
+              , React.createElement(Skeleton, { className: "h-10 w-32", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3024 } })
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3025 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3026 } })
+                , React.createElement(Skeleton, { className: "h-4 w-64", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3027 } })
               )
             )
             , renderSkeletonLoader()
@@ -3347,13 +3505,13 @@ export default function Dashboard() {
               _optionalChain([selectedItemName, 'optionalAccess', _41 => _41.toLowerCase, 'call', _42 => _42(), 'access', _43 => _43.replace, 'call', _44 => _44(/\s+/g, "")]) || "";
 
             return (
-              React.createElement('div', { className: "space-y-6" }
-                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0" }
-                  , React.createElement('div', { className: "min-w-0" }
+              React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3042 } }
+                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3043 } }
+                  , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3044 } }
                     /* Title removed per request (avoid duplicate tehsil text). */
                   )
 
-                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end w-full sm:w-auto" }
+                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end w-full sm:w-auto", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3048 } }
                     , React.createElement(Button, {
                       type: "button",
                       variant: "ghost",
@@ -3369,10 +3527,10 @@ export default function Dashboard() {
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3049 }
                     }
                       , "All Zones")
-                    , React.createElement('span', { className: "text-[#98a2b3]" }, "â€º")
+                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3064 } }, "›")
                     , React.createElement(Button, {
                       type: "button",
                       variant: "ghost",
@@ -3390,10 +3548,10 @@ export default function Dashboard() {
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3065 }
                     }
                       , _nullishCoalesce(parentDivisionName, () => ("Zone")))
-                    , React.createElement('span', { className: "text-[#98a2b3]" }, "â€º")
+                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3087 } }, "›")
                     , React.createElement(Button, {
                       type: "button",
                       variant: "ghost",
@@ -3410,39 +3568,39 @@ export default function Dashboard() {
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
-                      }
+                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3088 }
                     }
                       , _nullishCoalesce(parentDistrictName, () => ("Circle")))
-                    , React.createElement('span', { className: "text-[#98a2b3]" }, "â€º")
-                    , React.createElement('span', { className: "font-semibold text-[#344054]" }
+                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3110 } }, "›")
+                    , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3111 } }
                       , selectedItemName, " Tehsil"
                     )
                   )
                 )
 
                 /* Project Cards from API */
-                , React.createElement('div', { className: "w-full" }
-                  , React.createElement('div', { className: "mb-4" }
+                , React.createElement('div', { className: "w-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3052 } }
+                  , React.createElement('div', { className: "mb-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3053 } }
 
                   )
 
                   /* dropdown to pick project for KPI/Gantt */
                   , tehsilProjects.length > 0 && (
-                    React.createElement('div', { className: "mb-4 w-full max-w-md sm:w-64 sm:max-w-none" }
+                    React.createElement('div', { className: "mb-4 w-full max-w-md sm:w-64 sm:max-w-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3059 } }
                       , React.createElement(Select, {
                         value: selectedProjectForDetails ? String(selectedProjectForDetails.id) : "",
                         onValueChange: (val) => {
                           const p = tehsilProjects.find((x) => String(x.id) === val) || null;
                           setSelectedProjectForDetails(p);
-                        }
+                        }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3060 }
                       }
 
-                        , React.createElement(SelectTrigger, {}
-                          , React.createElement(SelectValue, { placeholder: "Choose project" })
+                        , React.createElement(SelectTrigger, { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3067 } }
+                          , React.createElement(SelectValue, { placeholder: "Choose project", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3068 } })
                         )
-                        , React.createElement(SelectContent, {}
+                        , React.createElement(SelectContent, { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3070 } }
                           , tehsilProjects.map((project) => (
-                            React.createElement(SelectItem, { key: project.id, value: String(project.id) }
+                            React.createElement(SelectItem, { key: project.id, value: String(project.id), __self: this, __source: { fileName: _jsxFileName, lineNumber: 3072 } }
                               , project.project_name || `Project ${project.id}`
                             )
                           ))
@@ -3452,7 +3610,7 @@ export default function Dashboard() {
                   )
 
                   , tehsilProjects.length > 0 ? (
-                    React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+                    React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3082 } }
                       , tehsilProjects.map((project, index) => {
                         const progress = Math.round(
                           _nullishCoalesce(ganttProgressByProjectId.get(project.id), () => (0)),
@@ -3470,16 +3628,16 @@ export default function Dashboard() {
                                 _optionalChain([prev, 'optionalAccess', _45 => _45.id]) === project.id ? null : project,
                               );
                             },
-                            color: CARD_COLORS[index % CARD_COLORS.length]
+                            color: CARD_COLORS[index % CARD_COLORS.length], __self: this, __source: { fileName: _jsxFileName, lineNumber: 3088 }
                           }
                           )
                         );
                       })
                     )
                   ) : (
-                    React.createElement(Card, { className: "border-border/50" }
-                      , React.createElement(CardContent, { className: "p-8 text-center" }
-                        , React.createElement('p', { className: "text-muted-foreground" }, "No projects found for "
+                    React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3106 } }
+                      , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3107 } }
+                        , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3108 } }, "No projects found for "
                           , selectedItemName, " Tehsil."
                         )
                       )
@@ -3495,7 +3653,7 @@ export default function Dashboard() {
                       flatGanttTasks: selectedProjectGanttTasks,
                       ganttProjectId: selectedProjectForDetails.id,
                       onProjectGanttRefresh: refetchSelectedProjectGantt,
-                      onClear: () => setSelectedProjectForDetails(null)
+                      onClear: () => setSelectedProjectForDetails(null), __self: this, __source: { fileName: _jsxFileName, lineNumber: 3117 }
                     }
                     )
                   )
@@ -3509,29 +3667,29 @@ export default function Dashboard() {
         , !selectedItemName &&
         viewType === "divisions" &&
         (isLoading ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" }
-              , React.createElement('div', {}
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-                , React.createElement(Skeleton, { className: "h-4 w-80" })
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3137 } }
+            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3138 } }
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3139 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3140 } })
+                , React.createElement(Skeleton, { className: "h-4 w-80", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3141 } })
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3144 } }
               , Array.from({ length: 4 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6" }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3" })
-                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2" })
-                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full" })
+                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3146 } }
+                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3147 } })
+                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3148 } })
+                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3149 } })
                 )
               ))
             )
             , renderSkeletonLoader()
           )
         ) : aggregatedData ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" }
-              , React.createElement('div', {}
-                , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1" }, "All Punjab Zones"
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3156 } }
+            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3157 } }
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3158 } }
+                , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3159 } }, "All Punjab Zones"
 
                 )
               )
@@ -3541,17 +3699,17 @@ export default function Dashboard() {
                 React.createElement(Button, {
                   variant: "default",
                   onClick: () => setExpandedDivisions(!expandedDivisions),
-                  className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer text-[12px]"
+                  className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer text-[12px]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3166 }
                 }
 
                   , expandedDivisions ? (
                     React.createElement(React.Fragment, null
-                      , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white" }), "Show Less ("
+                      , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3173 } }), "Show Less ("
                       , zonesData.length - 4, " hidden)"
                     )
                   ) : (
                     React.createElement(React.Fragment, null
-                      , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white" }), "Show More ("
+                      , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3178 } }), "Show More ("
                       , zonesData.length - 4, " more)"
                     )
                   )
@@ -3560,7 +3718,7 @@ export default function Dashboard() {
             )
 
             /* Division Cards */
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3187 } }
               , (expandedDivisions
                 ? zonesData
                 : zonesData.slice(0, 4)
@@ -3578,7 +3736,7 @@ export default function Dashboard() {
                     setParentDivisionName(null);
                     setParentDistrictId(null);
                     setParentDistrictName(null);
-                  }
+                  }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3192 }
                 }
                 )
               ))
@@ -3599,29 +3757,29 @@ export default function Dashboard() {
         , !selectedItemName &&
         viewType === "districts" &&
         (isLoading ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" }
-              , React.createElement('div', {}
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-                , React.createElement(Skeleton, { className: "h-4 w-80" })
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3221 } }
+            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3222 } }
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3223 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3224 } })
+                , React.createElement(Skeleton, { className: "h-4 w-80", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3225 } })
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3228 } }
               , Array.from({ length: 4 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6" }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3" })
-                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2" })
-                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full" })
+                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3230 } }
+                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3231 } })
+                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3232 } })
+                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3233 } })
                 )
               ))
             )
             , renderSkeletonLoader()
           )
         ) : aggregatedData ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" }
-              , React.createElement('div', {}
-                , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1" }, "All Punjab Circles"
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3240 } }
+            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3241 } }
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3242 } }
+                , React.createElement('h2', { className: "text-lg font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3243 } }, "All Punjab Circles"
 
                 )
               )
@@ -3631,17 +3789,17 @@ export default function Dashboard() {
                 React.createElement(Button, {
                   variant: "default",
                   onClick: () => setExpandedDistricts(!expandedDistricts),
-                  className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer text-[12px]"
+                  className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer text-[12px]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3250 }
                 }
 
                   , expandedDistricts ? (
                     React.createElement(React.Fragment, null
-                      , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white" }), "Show Less ("
+                      , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3257 } }), "Show Less ("
                       , divisionsData.length - 4, " hidden)"
                     )
                   ) : (
                     React.createElement(React.Fragment, null
-                      , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white" }), "Show More ("
+                      , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3262 } }), "Show More ("
                       , divisionsData.length - 4, " more)"
                     )
                   )
@@ -3650,7 +3808,7 @@ export default function Dashboard() {
             )
 
             /* Circle Cards */
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3271 } }
               , (expandedDistricts
                 ? divisionsData
                 : divisionsData.slice(0, 4)
@@ -3659,7 +3817,7 @@ export default function Dashboard() {
                   key: circle.id,
                   title: circle.name,
                   overallProgress: circle.overall,
-                  color: circle.color
+                  color: circle.color, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3276 }
                 }
                 )
               ))
@@ -3680,23 +3838,23 @@ export default function Dashboard() {
         , !selectedItemName &&
         viewType === "tehsils" &&
         (isLoading ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" }
-              , React.createElement('div', {}
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-                , React.createElement(Skeleton, { className: "h-4 w-80" })
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3310 } }
+            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3311 } }
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3312 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3313 } })
+                , React.createElement(Skeleton, { className: "h-4 w-80", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3314 } })
               )
             )
-            , React.createElement('div', { className: "space-y-4" }
+            , React.createElement('div', { className: "space-y-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3317 } }
               , Array.from({ length: 2 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6" }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-4" })
-                  , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3319 } }
+                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3320 } })
+                  , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3321 } }
                     , Array.from({ length: 4 }).map((_, j) => (
-                      React.createElement(Card, { key: j, className: "p-4" }
-                        , React.createElement(Skeleton, { className: "h-5 w-24 mb-3" })
-                        , React.createElement(Skeleton, { className: "h-8 w-16 mb-2" })
-                        , React.createElement(Skeleton, { className: "h-2 w-full rounded-full" })
+                      React.createElement(Card, { key: j, className: "p-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3323 } }
+                        , React.createElement(Skeleton, { className: "h-5 w-24 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3324 } })
+                        , React.createElement(Skeleton, { className: "h-8 w-16 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3325 } })
+                        , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3326 } })
                       )
                     ))
                   )
@@ -3713,46 +3871,46 @@ export default function Dashboard() {
             });
 
             return (
-              React.createElement('div', { className: "space-y-6" }
-                , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" }
-                  , React.createElement('div', {}
-                    , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1" }, "All Punjab Districts"
+              React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3387 } }
+                , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3388 } }
+                  , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3389 } }
+                    , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3390 } }, "All Punjab Districts"
 
                     )
-                    , React.createElement('p', { className: "text-sm text-muted-foreground" }, "District cards from district API, sorted by progress"
+                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3393 } }, "District cards from district API, sorted by progress"
 
                     )
                   )
 
-                  , React.createElement('div', { className: "relative flex-1 sm:max-w-[320px]" }
-                    , React.createElement(Search, { className: "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" })
+                  , React.createElement('div', { className: "relative flex-1 sm:max-w-[320px]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3401 } }
+                    , React.createElement(Search, { className: "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3402 } })
                     , React.createElement(Input, {
                       type: "text",
                       placeholder: "Search by district name...",
                       value: tehsilSearchQuery,
                       onChange: (e) => setTehsilSearchQuery(e.target.value),
-                      className: "pl-9 h-9 rounded-xl border-border/50 bg-background"
+                      className: "pl-9 h-9 rounded-xl border-border/50 bg-background", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3403 }
                     }
                     )
                   )
                 )
                 , filteredDistrictCards.length === 0 ? (
-                  React.createElement(Card, { className: "border-border/50" }
-                    , React.createElement(CardContent, { className: "p-8 text-center" }
-                      , React.createElement('p', { className: "text-muted-foreground" }, "No districts found matching \""
+                  React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3437 } }
+                    , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3438 } }
+                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3439 } }, "No districts found matching \""
                         , tehsilSearchQuery, "\". Please try a different search term."
 
                       )
                     )
                   )
                 ) : (
-                  React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+                  React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3446 } }
                     , filteredDistrictCards.map((dist) => (
                       React.createElement(HierarchyCard, {
                         key: dist.id,
                         title: dist.name,
                         overallProgress: dist.overall,
-                        color: dist.color
+                        color: dist.color, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3487 }
                       }
                       )
                     ))
@@ -3776,32 +3934,32 @@ export default function Dashboard() {
         , !selectedItemName &&
         viewType === "projects" &&
         (isLoading ? (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" }
-              , React.createElement('div', {}
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2" })
-                , React.createElement(Skeleton, { className: "h-4 w-80" })
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3576 } }
+            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3577 } }
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3578 } }
+                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3579 } })
+                , React.createElement(Skeleton, { className: "h-4 w-80", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3580 } })
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3583 } }
               , Array.from({ length: 4 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6" }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3" })
-                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2" })
-                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full" })
+                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3585 } }
+                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3586 } })
+                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3587 } })
+                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3588 } })
                 )
               ))
             )
             , renderSkeletonLoader()
           )
         ) : (
-          React.createElement('div', { className: "space-y-6" }
-            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" }
-              , React.createElement('div', {}
-                , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1" }, "All Projects"
+          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3595 } }
+            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3596 } }
+              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3597 } }
+                , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3598 } }, "All Projects"
 
                 )
-                , React.createElement('p', { className: "text-sm text-muted-foreground" }, "Select a project to view its Gantt chart and details"
+                , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3601 } }, "Select a project to view its Gantt chart and details"
 
                 )
               )
@@ -3814,8 +3972,8 @@ export default function Dashboard() {
                 const canPrev = projectsPage > 1;
                 const canNext = projectsPage < totalPages;
                 return (
-                  React.createElement('div', { className: "flex items-center gap-2" }
-                    , React.createElement('span', { className: "text-xs text-muted-foreground hidden sm:inline" }, "Page "
+                  React.createElement('div', { className: "flex items-center gap-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3614 } }
+                    , React.createElement('span', { className: "text-xs text-muted-foreground hidden sm:inline", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3615 } }, "Page "
                       , projectsPage, " / ", totalPages
                     )
                     , React.createElement(Button, {
@@ -3825,7 +3983,7 @@ export default function Dashboard() {
                       disabled: !canPrev,
                       onClick: () =>
                         setProjectsPage((p) => Math.max(1, p - 1))
-                      
+                      , __self: this, __source: { fileName: _jsxFileName, lineNumber: 3618 }
                     }
                       , "Prev"
 
@@ -3839,7 +3997,7 @@ export default function Dashboard() {
                         setProjectsPage((p) =>
                           Math.min(totalPages, p + 1),
                         )
-                      
+                      , __self: this, __source: { fileName: _jsxFileName, lineNumber: 3629 }
                     }
                       , "Next"
 
@@ -3849,7 +4007,7 @@ export default function Dashboard() {
               })()
             )
 
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" }
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3647 } }
               , (() => {
                 const totalPages = Math.max(
                   1,
@@ -3879,7 +4037,7 @@ export default function Dashboard() {
                           _optionalChain([prev, 'optionalAccess', _50 => _50.id]) === project.id ? null : project,
                         )
                       ,
-                      color: CARD_COLORS[(start + index) % CARD_COLORS.length]
+                      color: CARD_COLORS[(start + index) % CARD_COLORS.length], __self: this, __source: { fileName: _jsxFileName, lineNumber: 3668 }
                     }
                     )
                   );
@@ -3895,7 +4053,7 @@ export default function Dashboard() {
                 flatGanttTasks: selectedProjectGanttTasks,
                 ganttProjectId: selectedProjectForDetails.id,
                 onProjectGanttRefresh: refetchSelectedProjectGantt,
-                onClear: () => setSelectedProjectForDetails(null)
+                onClear: () => setSelectedProjectForDetails(null), __self: this, __source: { fileName: _jsxFileName, lineNumber: 3685 }
               }
               )
             )

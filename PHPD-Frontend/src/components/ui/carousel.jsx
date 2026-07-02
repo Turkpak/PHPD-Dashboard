@@ -1,4 +1,5 @@
-﻿import * as React from "react"
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+import * as React from "react"
 import useEmblaCarousel, {
 
 } from "embla-carousel-react"
@@ -76,11 +77,11 @@ const Carousel = React.forwardRef
     }, [])
 
     const scrollPrev = React.useCallback(() => {
-      api?.scrollPrev?.()
+      _optionalChain([api, 'optionalAccess', _ => _.scrollPrev, 'call', _2 => _2()])
     }, [api])
 
     const scrollNext = React.useCallback(() => {
-      api?.scrollNext?.()
+      _optionalChain([api, 'optionalAccess', _3 => _3.scrollNext, 'call', _4 => _4()])
     }, [api])
 
     const handleKeyDown = React.useCallback(
@@ -114,7 +115,7 @@ const Carousel = React.forwardRef
       api.on("select", onSelect)
 
       return () => {
-        api?.off?.("select", onSelect)
+        _optionalChain([api, 'optionalAccess', _5 => _5.off, 'call', _6 => _6("select", onSelect)])
       }
     }, [api, onSelect])
 
@@ -125,12 +126,12 @@ const Carousel = React.forwardRef
           api: api,
           opts,
           orientation:
-            orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+            orientation || (_optionalChain([opts, 'optionalAccess', _7 => _7.axis]) === "y" ? "vertical" : "horizontal"),
           scrollPrev,
           scrollNext,
           canScrollPrev,
           canScrollNext,
-        }}
+        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 122}}
 
         , React.createElement('div', {
           ref: ref,
@@ -138,7 +139,7 @@ const Carousel = React.forwardRef
           className: cn("relative", className),
           role: "region",
           'aria-roledescription': "carousel",
-          ...props}
+          ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 135}}
 
           , children
         )
@@ -155,7 +156,7 @@ const CarouselContent = React.forwardRef
   const { carouselRef, orientation } = useCarousel()
 
   return (
-    React.createElement('div', { ref: carouselRef, className: "overflow-hidden"}
+    React.createElement('div', { ref: carouselRef, className: "overflow-hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 158}}
       , React.createElement('div', {
         ref: ref,
         className: cn(
@@ -163,7 +164,7 @@ const CarouselContent = React.forwardRef
           orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
           className
         ),
-        ...props}
+        ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 159}}
       )
     )
   )
@@ -186,7 +187,7 @@ const CarouselItem = React.forwardRef
         orientation === "horizontal" ? "pl-4" : "pt-4",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 180}}
     )
   )
 })
@@ -212,10 +213,10 @@ const CarouselPrevious = React.forwardRef
       ),
       disabled: !canScrollPrev,
       onClick: scrollPrev,
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 202}}
 
-      , React.createElement(ArrowLeft, { className: "h-4 w-4" } )
-      , React.createElement('span', { className: "sr-only"}, "Previous slide" )
+      , React.createElement(ArrowLeft, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 217}} )
+      , React.createElement('span', { className: "sr-only", __self: this, __source: {fileName: _jsxFileName, lineNumber: 218}}, "Previous slide" )
     )
   )
 })
@@ -241,10 +242,10 @@ const CarouselNext = React.forwardRef
       ),
       disabled: !canScrollNext,
       onClick: scrollNext,
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 231}}
 
-      , React.createElement(ArrowRight, { className: "h-4 w-4" } )
-      , React.createElement('span', { className: "sr-only"}, "Next slide" )
+      , React.createElement(ArrowRight, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 246}} )
+      , React.createElement('span', { className: "sr-only", __self: this, __source: {fileName: _jsxFileName, lineNumber: 247}}, "Next slide" )
     )
   )
 })

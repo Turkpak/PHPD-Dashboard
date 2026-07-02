@@ -1,4 +1,5 @@
-﻿import * as React from "react"
+const _jsxFileName = "";
+import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -12,7 +13,7 @@ const Input = React.forwardRef(
           className
         ),
         ref: ref,
-        ...props}
+        ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 8}}
       )
     )
   }

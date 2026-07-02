@@ -1,4 +1,5 @@
-﻿import React from "react";
+const _jsxFileName = "";
+import React from "react";
 import { Slot } from "@radix-ui/react-slot"
 import { cva, } from "class-variance-authority"
 
@@ -33,7 +34,7 @@ function ButtonGroup({
       'data-slot': "button-group",
       'data-orientation': orientation,
       className: cn(buttonGroupVariants({ orientation }), className),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 30}}
     )
   )
 }
@@ -53,7 +54,7 @@ function ButtonGroupText({
         "bg-muted shadow-xs flex items-center gap-2 rounded-md border px-4 text-sm font-medium [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 50}}
     )
   )
 }
@@ -71,7 +72,7 @@ function ButtonGroupSeparator({
         "bg-input relative !m-0 self-stretch data-[orientation=vertical]:h-auto",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 66}}
     )
   )
 }

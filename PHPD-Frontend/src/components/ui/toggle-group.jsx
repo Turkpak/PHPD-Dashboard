@@ -1,4 +1,5 @@
-﻿
+const _jsxFileName = "";"use client"
+
 import * as React from "react"
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
 
@@ -21,9 +22,9 @@ const ToggleGroup = React.forwardRef
   React.createElement(ToggleGroupPrimitive.Root, {
     ref: ref,
     className: cn("flex items-center justify-center gap-1", className),
-    ...props}
+    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 22}}
 
-    , React.createElement(ToggleGroupContext.Provider, { value: { variant, size }}
+    , React.createElement(ToggleGroupContext.Provider, { value: { variant, size }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 27}}
       , children
     )
   )
@@ -48,7 +49,7 @@ const ToggleGroupItem = React.forwardRef
         }),
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 43}}
 
       , children
     )

@@ -1,4 +1,5 @@
-﻿import * as React from "react"
+const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+import * as React from "react"
 
 import { Slot } from "@radix-ui/react-slot"
 import {
@@ -12,21 +13,6 @@ import {
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
-
-// Transpiler-compatibility helpers
-const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
-const _optionalChain = (ops) => {
-  let lastAccessLHS;
-  let value = ops[0];
-  let i = 1;
-  while (i < ops.length) {
-    const op = ops[i]; const fn = ops[i + 1]; i += 2;
-    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
-    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
-    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
-  }
-  return value;
-};
 
 const Form = FormProvider
 
@@ -46,8 +32,8 @@ const FormField =
   ...props
 }) => {
   return (
-    React.createElement(FormFieldContext.Provider, { value: { name: props.name }}
-      , React.createElement(Controller, { ...props} )
+    React.createElement(FormFieldContext.Provider, { value: { name: props.name }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 34}}
+      , React.createElement(Controller, { ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 35}} )
     )
   )
 }
@@ -92,8 +78,8 @@ const FormItem = React.forwardRef
   const id = React.useId()
 
   return (
-    React.createElement(FormItemContext.Provider, { value: { id }}
-      , React.createElement('div', { ref: ref, className: cn("space-y-2", className), ...props} )
+    React.createElement(FormItemContext.Provider, { value: { id }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 80}}
+      , React.createElement('div', { ref: ref, className: cn("space-y-2", className), ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 81}} )
     )
   )
 })
@@ -110,7 +96,7 @@ const FormLabel = React.forwardRef
       ref: ref,
       className: cn(error && "text-destructive", className),
       htmlFor: formItemId,
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 94}}
     )
   )
 })
@@ -132,7 +118,7 @@ const FormControl = React.forwardRef
           : `${formDescriptionId} ${formMessageId}`
       ,
       'aria-invalid': !!error,
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 111}}
     )
   )
 })
@@ -149,7 +135,7 @@ const FormDescription = React.forwardRef
       ref: ref,
       id: formDescriptionId,
       className: cn("text-[0.8rem] text-muted-foreground", className),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 133}}
     )
   )
 })
@@ -171,7 +157,7 @@ const FormMessage = React.forwardRef
       ref: ref,
       id: formMessageId,
       className: cn("text-[0.8rem] font-medium text-destructive", className),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 155}}
 
       , body
     )

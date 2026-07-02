@@ -1,4 +1,5 @@
-﻿import React from "react";
+import React from "react";
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }// ProjectActivityManagement.tsx
 import { Layout } from "@/components/layout/Layout";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -9,20 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search } from "lucide-react";
 import { listProjects, getProjectGanttData } from "@/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-// Transpiler-compatibility helpers
-const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
-const _optionalChain = (ops) => {
-  let lastAccessLHS;
-  let value = ops[0];
-  let i = 1;
-  while (i < ops.length) {
-    const op = ops[i]; const fn = ops[i + 1]; i += 2;
-    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
-    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
-    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
-  }
-  return value;
-};
 
 
 
@@ -173,32 +160,32 @@ export default function ProjectActivityManagement() {
   };
 
   return (
-    React.createElement(Layout, { title: "Project Activities" }
-      , React.createElement('div', { className: "flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20"       }
+    React.createElement(Layout, { title: "Project Activities" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 162}}
+      , React.createElement('div', { className: "flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 163}}
 
         /* Project Selector */
-        , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden"  }
-          , React.createElement(CardHeader, { className: "pb-2"}
-            , React.createElement(CardTitle, { className: "text-sm font-bold uppercase tracking-widest text-muted-foreground"    }, "Select Project"
+        , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 166}}
+          , React.createElement(CardHeader, { className: "pb-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 167}}
+            , React.createElement(CardTitle, { className: "text-sm font-bold uppercase tracking-widest text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 168}}, "Select Project"
 
             )
           )
-          , React.createElement(CardContent, { className: "pt-4"}
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"    }
-              , React.createElement('div', { className: "space-y-2"}
-                , React.createElement(Label, { htmlFor: "project-select", className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    }, "Project "
-                   , React.createElement('span', { className: "text-destructive"}, "*")
+          , React.createElement(CardContent, { className: "pt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 172}}
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 173}}
+              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 174}}
+                , React.createElement(Label, { htmlFor: "project-select", className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 175}}, "Project "
+                   , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 176}}, "*")
                 )
                 , React.createElement(Select, {
                   value: selectedProjectId ? String(selectedProjectId) : "",
-                  onValueChange: (v) => setSelectedProjectId(v ? Number(v) : null)}
+                  onValueChange: (v) => setSelectedProjectId(v ? Number(v) : null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 178}}
 
-                  , React.createElement(SelectTrigger, { className: "h-10"}
-                    , React.createElement(SelectValue, { placeholder: "Choose project" } )
+                  , React.createElement(SelectTrigger, { className: "h-10", __self: this, __source: {fileName: _jsxFileName, lineNumber: 182}}
+                    , React.createElement(SelectValue, { placeholder: "Choose project" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 183}} )
                   )
-                  , React.createElement(SelectContent, {}
+                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 185}}
                     , projects.map((p) => (
-                      React.createElement(SelectItem, { key: p.id, value: String(p.id)}
+                      React.createElement(SelectItem, { key: p.id, value: String(p.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 187}}
                         , p.project_name || `#${p.id}`
                       )
                     ))
@@ -206,13 +193,13 @@ export default function ProjectActivityManagement() {
                 )
               )
 
-              , React.createElement('div', { className: "relative w-full sm:w-72 mt-4 md:mt-0"    }
-                , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"      } )
+              , React.createElement('div', { className: "relative w-full sm:w-72 mt-4 md:mt-0"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 195}}
+                , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 196}} )
                 , React.createElement(Input, {
                   placeholder: "Filter activities..." ,
                   className: "pl-10 h-10" ,
                   value: searchQuery,
-                  onChange: (e) => setSearchQuery(e.target.value)}
+                  onChange: (e) => setSearchQuery(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 197}}
                 )
               )
             )
@@ -221,37 +208,37 @@ export default function ProjectActivityManagement() {
 
         /* Gantt Chart */
         , selectedProjectId && (
-          React.createElement(Card, { className: "mt-8"}
-            , React.createElement(CardHeader, {}
-              , React.createElement(CardTitle, {}, "Project Timeline (Gantt Chart)"   )
+          React.createElement(Card, { className: "mt-8", __self: this, __source: {fileName: _jsxFileName, lineNumber: 210}}
+            , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 211}}
+              , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 212}}, "Project Timeline (Gantt Chart)"   )
             )
-            , React.createElement(CardContent, { className: "overflow-x-auto"}
-              , React.createElement('div', { className: "min-w-[1400px]"}
+            , React.createElement(CardContent, { className: "overflow-x-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 214}}
+              , React.createElement('div', { className: "min-w-[1400px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 215}}
                 /* Header */
-                , React.createElement('div', { className: "flex border-b mb-4 text-xs font-semibold"    }
-                  , React.createElement('div', { className: "w-48"}, "Activity")
-                  , React.createElement('div', { className: "w-20 text-center" }, "Duration")
-                  , React.createElement('div', { className: "w-32 text-center" }, "Start Date" )
-                  , React.createElement('div', { className: "w-32 text-center" }, "Finish Date" )
-                  , React.createElement('div', { className: "flex-1 grid grid-flow-col auto-cols-[120px] text-center"    }
+                , React.createElement('div', { className: "flex border-b mb-4 text-xs font-semibold"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 217}}
+                  , React.createElement('div', { className: "w-48", __self: this, __source: {fileName: _jsxFileName, lineNumber: 218}}, "Activity")
+                  , React.createElement('div', { className: "w-20 text-center" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}, "Duration")
+                  , React.createElement('div', { className: "w-32 text-center" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 220}}, "Start Date" )
+                  , React.createElement('div', { className: "w-32 text-center" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 221}}, "Finish Date" )
+                  , React.createElement('div', { className: "flex-1 grid grid-flow-col auto-cols-[120px] text-center"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 222}}
                     , monthsArray.map((d, i) => (
-                      React.createElement('div', { key: i, className: "border-l py-1 font-medium"  }
+                      React.createElement('div', { key: i, className: "border-l py-1 font-medium"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 224}}
                         , d.toLocaleDateString("en-US", { month: "short" })
-                        , React.createElement('div', { className: "text-[10px] text-muted-foreground" }, d.getFullYear())
+                        , React.createElement('div', { className: "text-[10px] text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 226}}, d.getFullYear())
                       )
                     ))
                   )
                 )
 
                 /* Main Project Row */
-                , React.createElement('div', { className: "flex items-center gap-2 font-semibold bg-gray-100 px-2 py-1 rounded"       }
-                  , React.createElement('div', { className: "w-48 truncate" }
+                , React.createElement('div', { className: "flex items-center gap-2 font-semibold bg-gray-100 px-2 py-1 rounded"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 233}}
+                  , React.createElement('div', { className: "w-48 truncate" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 234}}
                     , _optionalChain([projects, 'access', _5 => _5.find, 'call', _6 => _6(p => p.id === selectedProjectId), 'optionalAccess', _7 => _7.project_name]), " (" , selectedProjectId, ")"
                   )
-                  , React.createElement('div', { className: "w-20 text-center text-xs"  }, projectDuration, "d")
-                  , React.createElement('div', { className: "w-32 text-center text-xs"  }, projectStart ? projectStart.toLocaleDateString() : "â€”")
-                  , React.createElement('div', { className: "w-32 text-center text-xs"  }, projectEnd ? projectEnd.toLocaleDateString() : "â€”")
-                  , React.createElement('div', { className: "flex-1 relative h-8 rounded overflow-visible bg-transparent"     }
+                  , React.createElement('div', { className: "w-20 text-center text-xs"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 237}}, projectDuration, "d")
+                  , React.createElement('div', { className: "w-32 text-center text-xs"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 238}}, projectStart ? projectStart.toLocaleDateString() : "—")
+                  , React.createElement('div', { className: "w-32 text-center text-xs"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 239}}, projectEnd ? projectEnd.toLocaleDateString() : "—")
+                  , React.createElement('div', { className: "flex-1 relative h-8 rounded overflow-visible bg-transparent"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 240}}
                     /* Plan Bar */
                     , projectStart && projectEnd && (
                       React.createElement('div', {
@@ -259,7 +246,7 @@ export default function ProjectActivityManagement() {
                         style: {
                           left: 0,
                           width: "100%",
-                        }}
+                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 243}}
                       )
                     )
                     /* Actual Bar */
@@ -268,13 +255,13 @@ export default function ProjectActivityManagement() {
                       style: {
                         left: 0,
                         width: `${totalDays}%`,
-                      }}
+                      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 252}}
                     )
                   )
                 )
 
                 /* Tasks */
-                , React.createElement('div', { className: "space-y-2 mt-2" }
+                , React.createElement('div', { className: "space-y-2 mt-2" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 263}}
                   , displayTasks.map((task) => {
                     const left = getTaskPosition(task.start);
                     const width = getTaskWidth(task.start, task.end);
@@ -286,9 +273,9 @@ export default function ProjectActivityManagement() {
                         : [];
 
                     return (
-                      React.createElement('div', { key: task.id, className: "flex items-center gap-2"  }
+                      React.createElement('div', { key: task.id, className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 275}}
                         /* Activity Name + Expand */
-                        , React.createElement('div', { className: "w-48 truncate" , style: { paddingLeft: `${(task.indent || 0) * 16}px` }}
+                        , React.createElement('div', { className: "w-48 truncate" , style: { paddingLeft: `${(task.indent || 0) * 16}px` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 277}}
                           , childMap[task.id] && childMap[task.id].length > 0 && (
                             React.createElement('button', {
                               onClick: () => {
@@ -296,32 +283,32 @@ export default function ProjectActivityManagement() {
                                 copy.has(task.id) ? copy.delete(task.id) : copy.add(task.id);
                                 setExpandedTasks(copy);
                               },
-                              className: "text-xs mr-1" }
+                              className: "text-xs mr-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 279}}
 
-                              , expandedTasks.has(task.id) ? 'â–¾' : 'â–¸'
+                              , expandedTasks.has(task.id) ? '▾' : '▸'
                             )
                           )
                           , task.label, task.activity_id ? ` (${task.activity_id})` : ''
                         )
 
                         /* Duration */
-                        , React.createElement('div', { className: "w-20 text-center text-xs"  }, duration, "d")
+                        , React.createElement('div', { className: "w-20 text-center text-xs"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 294}}, duration, "d")
 
                         /* Start Date */
-                        , React.createElement('div', { className: "w-32 text-center text-xs"  }, task.start ? new Date(task.start).toLocaleDateString() : "â€”")
+                        , React.createElement('div', { className: "w-32 text-center text-xs"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 297}}, task.start ? new Date(task.start).toLocaleDateString() : "—")
 
                         /* Finish Date */
-                        , React.createElement('div', { className: "w-32 text-center text-xs"  }, task.end ? new Date(task.end).toLocaleDateString() : "â€”")
+                        , React.createElement('div', { className: "w-32 text-center text-xs"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 300}}, task.end ? new Date(task.end).toLocaleDateString() : "—")
 
                         /* Timeline Bar */
-                        , React.createElement('div', { className: "flex-1 relative h-8 rounded overflow-visible bg-transparent"     }
-                          , React.createElement('div', { className: "absolute h-4 bg-red-400 rounded top-1"    , style: { left: `${left}%`, width: `${width}%` }} )
-                          , React.createElement('div', { className: "absolute h-2 bg-red-700 rounded top-4"    , style: { left: `${left}%`, width: `${actualWidth}%` }} )
+                        , React.createElement('div', { className: "flex-1 relative h-8 rounded overflow-visible bg-transparent"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 303}}
+                          , React.createElement('div', { className: "absolute h-4 bg-red-400 rounded top-1"    , style: { left: `${left}%`, width: `${width}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 304}} )
+                          , React.createElement('div', { className: "absolute h-2 bg-red-700 rounded top-4"    , style: { left: `${left}%`, width: `${actualWidth}%` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 305}} )
                           , delayLog.length > 0 && (
                             React.createElement('div', {
                               className: "absolute h-full bg-red-900 opacity-70 cursor-pointer"    ,
                               style: { left: `${left + actualWidth}%`, width: `${width - actualWidth}%` },
-                              onClick: () => setSelectedDelayLog(delayLog)}
+                              onClick: () => setSelectedDelayLog(delayLog), __self: this, __source: {fileName: _jsxFileName, lineNumber: 307}}
                             )
                           )
                         )
@@ -337,13 +324,13 @@ export default function ProjectActivityManagement() {
 
         /* Delay Modal */
         , selectedDelayLog && (
-          React.createElement(Dialog, { open: true, onOpenChange: () => setSelectedDelayLog(null)}
-            , React.createElement(DialogContent, {}
-              , React.createElement(DialogHeader, {}
-                , React.createElement(DialogTitle, {}, "Delay Log" )
+          React.createElement(Dialog, { open: true, onOpenChange: () => setSelectedDelayLog(null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 326}}
+            , React.createElement(DialogContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 327}}
+              , React.createElement(DialogHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 328}}
+                , React.createElement(DialogTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 329}}, "Delay Log" )
               )
-              , React.createElement('ul', { className: "list-disc pl-6" }
-                , selectedDelayLog.map((log, i) => React.createElement('li', { key: i}, log))
+              , React.createElement('ul', { className: "list-disc pl-6" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 331}}
+                , selectedDelayLog.map((log, i) => React.createElement('li', { key: i, __self: this, __source: {fileName: _jsxFileName, lineNumber: 332}}, log))
               )
             )
           )

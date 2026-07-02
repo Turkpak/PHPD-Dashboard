@@ -1,4 +1,5 @@
-﻿
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }"use client"
+
 import * as React from "react"
 import {
   ChevronDownIcon,
@@ -130,14 +131,14 @@ function Calendar({
               'data-slot': "calendar",
               ref: rootRef,
               className: cn(className),
-              ...props}
+              ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 130}}
             )
           )
         },
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === "left") {
             return (
-              React.createElement(ChevronLeftIcon, { className: cn("size-4", className), ...props} )
+              React.createElement(ChevronLeftIcon, { className: cn("size-4", className), ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 141}} )
             )
           }
 
@@ -145,20 +146,20 @@ function Calendar({
             return (
               React.createElement(ChevronRightIcon, {
                 className: cn("size-4", className),
-                ...props}
+                ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 147}}
               )
             )
           }
 
           return (
-            React.createElement(ChevronDownIcon, { className: cn("size-4", className), ...props} )
+            React.createElement(ChevronDownIcon, { className: cn("size-4", className), ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 155}} )
           )
         },
         DayButton: CalendarDayButton,
         WeekNumber: ({ children, ...props }) => {
           return (
-            React.createElement('td', { ...props}
-              , React.createElement('div', { className: "flex size-[--cell-size] items-center justify-center text-center"    }
+            React.createElement('td', { ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 161}}
+              , React.createElement('div', { className: "flex size-[--cell-size] items-center justify-center text-center"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 162}}
                 , children
               )
             )
@@ -166,7 +167,7 @@ function Calendar({
         },
         ...components,
       },
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 29}}
     )
   )
 }
@@ -181,7 +182,7 @@ function CalendarDayButton({
 
   const ref = React.useRef(null)
   React.useEffect(() => {
-    if (modifiers.focused) ref.current?.focus?.()
+    if (modifiers.focused) _optionalChain([ref, 'access', _ => _.current, 'optionalAccess', _2 => _2.focus, 'call', _3 => _3()])
   }, [modifiers.focused])
 
   return (
@@ -204,7 +205,7 @@ function CalendarDayButton({
         defaultClassNames.day,
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 189}}
     )
   )
 }

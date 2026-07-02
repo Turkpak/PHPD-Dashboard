@@ -1,4 +1,5 @@
-﻿import React from "react";
+const _jsxFileName = "";
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -89,14 +90,15 @@ export function InstallationCard({
           e.preventDefault();
           onClick();
         }
-      }}
+      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 100}}
 
-      , React.createElement('div', { className: "relative w-[95px] h-[95px] mb-5 flex items-center justify-center"}
+      , React.createElement('div', { className: "relative w-[95px] h-[95px] mb-5 flex items-center justify-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 101}}
         , React.createElement('svg', { 
             width: size, 
             height: size, 
             viewBox: `0 0 ${size} ${size}`, 
-            className: "transform -rotate-90 overflow-visible"}
+            className: "transform -rotate-90 overflow-visible",
+            __self: this, __source: {fileName: _jsxFileName, lineNumber: 102}}
           , React.createElement('circle', {
             cx: size / 2,
             cy: size / 2,
@@ -105,7 +107,7 @@ export function InstallationCard({
             stroke: "currentColor",
             strokeWidth: strokeWidth,
             className: "text-[#f3f4f6]" // Background ring
-            }
+            , __self: this, __source: {fileName: _jsxFileName, lineNumber: 103}}
           )
           , React.createElement('circle', {
             cx: size / 2,
@@ -118,21 +120,21 @@ export function InstallationCard({
             strokeDasharray: circumference,
             strokeDashoffset: strokeDashoffset,
             className: cn("transition-all duration-1000 ease-out", colors.stroke)
-            }
+            , __self: this, __source: {fileName: _jsxFileName, lineNumber: 104}}
           )
         )
-        , React.createElement('div', { className: "absolute inset-0 flex items-center justify-center"}
-          , React.createElement('span', { className: "text-lg font-bold text-[#0f172a] tracking-tight"}
+        , React.createElement('div', { className: "absolute inset-0 flex items-center justify-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 106}}
+          , React.createElement('span', { className: "text-lg font-bold text-[#0f172a] tracking-tight", __self: this, __source: {fileName: _jsxFileName, lineNumber: 107}}
             , Math.round(clampedPct), "%"
           )
         )
       )
 
-      , React.createElement('div', { className: "flex flex-col items-center text-center px-2"}
-        , React.createElement('h3', { className: "text-[#0f172a] dark:text-white font-bold text-base mb-1.5 line-clamp-1"}
+      , React.createElement('div', { className: "flex flex-col items-center text-center px-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 112}}
+        , React.createElement('h3', { className: "text-[#0f172a] dark:text-white font-bold text-base mb-1.5 line-clamp-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 113}}
           , title
         )
-        , React.createElement('p', { className: "text-[#64748b] dark:text-gray-400 text-[12px] leading-tight font-medium w-[120%]"}
+        , React.createElement('p', { className: "text-[#64748b] dark:text-gray-400 text-[12px] leading-tight font-medium w-[120%]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 116}}
           , status
         )
       )

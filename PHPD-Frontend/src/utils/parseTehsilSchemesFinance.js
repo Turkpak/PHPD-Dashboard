@@ -1,4 +1,5 @@
-﻿import * as XLSX from "xlsx";
+ function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+import * as XLSX from "xlsx";
 
 /** Amounts in the workbook are PKR millions (same convention as the source Excel). */
 
@@ -40,7 +41,7 @@ function readTriple(row, start) {
 export function excelTitleToAppDivision(title) {
   const trimmed = title.trim();
   const parts = trimmed.split(/\s*-\s*/);
-  const last = parts[parts.length - 1]?.trim?.() ?? "";
+  const last = _nullishCoalesce(_optionalChain([parts, 'access', _ => _[parts.length - 1], 'optionalAccess', _2 => _2.trim, 'call', _3 => _3()]), () => ( ""));
   const withoutSuffix = last.replace(/\s+Division\s*$/i, "").trim();
   if (!withoutSuffix) return null;
   const key = withoutSuffix.toLowerCase().replace(/\./g, "");
@@ -57,8 +58,8 @@ export function excelTitleToAppDivision(title) {
 
 
 /**
- * Parses `Tehsil Schemes Financial Details.xlsx` â€” sheet "Scheme Wise Sheet",
- * header rows then data rows (Sr., G.S No., â€¦ Capital/Revenue/Total blocks).
+ * Parses `Tehsil Schemes Financial Details.xlsx` — sheet "Scheme Wise Sheet",
+ * header rows then data rows (Sr., G.S No., … Capital/Revenue/Total blocks).
  */
 export function parseTehsilSchemesWorkbook(ab) {
   const wb = XLSX.read(ab, { type: "array", cellDates: true, raw: false });
@@ -89,8 +90,8 @@ export function parseTehsilSchemesWorkbook(ab) {
     const sr = num(row[0]);
     const gsRaw = row[1];
     const gsNo = gsRaw != null && gsRaw !== "" ? String(gsRaw).trim() : "";
-    const projectTitle = String(row[2] ?? "").trim();
-    const category = String(row[3] ?? "").trim();
+    const projectTitle = String(_nullishCoalesce(row[2], () => ( ""))).trim();
+    const category = String(_nullishCoalesce(row[3], () => ( ""))).trim();
 
     const isTotalRow =
       category.toLowerCase() === "total" ||

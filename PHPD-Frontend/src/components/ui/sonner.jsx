@@ -1,4 +1,5 @@
-﻿import React from "react";
+import React from "react";
+const _jsxFileName = "";"use client"
 
 import { Toaster as Sonner } from "sonner"
 
@@ -20,7 +21,7 @@ const Toaster = ({ ...props }) => {
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
       },
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 9}}
     )
   )
 }

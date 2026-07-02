@@ -1,4 +1,5 @@
-﻿import React from "react";
+import React from "react";
+const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }// ProjectGanttChart.tsx
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,7 +57,7 @@ export function ProjectGanttChart({ projectId: propProjectId, searchQuery = "" }
       const normalized = (fetchedTasks || []).map((t) => ({
         ...t,
         progress:
-          typeof t?.progress === "number" && Number.isFinite(t.progress)
+          typeof _optionalChain([t, 'optionalAccess', _ => _.progress]) === "number" && Number.isFinite(t.progress)
             ? Math.max(0, Math.min(100, t.progress))
             : 0,
       }));
@@ -120,38 +121,38 @@ export function ProjectGanttChart({ projectId: propProjectId, searchQuery = "" }
 
   // if we are in selector mode and no project chosen yet, prompt user
   if (!propProjectId && !selectedProjectId) {
-    return React.createElement('div', { className: "py-8 text-center text-muted-foreground"  }, "Please select a project above to view the Gantt chart."         );
+    return React.createElement('div', { className: "py-8 text-center text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 123}}, "Please select a project above to view the Gantt chart."         );
   }
 
-  if (loading) return React.createElement('div', {}, "Loading...");
-  if (error || filteredTasks.length === 0) return React.createElement('div', {}, "No tasks found."  );
+  if (loading) return React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 126}}, "Loading...");
+  if (error || filteredTasks.length === 0) return React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 127}}, "No tasks found."  );
 
   return (
     React.createElement(React.Fragment, null
       /* selector UI only when propProjectId wasn't provided */
       , !propProjectId && (
-        React.createElement(Card, { className: "border-none shadow-sm overflow-hidden mb-4"   }
-          , React.createElement(CardHeader, { className: "pb-2"}
-            , React.createElement(CardTitle, { className: "text-sm font-bold uppercase tracking-widest text-muted-foreground"    }, "Select Project"
+        React.createElement(Card, { className: "border-none shadow-sm overflow-hidden mb-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 133}}
+          , React.createElement(CardHeader, { className: "pb-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 134}}
+            , React.createElement(CardTitle, { className: "text-sm font-bold uppercase tracking-widest text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 135}}, "Select Project"
 
             )
           )
-          , React.createElement(CardContent, { className: "pt-4"}
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-6"   }
-              , React.createElement('div', { className: "space-y-2"}
-                , React.createElement(Label, { htmlFor: "project-select", className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    }, "Project "
-                   , React.createElement('span', { className: "text-destructive"}, "*")
+          , React.createElement(CardContent, { className: "pt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 139}}
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-6"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 140}}
+              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 141}}
+                , React.createElement(Label, { htmlFor: "project-select", className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 142}}, "Project "
+                   , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 143}}, "*")
                 )
                 , React.createElement(Select, {
                   value: selectedProjectId ? String(selectedProjectId) : "",
-                  onValueChange: (v) => setSelectedProjectId(v ? Number(v) : null)}
+                  onValueChange: (v) => setSelectedProjectId(v ? Number(v) : null), __self: this, __source: {fileName: _jsxFileName, lineNumber: 145}}
 
-                  , React.createElement(SelectTrigger, { className: "h-10"}
-                    , React.createElement(SelectValue, { placeholder: "Choose project" } )
+                  , React.createElement(SelectTrigger, { className: "h-10", __self: this, __source: {fileName: _jsxFileName, lineNumber: 149}}
+                    , React.createElement(SelectValue, { placeholder: "Choose project" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 150}} )
                   )
-                  , React.createElement(SelectContent, {}
+                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 152}}
                     , projects.map((p) => (
-                      React.createElement(SelectItem, { key: p.id, value: String(p.id)}
+                      React.createElement(SelectItem, { key: p.id, value: String(p.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 154}}
                         , p.project_name || `#${p.id}`
                       )
                     ))
@@ -159,13 +160,13 @@ export function ProjectGanttChart({ projectId: propProjectId, searchQuery = "" }
                 )
               )
 
-              , React.createElement('div', { className: "relative w-full sm:w-72 mt-4 md:mt-0"    }
-                , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"      } )
+              , React.createElement('div', { className: "relative w-full sm:w-72 mt-4 md:mt-0"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 162}}
+                , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 163}} )
                 , React.createElement(Input, {
                   placeholder: "Filter activities..." ,
                   className: "pl-10 h-10" ,
                   value: searchQueryLocal,
-                  onChange: (e) => setSearchQueryLocal(e.target.value)}
+                  onChange: (e) => setSearchQueryLocal(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 164}}
                 )
               )
             )
@@ -173,20 +174,21 @@ export function ProjectGanttChart({ projectId: propProjectId, searchQuery = "" }
         )
       )
 
-      , React.createElement(Card, { className: "mt-8"}
-        , React.createElement(CardHeader, {}
-          , React.createElement(CardTitle, {}, "Project Timeline (Gantt Chart)"   )
+      , React.createElement(Card, { className: "mt-8", __self: this, __source: {fileName: _jsxFileName, lineNumber: 176}}
+        , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 177}}
+          , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 178}}, "Project Timeline (Gantt Chart)"   )
         )
-        , React.createElement(CardContent, {}
+        , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 180}}
           , React.createElement(ProjectGanttTree, {
-            tasks: filteredTasks,
-            projectId: selectedProjectId ?? undefined,
-            projectName:
+            tasks: filteredTasks ,
+            projectId: _nullishCoalesce(selectedProjectId, () => ( undefined)),
+            projectName: 
               selectedProjectId != null
-                ? (projects.find((p) => p.id === selectedProjectId)?.project_name ?? `#${selectedProjectId}`)
-                : undefined,
+                ? _nullishCoalesce(_optionalChain([projects, 'access', _2 => _2.find, 'call', _3 => _3((p) => p.id === selectedProjectId), 'optionalAccess', _4 => _4.project_name]), () => ( `#${selectedProjectId}`))
+                : undefined
+            ,
             onDelayLogSaved: loadGantt,
-            onProgressSaved: loadGantt}
+            onProgressSaved: loadGantt, __self: this, __source: {fileName: _jsxFileName, lineNumber: 181}}
           )
         )
       )

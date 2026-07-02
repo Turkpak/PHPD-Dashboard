@@ -1,4 +1,5 @@
-﻿import { request, requestRaw } from "./client";
+ function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+import { request, requestRaw } from "./client";
 
 const CREATE = "create-project-document/";
 const LIST = "list-project-document/";
@@ -33,10 +34,10 @@ export async function createProjectDocument(payload) {
 
 function extractListPayload(raw) {
   const r = raw ;
-  const results = r?.results ;
-  if (results?.data != null && Array.isArray(results.data)) return results.data ;
-  if (Array.isArray(r?.results)) return r.results ;
-  if (Array.isArray(r?.data)) return r.data ;
+  const results = _optionalChain([r, 'optionalAccess', _ => _.results]) ;
+  if (_optionalChain([results, 'optionalAccess', _2 => _2.data]) != null && Array.isArray(results.data)) return results.data ;
+  if (Array.isArray(_optionalChain([r, 'optionalAccess', _3 => _3.results]))) return r.results ;
+  if (Array.isArray(_optionalChain([r, 'optionalAccess', _4 => _4.data]))) return r.data ;
   return [];
 }
 
@@ -51,8 +52,8 @@ export async function listProjectDocuments(params
 
 ) {
   const q = {};
-  if (params?.project != null) q.project = String(params.project);
-  if (params?.activity != null) {
+  if (_optionalChain([params, 'optionalAccess', _5 => _5.project]) != null) q.project = String(params.project);
+  if (_optionalChain([params, 'optionalAccess', _6 => _6.activity]) != null) {
     q.activity = String(params.activity);
     q.activity_id = String(params.activity);
   }
@@ -79,7 +80,7 @@ export async function updateProjectDocument(
     if (payload.activity == null) form.append("activity", "");
     else form.append("activity", String(payload.activity));
   }
-  if (payload.title !== undefined) form.append("title", payload.title ?? "");
+  if (payload.title !== undefined) form.append("title", _nullishCoalesce(payload.title, () => ( "")));
   if (payload.file != null) form.append("file", payload.file);
   return requestRaw(`${UPDATE}${id}/`, { method: "PUT", formData: form });
 }

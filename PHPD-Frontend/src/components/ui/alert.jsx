@@ -1,4 +1,5 @@
-﻿import * as React from "react"
+const _jsxFileName = "";
+import * as React from "react"
 import { cva, } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -27,7 +28,7 @@ const Alert = React.forwardRef
     ref: ref,
     role: "alert",
     className: cn(alertVariants({ variant }), className),
-    ...props}
+    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 26}}
   )
 ))
 Alert.displayName = "Alert"
@@ -39,7 +40,7 @@ const AlertTitle = React.forwardRef
   React.createElement('h5', {
     ref: ref,
     className: cn("mb-1 font-medium leading-none tracking-tight", className),
-    ...props}
+    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 39}}
   )
 ))
 AlertTitle.displayName = "AlertTitle"
@@ -51,7 +52,7 @@ const AlertDescription = React.forwardRef
   React.createElement('div', {
     ref: ref,
     className: cn("text-sm [&_p]:leading-relaxed", className),
-    ...props}
+    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 51}}
   )
 ))
 AlertDescription.displayName = "AlertDescription"

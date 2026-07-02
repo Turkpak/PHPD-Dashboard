@@ -1,4 +1,5 @@
-﻿import React from "react";
+const _jsxFileName = "";
+import React from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWindowSize } from "@/hooks/use-window-size";
@@ -37,43 +38,43 @@ export function TrendChart({ cityData, cityKey = "default" }) {
   const gradientId2 = `colorSurveys-${cityKey}`;
 
   return (
-    React.createElement(Card, { className: "shadow-lg border-border/50 border-2 transition-colors hover:border-primary/60"    }
-      , React.createElement(CardHeader, { className: "pb-4"}
-        , React.createElement(CardTitle, { className: "font-heading text-xl font-bold"  }, "Installation Progress Timeline"  )
-        , React.createElement(CardDescription, { className: "text-sm"}, "Monthly Progress Overview (Last 6 Months)"     )
+    React.createElement(Card, { className: "shadow-lg border-border/50 border-2 transition-colors hover:border-primary/60"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 39}}
+      , React.createElement(CardHeader, { className: "pb-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 40}}
+        , React.createElement(CardTitle, { className: "font-heading text-xl font-bold"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 41}}, "Installation Progress Timeline"  )
+        , React.createElement(CardDescription, { className: "text-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 42}}, "Monthly Progress Overview (Last 6 Months)"     )
       )
-      , React.createElement(CardContent, {}
-        , React.createElement('div', { className: "w-full", style: { height: isMobile ? '240px' : isTablet ? '280px' : '320px' }}
-        , React.createElement(ResponsiveContainer, { width: "100%", height: "100%"}
+      , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 44}}
+        , React.createElement('div', { className: "w-full", style: { height: isMobile ? '240px' : isTablet ? '280px' : '320px' }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 45}}
+        , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 46}}
             , React.createElement(AreaChart, { data: data, margin: { 
               top: 10, 
               right: isMobile ? 5 : 10, 
               left: isMobile ? -10 : 0, 
               bottom: isMobile ? 5 : 0 
-            }, key: cityKey}
-            , React.createElement('defs', {}
-              , React.createElement('linearGradient', { id: gradientId1, x1: "0", y1: "0", x2: "0", y2: "1"}
-                , React.createElement('stop', { offset: "5%", stopColor: "hsl(var(--primary))", stopOpacity: 0})
-                , React.createElement('stop', { offset: "95%", stopColor: "hsl(var(--primary))", stopOpacity: 0})
+            }, key: cityKey, __self: this, __source: {fileName: _jsxFileName, lineNumber: 47}}
+            , React.createElement('defs', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 53}}
+              , React.createElement('linearGradient', { id: gradientId1, x1: "0", y1: "0", x2: "0", y2: "1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 54}}
+                , React.createElement('stop', { offset: "5%", stopColor: "hsl(var(--primary))", stopOpacity: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 55}})
+                , React.createElement('stop', { offset: "95%", stopColor: "hsl(var(--primary))", stopOpacity: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 56}})
               )
-              , React.createElement('linearGradient', { id: gradientId2, x1: "0", y1: "0", x2: "0", y2: "1"}
-                , React.createElement('stop', { offset: "5%", stopColor: "#2F8F6C", stopOpacity: 0})
-                , React.createElement('stop', { offset: "95%", stopColor: "#2F8F6C", stopOpacity: 0})
+              , React.createElement('linearGradient', { id: gradientId2, x1: "0", y1: "0", x2: "0", y2: "1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 58}}
+                , React.createElement('stop', { offset: "5%", stopColor: "#2F8F6C", stopOpacity: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 59}})
+                , React.createElement('stop', { offset: "95%", stopColor: "#2F8F6C", stopOpacity: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 60}})
               )
             )
-            , React.createElement(CartesianGrid, { strokeDasharray: "3 3" , vertical: false, stroke: "hsl(var(--border))"} )
+            , React.createElement(CartesianGrid, { strokeDasharray: "3 3" , vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 63}} )
               , React.createElement(XAxis, { 
                 dataKey: "month", 
                 axisLine: false, 
                 tickLine: false, 
-                tick: { fontSize: isMobile ? 10 : isTablet ? 11 : 12, fill: "hsl(var(--muted-foreground))" }} 
+                tick: { fontSize: isMobile ? 10 : isTablet ? 11 : 12, fill: "hsl(var(--muted-foreground))" }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 64}} 
               )
               , React.createElement(YAxis, { 
                 axisLine: false, 
                 tickLine: false, 
                 width: isMobile ? 35 : 50,
                 tick: { fontSize: isMobile ? 10 : isTablet ? 11 : 12, fill: "hsl(var(--muted-foreground))" }, 
-                domain: [0, 100]} 
+                domain: [0, 100], __self: this, __source: {fileName: _jsxFileName, lineNumber: 70}} 
               )
             , React.createElement(Tooltip, { 
                 contentStyle: { 
@@ -83,10 +84,10 @@ export function TrendChart({ cityData, cityKey = "default" }) {
                   fontSize: isMobile ? '10px' : '12px',
                   padding: isMobile ? '4px 6px' : '8px 12px'
                 },
-              itemStyle: { color: "hsl(var(--foreground))" }}
+              itemStyle: { color: "hsl(var(--foreground))" }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 77}}
             )
-              , React.createElement(Area, { type: "monotone", dataKey: "overall", stroke: "hsl(var(--primary))", fillOpacity: 0, fill: `url(#${gradientId1})`, strokeWidth: isMobile ? 1.5 : 2} )
-              , React.createElement(Area, { type: "monotone", dataKey: "surveys", stroke: "#2F8F6C", fillOpacity: 0, fill: `url(#${gradientId2})`, strokeWidth: isMobile ? 1 : 1.5, strokeDasharray: "5 5" } )
+              , React.createElement(Area, { type: "monotone", dataKey: "overall", stroke: "hsl(var(--primary))", fillOpacity: 0, fill: `url(#${gradientId1})`, strokeWidth: isMobile ? 1.5 : 2, __self: this, __source: {fileName: _jsxFileName, lineNumber: 87}} )
+              , React.createElement(Area, { type: "monotone", dataKey: "surveys", stroke: "#2F8F6C", fillOpacity: 0, fill: `url(#${gradientId2})`, strokeWidth: isMobile ? 1 : 1.5, strokeDasharray: "5 5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 88}} )
           )
         )
         )

@@ -1,22 +1,5 @@
 ﻿import React from "react";
-
-// Transpiler-compatibility helpers (nullish coalesce + optional chain)
-const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
-const _optionalChain = (ops) => {
-  let lastAccessLHS;
-  let value = ops[0];
-  let i = 1;
-  while (i < ops.length) {
-    const op = ops[i];
-    const fn = ops[i + 1];
-    i += 2;
-    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
-    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
-    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
-  }
-  return value;
-};
-
+const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -306,13 +289,13 @@ export default function UserManagement() {
   const isSubmitDisabled = addUserStep === 2 && isCreatingWithPermissions;
 
   const getStakeholderLabel = (id) => {
-    if (id == null) return "â€”";
+    if (id == null) return "—";
     const s = stakeholders.find((st) => st.id === id);
     return s ? `${s.stakeholder_title} (${s.stakeholder_type})` : String(id);
   };
 
   const formatRole = (role) => {
-    if (!role) return "â€”";
+    if (!role) return "—";
     const r = role.trim().toLowerCase();
     if (r === "super_admin") return "Super Admin";
     if (r === "contractor") return "Contractor";
@@ -398,16 +381,16 @@ export default function UserManagement() {
 
   if (!isSuperAdmin) {
     return (
-      React.createElement(Layout, { title: "User Management" }
-        , React.createElement('div', { className: "space-y-6"}
-          , React.createElement(Card, { className: "border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800"   }
-            , React.createElement(CardHeader, {}
-              , React.createElement(CardTitle, { className: "flex items-center gap-2 text-amber-800 dark:text-amber-200"    }
-                , React.createElement(ShieldAlert, { className: "h-5 w-5" } ), "Access restricted"
+      React.createElement(Layout, { title: "User Management" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 383}}
+        , React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 384}}
+          , React.createElement(Card, { className: "border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 385}}
+            , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 386}}
+              , React.createElement(CardTitle, { className: "flex items-center gap-2 text-amber-800 dark:text-amber-200"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 387}}
+                , React.createElement(ShieldAlert, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 388}} ), "Access restricted"
 
               )
-              , React.createElement(CardDescription, {}, "User Management is available only to Super Admin. Your role: "
-                          , React.createElement('strong', {}, currentRole || "â€”"), ". Contact an administrator to manage users."
+              , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 391}}, "User Management is available only to Super Admin. Your role: "
+                          , React.createElement('strong', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 392}}, currentRole || "—"), ". Contact an administrator to manage users."
               )
             )
           )
@@ -417,18 +400,18 @@ export default function UserManagement() {
   }
 
   return (
-    React.createElement(Layout, { title: "User Management" }
-      , React.createElement('div', { className: "space-y-6"}
-        /* Header with Add New User button on the right â€” Super Admin only */
-        , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"     }
+    React.createElement(Layout, { title: "User Management" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 402}}
+      , React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 403}}
+        /* Header with Add New User button on the right — Super Admin only */
+        , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 405}}
           , React.createElement(Button, {
             onClick: () => setDialogOpen(true),
             size: "sm",
-            className: "gap-2 w-fit self-start sm:w-auto sm:self-auto shrink-0 px-3"      }
+            className: "gap-2 w-fit self-start sm:w-auto sm:self-auto shrink-0 px-3"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 406}}
 
-            , React.createElement(UserPlus, { className: "h-4 w-4" } )
-            , React.createElement('span', { className: "sm:hidden"}, "Add")
-            , React.createElement('span', { className: "hidden sm:inline" }, "Add New User"  )
+            , React.createElement(UserPlus, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 411}} )
+            , React.createElement('span', { className: "sm:hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 412}}, "Add")
+            , React.createElement('span', { className: "hidden sm:inline" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 413}}, "Add New User"  )
           )
         )
 
@@ -438,108 +421,108 @@ export default function UserManagement() {
           onOpenChange: (open) => {
             setDialogOpen(open);
             if (!open) resetForm();
-          }}
+          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 418}}
 
-          , React.createElement(DialogContent, { className: "max-w-xl max-h-[90vh] overflow-y-auto"  }
-            , React.createElement(DialogHeader, {}
-              , React.createElement(DialogTitle, { className: "flex items-center gap-2"  }
-                , React.createElement(UserPlus, { className: "h-5 w-5" } ), "Add New User"
-                  , addUserStep === 2 ? " â€” Step 2 of 2" : ""
+          , React.createElement(DialogContent, { className: "max-w-xl max-h-[90vh] overflow-y-auto"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 425}}
+            , React.createElement(DialogHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 426}}
+              , React.createElement(DialogTitle, { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 427}}
+                , React.createElement(UserPlus, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 428}} ), "Add New User"
+                  , addUserStep === 2 ? " — Step 2 of 2" : ""
               )
               , addUserStep === 2 && (
-                React.createElement(DialogDescription, {}, "Set page permissions for this user. Read = can view, Create = add new, Update = edit, Delete = remove."
+                React.createElement(DialogDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 432}}, "Set page permissions for this user. Read = can view, Create = add new, Update = edit, Delete = remove."
 
                 )
               )
             )
-            , React.createElement('form', { onSubmit: handleAddUserSubmit, className: "space-y-6"}
+            , React.createElement('form', { onSubmit: handleAddUserSubmit, className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 437}}
               , addUserStep === 1 && (
                 React.createElement(React.Fragment, null
-                  , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2"  }
-                    , React.createElement('div', { className: "space-y-2"}
-                      , React.createElement(Label, { htmlFor: "dialog-email"}, "Email")
+                  , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 440}}
+                    , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 441}}
+                      , React.createElement(Label, { htmlFor: "dialog-email", __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}, "Email")
                       , React.createElement(Input, {
                         id: "dialog-email",
                         type: "email",
                         placeholder: "e.g. sana@psc.com" ,
                         value: email,
                         onChange: (e) => setEmail(e.target.value),
-                        autoComplete: "email"}
+                        autoComplete: "email", __self: this, __source: {fileName: _jsxFileName, lineNumber: 443}}
                       )
                     )
-                    , React.createElement('div', { className: "space-y-2"}
-                      , React.createElement(Label, { htmlFor: "dialog-role"}, "Role")
-                      , React.createElement(Select, { value: stakeholderId, onValueChange: setStakeholderId}
-                        , React.createElement(SelectTrigger, { id: "dialog-role"}
-                          , React.createElement(SelectValue, { placeholder: "Select role (Consultant / Contractor)"    } )
+                    , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 452}}
+                      , React.createElement(Label, { htmlFor: "dialog-role", __self: this, __source: {fileName: _jsxFileName, lineNumber: 453}}, "Role")
+                      , React.createElement(Select, { value: stakeholderId, onValueChange: setStakeholderId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 454}}
+                        , React.createElement(SelectTrigger, { id: "dialog-role", __self: this, __source: {fileName: _jsxFileName, lineNumber: 455}}
+                          , React.createElement(SelectValue, { placeholder: "Select role (Consultant / Contractor)"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 456}} )
                         )
-                        , React.createElement(SelectContent, {}
+                        , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 458}}
                           , roleStakeholders.map((s) => (
-                            React.createElement(SelectItem, { key: s.id, value: String(s.id)}
+                            React.createElement(SelectItem, { key: s.id, value: String(s.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 460}}
                               , s.stakeholder_type
-                              , s.stakeholder_title ? ` â€” ${s.stakeholder_title}` : ""
+                              , s.stakeholder_title ? ` — ${s.stakeholder_title}` : ""
                             )
                           ))
                         )
                       )
                     )
                   )
-                  , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2"  }
-                    , React.createElement('div', { className: "space-y-2"}
-                      , React.createElement(Label, { htmlFor: "dialog-first_name"}, "First name" )
+                  , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 469}}
+                    , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 470}}
+                      , React.createElement(Label, { htmlFor: "dialog-first_name", __self: this, __source: {fileName: _jsxFileName, lineNumber: 471}}, "First name" )
                       , React.createElement(Input, {
                         id: "dialog-first_name",
                         placeholder: "e.g. Sana" ,
                         value: firstName,
                         onChange: (e) => setFirstName(e.target.value),
-                        autoComplete: "given-name"}
+                        autoComplete: "given-name", __self: this, __source: {fileName: _jsxFileName, lineNumber: 472}}
                       )
                     )
-                    , React.createElement('div', { className: "space-y-2"}
-                      , React.createElement(Label, { htmlFor: "dialog-last_name"}, "Last name" )
+                    , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 480}}
+                      , React.createElement(Label, { htmlFor: "dialog-last_name", __self: this, __source: {fileName: _jsxFileName, lineNumber: 481}}, "Last name" )
                       , React.createElement(Input, {
                         id: "dialog-last_name",
                         placeholder: "e.g. Admin" ,
                         value: lastName,
                         onChange: (e) => setLastName(e.target.value),
-                        autoComplete: "family-name"}
+                        autoComplete: "family-name", __self: this, __source: {fileName: _jsxFileName, lineNumber: 482}}
                       )
                     )
                   )
-                  , React.createElement('div', { className: "space-y-2"}
-                    , React.createElement(Label, { htmlFor: "dialog-password"}, "Password")
+                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 491}}
+                    , React.createElement(Label, { htmlFor: "dialog-password", __self: this, __source: {fileName: _jsxFileName, lineNumber: 492}}, "Password")
                     , React.createElement(Input, {
                       id: "dialog-password",
                       type: "password",
                       placeholder: "Min. 8 characters"  ,
                       value: password,
                       onChange: (e) => setPassword(e.target.value),
-                      autoComplete: "new-password"}
+                      autoComplete: "new-password", __self: this, __source: {fileName: _jsxFileName, lineNumber: 493}}
                     )
                   )
                 )
               )
 
               , addUserStep === 2 && (
-                React.createElement('div', { className: "rounded-md border overflow-x-auto"  }
-                  , React.createElement(Table, {}
-                    , React.createElement(TableHeader, {}
-                      , React.createElement(TableRow, {}
-                        , React.createElement(TableHead, { className: "min-w-[220px]"}, "Page")
-                        , React.createElement(TableHead, { className: "text-center w-[80px]" }, "Read")
-                        , React.createElement(TableHead, { className: "text-center w-[80px]" }, "Create")
-                        , React.createElement(TableHead, { className: "text-center w-[80px]" }, "Update")
-                        , React.createElement(TableHead, { className: "text-center w-[80px]" }, "Delete")
+                React.createElement('div', { className: "rounded-md border overflow-x-auto"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 506}}
+                  , React.createElement(Table, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 507}}
+                    , React.createElement(TableHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 508}}
+                      , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 509}}
+                        , React.createElement(TableHead, { className: "min-w-[220px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 510}}, "Page")
+                        , React.createElement(TableHead, { className: "text-center w-[80px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 511}}, "Read")
+                        , React.createElement(TableHead, { className: "text-center w-[80px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 512}}, "Create")
+                        , React.createElement(TableHead, { className: "text-center w-[80px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 513}}, "Update")
+                        , React.createElement(TableHead, { className: "text-center w-[80px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 514}}, "Delete")
                       )
                     )
-                    , React.createElement(TableBody, {}
+                    , React.createElement(TableBody, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 517}}
                       , visiblePermissionRows.map((row) => {
                         const p = getNewUserPerm(row.sidebar_label, row.sub_label);
                         const isGroup = row.kind === "group";
                         const groupId = row.groupId;
                         return (
-                          React.createElement(TableRow, { key: permissionRowKey(row.sidebar_label, row.sub_label)}
-                            , React.createElement(TableCell, { className: "font-medium"}
+                          React.createElement(TableRow, { key: permissionRowKey(row.sidebar_label, row.sub_label), __self: this, __source: {fileName: _jsxFileName, lineNumber: 523}}
+                            , React.createElement(TableCell, { className: "font-medium", __self: this, __source: {fileName: _jsxFileName, lineNumber: 524}}
                               , isGroup && groupId ? (
                                 React.createElement('button', {
                                   type: "button",
@@ -549,54 +532,54 @@ export default function UserManagement() {
                                       ...prev,
                                       [groupId]: !prev[groupId],
                                     }))
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 526}}
 
-                                  , React.createElement('span', { className: "text-base leading-none" }, expandedGroups[groupId] ? "â–¾" : "â–¸")
-                                  , React.createElement('span', {}, row.displayLabel)
+                                  , React.createElement('span', { className: "text-base leading-none" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 536}}, expandedGroups[groupId] ? "▾" : "▸")
+                                  , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 537}}, row.displayLabel)
                                 )
                               ) : (
-                                React.createElement('span', { style: { paddingLeft: `${(_nullishCoalesce(row.indent, () => ( 0))) * 16}px` }}
+                                React.createElement('span', { style: { paddingLeft: `${(_nullishCoalesce(row.indent, () => ( 0))) * 16}px` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 540}}
                                   , row.displayLabel
                                 )
                               )
                             )
-                            , React.createElement(TableCell, { className: "text-center"}
+                            , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 545}}
                               , !isGroup ? (
                                 React.createElement(Checkbox, {
                                   checked: _nullishCoalesce(p.read, () => ( false)),
                                   onCheckedChange: (c) =>
                                     setNewUserPerm(row.sidebar_label, row.sub_label, "read", !!c)
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 547}}
                                 )
                               ) : null
                             )
-                            , React.createElement(TableCell, { className: "text-center"}
+                            , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 555}}
                               , !isGroup ? (
                                 React.createElement(Checkbox, {
                                   checked: _nullishCoalesce(p.create, () => ( false)),
                                   onCheckedChange: (c) =>
                                     setNewUserPerm(row.sidebar_label, row.sub_label, "create", !!c)
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 557}}
                                 )
                               ) : null
                             )
-                            , React.createElement(TableCell, { className: "text-center"}
+                            , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 565}}
                               , !isGroup ? (
                                 React.createElement(Checkbox, {
                                   checked: _nullishCoalesce(p.update, () => ( false)),
                                   onCheckedChange: (c) =>
                                     setNewUserPerm(row.sidebar_label, row.sub_label, "update", !!c)
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 567}}
                                 )
                               ) : null
                             )
-                            , React.createElement(TableCell, { className: "text-center"}
+                            , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 575}}
                               , !isGroup ? (
                                 React.createElement(Checkbox, {
                                   checked: _nullishCoalesce(p.delete, () => ( false)),
                                   onCheckedChange: (c) =>
                                     setNewUserPerm(row.sidebar_label, row.sub_label, "delete", !!c)
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 577}}
                                 )
                               ) : null
                             )
@@ -608,19 +591,19 @@ export default function UserManagement() {
                 )
               )
 
-              , React.createElement(DialogFooter, {}
+              , React.createElement(DialogFooter, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 593}}
                 , React.createElement(Button, {
                   type: "button",
                   variant: "outline",
                   onClick: () => {
                     if (addUserStep === 2) setAddUserStep(1);
                     else setDialogOpen(false);
-                  }}
+                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 594}}
 
                   , addUserStep === 2 ? "Back" : "Cancel"
                 )
-                , React.createElement(Button, { type: "submit", disabled: isSubmitDisabled}
-                  , addUserStep === 1 ? "Next" : isSubmitDisabled ? "Creatingâ€¦" : "Create user"
+                , React.createElement(Button, { type: "submit", disabled: isSubmitDisabled, __self: this, __source: {fileName: _jsxFileName, lineNumber: 604}}
+                  , addUserStep === 1 ? "Next" : isSubmitDisabled ? "Creating…" : "Create user"
                 )
               )
             )
@@ -628,24 +611,24 @@ export default function UserManagement() {
         )
 
         /* Users table */
-        , React.createElement(Card, {}
-          , React.createElement(CardHeader, {}
-            , React.createElement(CardTitle, { className: "flex items-center gap-2"  }
-              , React.createElement(Users, { className: "h-5 w-5" } ), "Registered Users"
+        , React.createElement(Card, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 613}}
+          , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 614}}
+            , React.createElement(CardTitle, { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 615}}
+              , React.createElement(Users, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 616}} ), "Registered Users"
 
             )
-            , React.createElement(CardDescription, {}, "Users added by Super Admin,                                        Total: "
+            , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 619}}, "Users added by Super Admin,                                        Total: "
                                                            , users.length
               , users.length > USERS_PER_PAGE && (
-                React.createElement(React.Fragment, null, " Â· Page "   , usersPage, " of "  , totalUsersPages)
+                React.createElement(React.Fragment, null, " · Page "   , usersPage, " of "  , totalUsersPages)
               )
             )
           )
-          , React.createElement(CardContent, {}
+          , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 626}}
             , usersLoading ? (
-              React.createElement('p', { className: "text-muted-foreground py-8 text-center"  }, "Loading usersâ€¦" )
+              React.createElement('p', { className: "text-muted-foreground py-8 text-center"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 628}}, "Loading users…" )
             ) : users.length === 0 ? (
-              React.createElement('p', { className: "text-muted-foreground py-8 text-center"  }, "No users yet. Click \"Add New User\" to create one."         )
+              React.createElement('p', { className: "text-muted-foreground py-8 text-center"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 630}}, "No users yet. Click \"Add New User\" to create one."         )
             ) : (
               React.createElement(React.Fragment, null
                 , React.createElement('div', { className: "rounded-md border overflow-x-auto"  }
@@ -661,7 +644,7 @@ export default function UserManagement() {
                         , React.createElement(TableHead, { className: "text-right"}, "Permissions")
                       )
                     )
-                    , React.createElement(TableBody, {}
+                    , React.createElement(TableBody, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 646}}
                       , paginatedUsers.map((u, index) => {
                         const rowNumber = (usersPage - 1) * USERS_PER_PAGE + index + 1;
                         const isSuperAdminUser = (_nullishCoalesce(u.role, () => ( ""))).trim().toLowerCase() === "super_admin";
@@ -682,7 +665,7 @@ export default function UserManagement() {
                                 , u.is_active ? "Active" : "Inactive"
                               )
                             )
-                            , React.createElement(TableCell, { className: "text-right"}
+                            , React.createElement(TableCell, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 668}}
                               , !isSuperAdminUser && (
                                 React.createElement(Button, {
                                   variant: "ghost",
@@ -691,13 +674,13 @@ export default function UserManagement() {
                                   onClick: () => {
                                     setSelectedUserIdForPermissions(u.id);
                                     _optionalChain([pagePermissionsCardRef, 'access', _3 => _3.current, 'optionalAccess', _4 => _4.scrollIntoView, 'call', _5 => _5({ behavior: "smooth", block: "start" })]);
-                                  }}
+                                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 670}}
 
-                                  , React.createElement(UserCog, { className: "h-3.5 w-3.5" } ), "View permissions"
+                                  , React.createElement(UserCog, { className: "h-3.5 w-3.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 679}} ), "View permissions"
 
                                 )
                               )
-                              , isSuperAdminUser && React.createElement('span', { className: "text-muted-foreground text-xs" }, "â€”")
+                              , isSuperAdminUser && React.createElement('span', { className: "text-muted-foreground text-xs" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 683}}, "—")
                             )
                           )
                         );
@@ -706,19 +689,19 @@ export default function UserManagement() {
                   )
                 )
                 , totalUsersPages > 1 && (
-                  React.createElement('div', { className: "flex items-center justify-between gap-4 mt-4"    }
-                    , React.createElement('p', { className: "text-sm text-muted-foreground" }, "Showing "
-                       , ((usersPage - 1) * USERS_PER_PAGE) + 1, "â€“", Math.min(usersPage * USERS_PER_PAGE, sortedUsers.length), " of "  , sortedUsers.length
+                  React.createElement('div', { className: "flex items-center justify-between gap-4 mt-4"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 692}}
+                    , React.createElement('p', { className: "text-sm text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 693}}, "Showing "
+                       , ((usersPage - 1) * USERS_PER_PAGE) + 1, "–", Math.min(usersPage * USERS_PER_PAGE, sortedUsers.length), " of "  , sortedUsers.length
                     )
-                    , React.createElement('div', { className: "flex items-center gap-2"  }
+                    , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 696}}
                       , React.createElement(Button, {
                         variant: "outline",
                         size: "sm",
                         onClick: () => setUsersPage((p) => Math.max(1, p - 1)),
                         disabled: usersPage <= 1,
-                        className: "gap-1"}
+                        className: "gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 697}}
 
-                        , React.createElement(ChevronLeft, { className: "h-4 w-4" } ), "Previous"
+                        , React.createElement(ChevronLeft, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 704}} ), "Previous"
 
                       )
                       , React.createElement(Button, {
@@ -726,10 +709,10 @@ export default function UserManagement() {
                         size: "sm",
                         onClick: () => setUsersPage((p) => Math.min(totalUsersPages, p + 1)),
                         disabled: usersPage >= totalUsersPages,
-                        className: "gap-1 bg-primary text-primary-foreground"  }
+                        className: "gap-1 bg-primary text-primary-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 707}}
 , "Next"
 
-                        , React.createElement(ChevronRight, { className: "h-4 w-4" } )
+                        , React.createElement(ChevronRight, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 715}} )
                       )
                     )
                   )
@@ -739,51 +722,51 @@ export default function UserManagement() {
           )
         )
 
-        /* Page Permissions â€” select user (name + role) from GET /api/user-permissions/, show their permissions */
-        , React.createElement(Card, { ref: pagePermissionsCardRef}
-          , React.createElement(CardHeader, {}
-            , React.createElement('div', { className: "flex flex-col gap-4"  }
-              , React.createElement(CardTitle, { className: "flex items-center gap-2"  }
-                , React.createElement(ListChecks, { className: "h-5 w-5" } ), "Page permissions"
+        /* Page Permissions — select user (name + role) from GET /api/user-permissions/, show their permissions */
+        , React.createElement(Card, { ref: pagePermissionsCardRef, __self: this, __source: {fileName: _jsxFileName, lineNumber: 726}}
+          , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 727}}
+            , React.createElement('div', { className: "flex flex-col gap-4"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 728}}
+              , React.createElement(CardTitle, { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 729}}
+                , React.createElement(ListChecks, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 730}} ), "Page permissions"
 
               )
 
               , usersWithPermissionsLoading ? (
-                React.createElement('p', { className: "text-muted-foreground text-sm" }, "Loading users and permissionsâ€¦"   )
+                React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 735}}, "Loading users and permissions…"   )
               ) : (
-                React.createElement('div', { className: "grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap sm:items-end sm:gap-4"       }
-                  , React.createElement('div', { className: "space-y-2 min-w-0" }
-                    , React.createElement(Label, { htmlFor: "permissions-name-combobox"}, "Name")
-                    , React.createElement(Popover, { open: nameComboboxOpen, onOpenChange: setNameComboboxOpen}
-                      , React.createElement(PopoverTrigger, { asChild: true}
+                React.createElement('div', { className: "grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap sm:items-end sm:gap-4"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 737}}
+                  , React.createElement('div', { className: "space-y-2 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 738}}
+                    , React.createElement(Label, { htmlFor: "permissions-name-combobox", __self: this, __source: {fileName: _jsxFileName, lineNumber: 739}}, "Name")
+                    , React.createElement(Popover, { open: nameComboboxOpen, onOpenChange: setNameComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 740}}
+                      , React.createElement(PopoverTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 741}}
                         , React.createElement(Button, {
                           id: "permissions-name-combobox",
                           variant: "outline",
                           role: "combobox",
                           'aria-expanded': nameComboboxOpen,
-                          className: "w-full justify-between font-normal h-9 px-3 text-sm"     }
+                          className: "w-full justify-between font-normal h-9 px-3 text-sm"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 742}}
 
-                          , React.createElement('span', { className: "truncate"}
+                          , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 749}}
                             , selectedUserWithPermissions
                               ? selectedUserWithPermissions.full_name || selectedUserWithPermissions.email || `User ${selectedUserWithPermissions.user_id}`
-                              : "Select user by nameâ€¦"
+                              : "Select user by name…"
                           )
-                          , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    } )
+                          , React.createElement(ChevronDown, { className: "ml-2 h-4 w-4 shrink-0 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 754}} )
                         )
                       )
-                      , React.createElement(PopoverContent, { className: "w-[min(420px,calc(100vw-2rem))] p-0" , align: "start"}
+                      , React.createElement(PopoverContent, { className: "w-[min(420px,calc(100vw-2rem))] p-0" , align: "start", __self: this, __source: {fileName: _jsxFileName, lineNumber: 757}}
                         , React.createElement(Command, {
                           filter: (value, search) => {
                             const label = (value || "").toLowerCase();
                             const q = (search || "").toLowerCase();
                             if (!q) return 1;
                             return label.includes(q) ? 1 : 0;
-                          }}
+                          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 758}}
 
-                          , React.createElement(CommandInput, { placeholder: "Type to search name or emailâ€¦"     } )
-                          , React.createElement(CommandList, {}
-                            , React.createElement(CommandEmpty, {}, "No user found."  )
-                            , React.createElement(CommandGroup, {}
+                          , React.createElement(CommandInput, { placeholder: "Type to search name or email…"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 766}} )
+                          , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 767}}
+                            , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 768}}, "No user found."  )
+                            , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 769}}
                               , usersForPermissionView.map((u) => {
                                 const label = u.full_name || u.email || `User ${u.user_id}`;
                                 return (
@@ -793,7 +776,7 @@ export default function UserManagement() {
                                     onSelect: () => {
                                       setSelectedUserIdForPermissions(u.user_id);
                                       setNameComboboxOpen(false);
-                                    }}
+                                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 773}}
 
                                     , label
                                   )
@@ -805,13 +788,13 @@ export default function UserManagement() {
                       )
                     )
                   )
-                  , React.createElement('div', { className: "space-y-2 min-w-0" }
-                    , React.createElement(Label, { htmlFor: "permissions-role-display"}, "Role")
+                  , React.createElement('div', { className: "space-y-2 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 791}}
+                    , React.createElement(Label, { htmlFor: "permissions-role-display", __self: this, __source: {fileName: _jsxFileName, lineNumber: 792}}, "Role")
                     , React.createElement(Input, {
                       id: "permissions-role-display",
                       readOnly: true,
                       className: "bg-muted w-full" ,
-                      value: selectedUserWithPermissions ? formatRole(selectedUserWithPermissions.role) : "â€”"}
+                      value: selectedUserWithPermissions ? formatRole(selectedUserWithPermissions.role) : "—", __self: this, __source: {fileName: _jsxFileName, lineNumber: 793}}
                     )
                   )
                   , selectedUserIdForPermissions != null && (
@@ -819,7 +802,7 @@ export default function UserManagement() {
                       variant: "destructive",
                       size: "sm",
                       onClick: () => setSelectedUserIdForPermissions(null),
-                      className: "col-span-2 sm:col-span-auto shrink-0 h-8 text-white bg-red-600 hover:bg-red-700 border-0"       }
+                      className: "col-span-2 sm:col-span-auto shrink-0 h-8 text-white bg-red-600 hover:bg-red-700 border-0"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 801}}
 , "Clear selection"
 
                     )
@@ -828,24 +811,24 @@ export default function UserManagement() {
               )
             )
           )
-          , React.createElement(CardContent, {}
+          , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 814}}
             , selectedUserWithPermissions == null ? (
-              React.createElement('p', { className: "text-muted-foreground py-8 text-center rounded-md border border-dashed"     }, "Select a user by name above (or click \"View permissions\" in the Registered Users table) to view and edit their page permissions."
+              React.createElement('p', { className: "text-muted-foreground py-8 text-center rounded-md border border-dashed"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 816}}, "Select a user by name above (or click \"View permissions\" in the Registered Users table) to view and edit their page permissions."
 
               )
             ) : (
-              React.createElement('div', { className: "rounded-md border overflow-x-auto"  }
-                , React.createElement(Table, {}
-                  , React.createElement(TableHeader, {}
-                    , React.createElement(TableRow, {}
-                      , React.createElement(TableHead, { className: "min-w-[220px]"}, "Page")
-                      , React.createElement(TableHead, { className: "text-center w-[90px]" }, "Read")
-                      , React.createElement(TableHead, { className: "text-center w-[90px]" }, "Create")
-                      , React.createElement(TableHead, { className: "text-center w-[90px]" }, "Update")
-                      , React.createElement(TableHead, { className: "text-center w-[90px]" }, "Delete")
+              React.createElement('div', { className: "rounded-md border overflow-x-auto"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}
+                , React.createElement(Table, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 821}}
+                  , React.createElement(TableHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 822}}
+                    , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 823}}
+                      , React.createElement(TableHead, { className: "min-w-[220px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 824}}, "Page")
+                      , React.createElement(TableHead, { className: "text-center w-[90px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 825}}, "Read")
+                      , React.createElement(TableHead, { className: "text-center w-[90px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 826}}, "Create")
+                      , React.createElement(TableHead, { className: "text-center w-[90px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 827}}, "Update")
+                      , React.createElement(TableHead, { className: "text-center w-[90px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 828}}, "Delete")
                     )
                   )
-                  , React.createElement(TableBody, {}
+                  , React.createElement(TableBody, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 831}}
                     , visiblePermissionRows.map((row) => {
                       const perm = getPermissionForRow(
                         selectedUserWithPermissions.permissions,
@@ -860,8 +843,8 @@ export default function UserManagement() {
                       const isGroup = row.kind === "group";
                       const groupId = row.groupId;
                       return (
-                        React.createElement(TableRow, { key: `${row.sidebar_label}|${_nullishCoalesce(row.sub_label, () => ( ""))}`}
-                          , React.createElement(TableCell, { className: "font-medium"}
+                        React.createElement(TableRow, { key: `${row.sidebar_label}|${_nullishCoalesce(row.sub_label, () => ( ""))}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 846}}
+                          , React.createElement(TableCell, { className: "font-medium", __self: this, __source: {fileName: _jsxFileName, lineNumber: 847}}
                             , isGroup && groupId ? (
                               React.createElement('button', {
                                 type: "button",
@@ -871,65 +854,65 @@ export default function UserManagement() {
                                     ...prev,
                                     [groupId]: !prev[groupId],
                                   }))
-                                }
+                                , __self: this, __source: {fileName: _jsxFileName, lineNumber: 849}}
 
-                                , React.createElement('span', { className: "text-base leading-none" }, expandedGroups[groupId] ? "â–¾" : "â–¸")
-                                , React.createElement('span', {}, row.displayLabel)
+                                , React.createElement('span', { className: "text-base leading-none" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}}, expandedGroups[groupId] ? "▾" : "▸")
+                                , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 860}}, row.displayLabel)
                               )
                             ) : (
-                              React.createElement('span', { style: { paddingLeft: `${(_nullishCoalesce(row.indent, () => ( 0))) * 16}px` }}
+                              React.createElement('span', { style: { paddingLeft: `${(_nullishCoalesce(row.indent, () => ( 0))) * 16}px` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 863}}
                                 , row.displayLabel
                               )
                             )
                           )
-                          , React.createElement(TableCell, { className: "text-center"}
-                            , React.createElement('div', { className: "flex justify-center" }
+                          , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 868}}
+                            , React.createElement('div', { className: "flex justify-center" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 869}}
                               , !isGroup ? (
                                 React.createElement(Checkbox, {
                                   checked: canView,
                                   disabled: disabled,
                                   onCheckedChange: (c) =>
                                     handlePermissionToggle(row.sidebar_label, row.sub_label, "can_view", !!c)
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 871}}
                                 )
                               ) : null
                             )
                           )
-                          , React.createElement(TableCell, { className: "text-center"}
-                            , React.createElement('div', { className: "flex justify-center" }
+                          , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 881}}
+                            , React.createElement('div', { className: "flex justify-center" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 882}}
                               , !isGroup ? (
                                 React.createElement(Checkbox, {
                                   checked: canCreate,
                                   disabled: disabled,
                                   onCheckedChange: (c) =>
                                     handlePermissionToggle(row.sidebar_label, row.sub_label, "can_create", !!c)
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 884}}
                                 )
                               ) : null
                             )
                           )
-                          , React.createElement(TableCell, { className: "text-center"}
-                            , React.createElement('div', { className: "flex justify-center" }
+                          , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 894}}
+                            , React.createElement('div', { className: "flex justify-center" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 895}}
                               , !isGroup ? (
                                 React.createElement(Checkbox, {
                                   checked: canUpdate,
                                   disabled: disabled,
                                   onCheckedChange: (c) =>
                                     handlePermissionToggle(row.sidebar_label, row.sub_label, "can_update", !!c)
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 897}}
                                 )
                               ) : null
                             )
                           )
-                          , React.createElement(TableCell, { className: "text-center"}
-                            , React.createElement('div', { className: "flex justify-center" }
+                          , React.createElement(TableCell, { className: "text-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 907}}
+                            , React.createElement('div', { className: "flex justify-center" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 908}}
                               , !isGroup ? (
                                 React.createElement(Checkbox, {
                                   checked: canDelete,
                                   disabled: disabled,
                                   onCheckedChange: (c) =>
                                     handlePermissionToggle(row.sidebar_label, row.sub_label, "can_delete", !!c)
-                                  }
+                                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 910}}
                                 )
                               ) : null
                             )

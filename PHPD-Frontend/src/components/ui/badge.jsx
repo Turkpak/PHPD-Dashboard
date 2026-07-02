@@ -1,4 +1,5 @@
-﻿import * as React from "react"
+const _jsxFileName = "";
+import * as React from "react"
 import { cva, } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -36,7 +37,7 @@ const badgeVariants = cva(
 
 function Badge({ className, variant, ...props }) {
   return (
-    React.createElement('div', { className: cn(badgeVariants({ variant }), className), ...props} )
+    React.createElement('div', { className: cn(badgeVariants({ variant }), className), ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 39}} )
   )
 }
 

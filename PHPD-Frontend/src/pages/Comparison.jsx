@@ -1,4 +1,5 @@
-﻿import React from "react";
+import React from "react";
+const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { CityCompletionChart } from "@/components/comparison/CityCompletionChart";
 import { useQuery } from "@tanstack/react-query";
@@ -6,20 +7,6 @@ import { getProjectGanttAll, listDistricts, listDivisions, listProjects, listTeh
 
 import { useMemo } from "react";
 import { useWindowSize } from "@/hooks/use-window-size";
-// Transpiler-compatibility helpers
-const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
-const _optionalChain = (ops) => {
-  let lastAccessLHS;
-  let value = ops[0];
-  let i = 1;
-  while (i < ops.length) {
-    const op = ops[i]; const fn = ops[i + 1]; i += 2;
-    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
-    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
-    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
-  }
-  return value;
-};
 
 export default function Comparison() {
   const { width } = useWindowSize();
@@ -174,15 +161,15 @@ export default function Comparison() {
 
 
   return (
-    React.createElement(Layout, { title: isMobile ? "CITY COMPARISON" : "City Comparison - Smart Safe Cities" }
-      , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0" }
+    React.createElement(Layout, { title: isMobile ? "CITY COMPARISON" : "City Comparison - Smart Safe Cities", __self: this, __source: { fileName: _jsxFileName, lineNumber: 162 } }
+      , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 163 } }
         /* Header Section */
 
 
         /* City Completion Comparison Chart */
         , React.createElement(CityCompletionChart, {
           cityData: divisionCompletionData,
-          description: "Zone Wise Progress"
+          description: "Zone Wise Progress", __self: this, __source: { fileName: _jsxFileName, lineNumber: 168 }
         }
         )
       )

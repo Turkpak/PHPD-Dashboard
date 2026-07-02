@@ -1,4 +1,5 @@
-﻿import React from "react";
+import React from "react";
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
@@ -85,13 +86,13 @@ export function InstallationMap({ cityData, selectedCity, onCitySelect }) {
 
   if (!isMounted) {
     return (
-      React.createElement(Card, {}
-        , React.createElement(CardHeader, {}
-          , React.createElement(CardTitle, {}, "Divisonwise Milestone Progress Map"   )
-          , React.createElement(CardDescription, {}, "Geographic overview across Punjab"   )
+      React.createElement(Card, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 87}}
+        , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 88}}
+          , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 89}}, "Divisonwise Milestone Progress Map"   )
+          , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 90}}, "Geographic overview across Punjab"   )
         )
-        , React.createElement(CardContent, {}
-          , React.createElement('div', { className: "h-[320px] sm:h-[420px] lg:h-[500px] w-full bg-muted animate-pulse rounded-xl"      } )
+        , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 92}}
+          , React.createElement('div', { className: "h-[320px] sm:h-[420px] lg:h-[500px] w-full bg-muted animate-pulse rounded-xl"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 93}} )
         )
       )
     );
@@ -102,27 +103,27 @@ export function InstallationMap({ cityData, selectedCity, onCitySelect }) {
   const zoom = 7;
 
   return (
-    React.createElement(Card, { className: "shadow-lg border-border/50" }
-      , React.createElement(CardHeader, { className: "pb-4"}
-        , React.createElement(CardTitle, { className: "flex items-center gap-2 font-heading text-xl font-bold"     }
-          , React.createElement('div', { className: "h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center"      }
-            , React.createElement(MapPin, { className: "h-5 w-5 text-primary"  } )
+    React.createElement(Card, { className: "shadow-lg border-border/50" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 104}}
+      , React.createElement(CardHeader, { className: "pb-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 105}}
+        , React.createElement(CardTitle, { className: "flex items-center gap-2 font-heading text-xl font-bold"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 106}}
+          , React.createElement('div', { className: "h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 107}}
+            , React.createElement(MapPin, { className: "h-5 w-5 text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 108}} )
           ), "Progress Map"
 
         )
-        , React.createElement(CardDescription, { className: "text-sm"}, "Geographic overview of camera installation across Punjab cities"       )
+        , React.createElement(CardDescription, { className: "text-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 112}}, "Geographic overview of camera installation across Punjab cities"       )
       )
-      , React.createElement(CardContent, {}
-        , React.createElement('div', { className: "h-[320px] sm:h-[420px] lg:h-[500px] w-full rounded-xl overflow-hidden border relative z-0"        }
+      , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 114}}
+        , React.createElement('div', { className: "h-[320px] sm:h-[420px] lg:h-[500px] w-full rounded-xl overflow-hidden border relative z-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 115}}
           , React.createElement(MapContainer, {
             center: center,
             zoom: zoom,
             style: { height: "100%", width: "100%", zIndex: 0 },
-            scrollWheelZoom: true}
+            scrollWheelZoom: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 116}}
 
             , React.createElement(TileLayer, {
-              attribution: "Â© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"   ,
-              url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
+              attribution: "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"   ,
+              url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", __self: this, __source: {fileName: _jsxFileName, lineNumber: 122}}
             )
 
             , Object.entries(CITY_COORDINATES).map(([key, city]) => {
@@ -134,45 +135,45 @@ export function InstallationMap({ cityData, selectedCity, onCitySelect }) {
               const isSelected = selectedCity === key;
               
               return (
-                React.createElement('div', { key: key}
+                React.createElement('div', { key: key, __self: this, __source: {fileName: _jsxFileName, lineNumber: 136}}
                   , React.createElement(Marker, {
                     position: city.pos,
                     icon: getProgressIcon(percentage),
                     eventHandlers: {
-                      click: () => onCitySelect?.(key),
-                    }}
+                      click: () => _optionalChain([onCitySelect, 'optionalCall', _ => _(key)]),
+                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 137}}
 
-                    , React.createElement(Popup, {}
-                      , React.createElement('div', { className: "p-2 min-w-[200px]" }
-                        , React.createElement('div', { className: "flex items-center justify-between mb-2"   }
-                          , React.createElement('h3', { className: "font-bold text-sm" }, city.name)
+                    , React.createElement(Popup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 144}}
+                      , React.createElement('div', { className: "p-2 min-w-[200px]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 145}}
+                        , React.createElement('div', { className: "flex items-center justify-between mb-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 146}}
+                          , React.createElement('h3', { className: "font-bold text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 147}}, city.name)
                           , React.createElement(Badge, { 
                             variant: "outline", 
                             className: "text-xs",
                             style: { 
                               borderColor: color,
                               color: color 
-                            }}
+                            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 148}}
 
                             , percentage, "%"
                           )
                         )
-                        , React.createElement('div', { className: "space-y-1 text-xs" }
-                          , React.createElement('div', { className: "flex items-center gap-1"  }
-                            , React.createElement(TrendingUp, { className: "h-3 w-3 text-muted-foreground"  } )
-                            , React.createElement('span', { className: "text-muted-foreground"}, "Overall Progress" )
+                        , React.createElement('div', { className: "space-y-1 text-xs" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 159}}
+                          , React.createElement('div', { className: "flex items-center gap-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 160}}
+                            , React.createElement(TrendingUp, { className: "h-3 w-3 text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 161}} )
+                            , React.createElement('span', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 162}}, "Overall Progress" )
                           )
-                          , React.createElement('div', { className: "w-full bg-muted rounded-full h-2"   }
+                          , React.createElement('div', { className: "w-full bg-muted rounded-full h-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 164}}
                             , React.createElement('div', {
                               className: "h-full rounded-full transition-all"  ,
                               style: {
                                 width: `${percentage}%`,
                                 backgroundColor: color,
-                              }}
+                              }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 165}}
                             )
                           )
                           , isSelected && (
-                            React.createElement('p', { className: "text-primary font-medium mt-2"  }, "Currently Selected" )
+                            React.createElement('p', { className: "text-primary font-medium mt-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 174}}, "Currently Selected" )
                           )
                         )
                       )
@@ -198,7 +199,7 @@ export function InstallationMap({ cityData, selectedCity, onCitySelect }) {
                     fillColor: color,
                     fillOpacity: 0.1,
                     weight: 2,
-                  }}
+                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 191}}
                 )
               );
             })()
@@ -206,22 +207,22 @@ export function InstallationMap({ cityData, selectedCity, onCitySelect }) {
         )
 
         /* Legend */
-        , React.createElement('div', { className: "mt-4 flex flex-wrap items-center gap-4 text-xs"     }
-          , React.createElement('div', { className: "flex items-center gap-2"  }
-            , React.createElement('div', { className: "w-4 h-4 rounded-full bg-emerald-500"   })
-            , React.createElement('span', {}, "80-100% (Excellent)" )
+        , React.createElement('div', { className: "mt-4 flex flex-wrap items-center gap-4 text-xs"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 208}}
+          , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 209}}
+            , React.createElement('div', { className: "w-4 h-4 rounded-full bg-emerald-500"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 210}})
+            , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 211}}, "80-100% (Excellent)" )
           )
-          , React.createElement('div', { className: "flex items-center gap-2"  }
-            , React.createElement('div', { className: "w-4 h-4 rounded-full bg-emerald-600"   })
-            , React.createElement('span', {}, "60-79% (Good)" )
+          , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 213}}
+            , React.createElement('div', { className: "w-4 h-4 rounded-full bg-emerald-600"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 214}})
+            , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 215}}, "60-79% (Good)" )
           )
-          , React.createElement('div', { className: "flex items-center gap-2"  }
-            , React.createElement('div', { className: "w-4 h-4 rounded-full bg-orange-500"   })
-            , React.createElement('span', {}, "40-59% (In Progress)"  )
+          , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 217}}
+            , React.createElement('div', { className: "w-4 h-4 rounded-full bg-orange-500"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 218}})
+            , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}, "40-59% (In Progress)"  )
           )
-          , React.createElement('div', { className: "flex items-center gap-2"  }
-            , React.createElement('div', { className: "w-4 h-4 rounded-full bg-red-500"   })
-            , React.createElement('span', {}, "0-39% (Early Stage)"  )
+          , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 221}}
+            , React.createElement('div', { className: "w-4 h-4 rounded-full bg-red-500"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 222}})
+            , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 223}}, "0-39% (Early Stage)"  )
           )
         )
       )

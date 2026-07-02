@@ -1,22 +1,8 @@
-﻿import * as React from "react"
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils"
-
-// Transpiler-compatibility helpers
-const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
-const _optionalChain = (ops) => {
-  let lastAccessLHS;
-  let value = ops[0];
-  let i = 1;
-  while (i < ops.length) {
-    const op = ops[i]; const fn = ops[i + 1]; i += 2;
-    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
-    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
-    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
-  }
-  return value;
-};
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } 
@@ -60,7 +46,7 @@ const ChartContainer = React.forwardRef
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
 
   return (
-    React.createElement(ChartContext.Provider, { value: { config }}
+    React.createElement(ChartContext.Provider, { value: { config }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 48}}
       , React.createElement('div', {
         'data-chart': chartId,
         ref: ref,
@@ -68,10 +54,10 @@ const ChartContainer = React.forwardRef
           "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
           className
         ),
-        ...props}
+        ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 49}}
 
-        , React.createElement(ChartStyle, { id: chartId, config: config} )
-        , React.createElement(RechartsPrimitive.ResponsiveContainer, {}
+        , React.createElement(ChartStyle, { id: chartId, config: config, __self: this, __source: {fileName: _jsxFileName, lineNumber: 58}} )
+        , React.createElement(RechartsPrimitive.ResponsiveContainer, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 59}}
           , children
         )
       )
@@ -99,7 +85,7 @@ ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color =
-      itemConfig.theme?.[theme ] ||
+      _optionalChain([itemConfig, 'access', _ => _.theme, 'optionalAccess', _2 => _2[theme ]]) ||
       itemConfig.color
     return color ? `  --color-${key}: ${color};` : null
   })
@@ -108,7 +94,7 @@ ${colorConfig
 `
           )
           .join("\n"),
-      }}
+      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 78}}
     )
   )
 }
@@ -161,7 +147,7 @@ const ChartTooltipContent = React.forwardRef
 
       if (labelFormatter) {
         return (
-          React.createElement('div', { className: cn("font-medium", labelClassName)}
+          React.createElement('div', { className: cn("font-medium", labelClassName), __self: this, __source: {fileName: _jsxFileName, lineNumber: 149}}
             , labelFormatter(value, payload)
           )
         )
@@ -171,7 +157,7 @@ const ChartTooltipContent = React.forwardRef
         return null
       }
 
-      return React.createElement('div', { className: cn("font-medium", labelClassName)}, value)
+      return React.createElement('div', { className: cn("font-medium", labelClassName), __self: this, __source: {fileName: _jsxFileName, lineNumber: 159}}, value)
     }, [
       label,
       labelFormatter,
@@ -194,10 +180,10 @@ const ChartTooltipContent = React.forwardRef
         className: cn(
           "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
           className
-        )}
+        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 177}}
 
         , !nestLabel ? tooltipLabel : null
-        , React.createElement('div', { className: "grid gap-1.5" }
+        , React.createElement('div', { className: "grid gap-1.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 185}}
           , payload
             .filter((item) => item.type !== "none")
             .map((item, index) => {
@@ -211,14 +197,14 @@ const ChartTooltipContent = React.forwardRef
                   className: cn(
                     "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                     indicator === "dot" && "items-center"
-                  )}
+                  ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 194}}
 
                   , formatter && _optionalChain([item, 'optionalAccess', _10 => _10.value]) !== undefined && item.name ? (
                     formatter(item.value, item.name, item, index, item.payload)
                   ) : (
                     React.createElement(React.Fragment, null
                       , _optionalChain([itemConfig, 'optionalAccess', _11 => _11.icon]) ? (
-                        React.createElement(itemConfig.icon, {} )
+                        React.createElement(itemConfig.icon, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 206}} )
                       ) : (
                         !hideIndicator && (
                           React.createElement('div', {
@@ -237,7 +223,7 @@ const ChartTooltipContent = React.forwardRef
                                 "--color-bg": indicatorColor,
                                 "--color-border": indicatorColor,
                               } 
-                            }
+                            , __self: this, __source: {fileName: _jsxFileName, lineNumber: 209}}
                           )
                         )
                       )
@@ -245,16 +231,16 @@ const ChartTooltipContent = React.forwardRef
                         className: cn(
                           "flex flex-1 justify-between leading-none",
                           nestLabel ? "items-end" : "items-center"
-                        )}
+                        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 229}}
 
-                        , React.createElement('div', { className: "grid gap-1.5" }
+                        , React.createElement('div', { className: "grid gap-1.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 235}}
                           , nestLabel ? tooltipLabel : null
-                          , React.createElement('span', { className: "text-muted-foreground"}
+                          , React.createElement('span', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 237}}
                             , _optionalChain([itemConfig, 'optionalAccess', _12 => _12.label]) || item.name
                           )
                         )
                         , item.value && (
-                          React.createElement('span', { className: "font-mono font-medium tabular-nums text-foreground"   }
+                          React.createElement('span', { className: "font-mono font-medium tabular-nums text-foreground"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 242}}
                             , item.value.toLocaleString()
                           )
                         )
@@ -298,7 +284,7 @@ const ChartLegendContent = React.forwardRef
           "flex items-center justify-center gap-4",
           verticalAlign === "top" ? "pb-3" : "pt-3",
           className
-        )}
+        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 280}}
 
         , payload
           .filter((item) => item.type !== "none")
@@ -311,16 +297,16 @@ const ChartLegendContent = React.forwardRef
                 key: item.value,
                 className: cn(
                   "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
-                )}
+                ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 295}}
 
                 , _optionalChain([itemConfig, 'optionalAccess', _14 => _14.icon]) && !hideIcon ? (
-                  React.createElement(itemConfig.icon, {} )
+                  React.createElement(itemConfig.icon, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 302}} )
                 ) : (
                   React.createElement('div', {
                     className: "h-2 w-2 shrink-0 rounded-[2px]"   ,
                     style: {
                       backgroundColor: item.color,
-                    }}
+                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 304}}
                   )
                 )
                 , _optionalChain([itemConfig, 'optionalAccess', _15 => _15.label])

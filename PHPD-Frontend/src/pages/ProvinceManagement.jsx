@@ -1,3 +1,4 @@
+﻿const _jsxFileName = "";
 import React from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useState } from "react";
@@ -16,6 +17,7 @@ import {
   updateProvince,
   deleteProvince,
 } from "@/api/province";
+
 
 export default function ProvinceManagement() {
   const [provinceName, setProvinceName] = useState("");
@@ -46,7 +48,8 @@ export default function ProvinceManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }) => updateProvince(id, payload),
+    mutationFn: ({ id, payload }) =>
+      updateProvince(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["provinces"] });
       setProvinceName("");
@@ -102,112 +105,112 @@ export default function ProvinceManagement() {
   );
 
   return (
-    <Layout title="Area Hierarchy Management">
-      <div className="flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20">
-        <div>
-          <h1 className="text-2xl font-bold text-primary">Zone — Add / Edit</h1>
-          <p className="text-muted-foreground text-sm">Create a new Zone or edit an existing one.</p>
-        </div>
+    React.createElement(Layout, { title: "Area Hierarchy Management"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 106}}
+      , React.createElement('div', { className: "flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 107}}
+        , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 108}}
+          , React.createElement('h1', { className: "text-2xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 109}}, "Zone — Add / Edit"    )
+          , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 110}}, "Create a new Zone or edit an existing one."        )
+        )
 
-        {(canCreate || (canUpdate && editingId !== null)) && (
-          <Card className="border-none shadow-sm overflow-hidden">
-            <div className="h-1 bg-secondary w-full" />
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                <div className="space-y-2">
-                  <Label htmlFor="Zone-name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Zone Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="Zone-name"
-                    placeholder="e.g. Punjab Zone"
-                    value={provinceName}
-                    onChange={(e) => setProvinceName(e.target.value)}
-                    className="h-10"
-                  />
-                </div>
-                <div className="flex flex-row gap-2 min-w-0">
-                  {canCreate && editingId === null && (
-                    <Button
-                      onClick={handleSubmit}
-                      disabled={createMutation.isPending}
-                      className="bg-secondary hover:bg-secondary/90 text-white flex-1 h-10 min-w-0"
-                    >
-                      <Plus className="h-4 w-4 mr-2" /> Create Zone
-                    </Button>
-                  )}
-                  {canUpdate && editingId !== null && (
-                    <>
-                      <Button
-                        onClick={handleSubmit}
-                        disabled={updateMutation.isPending}
-                        className="bg-secondary hover:bg-secondary/90 text-white flex-1 h-10 min-w-0"
-                      >
-                        Update Zone
-                      </Button>
-                      <Button variant="outline" onClick={handleCancel} className="flex-1 h-10 min-w-0">
-                        Cancel
-                      </Button>
-                    </>
-                  )}
-                  {editingId === null && canCreate && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setProvinceName("")}
-                      className="flex-1 h-10 min-w-0 text-red-600 bg-white hover:bg-red-50 border-red-200 hover:border-red-300 text-xs font-semibold"
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        , (canCreate || (canUpdate && editingId !== null)) && (
+          React.createElement(Card, { className: "border-none shadow-sm overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 114}}
+            , React.createElement('div', { className: "h-1 bg-secondary w-full"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 115}} )
+            , React.createElement(CardHeader, { className: "pb-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 116}}
+              , React.createElement(CardTitle, { className: "text-sm font-bold uppercase tracking-widest text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 117}}, "Basic Information"
 
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-xl font-bold text-primary">Zone List</h2>
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name .."
-                className="pl-10 h-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
+              )
+            )
+            , React.createElement(CardContent, { className: "pt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 121}}
+              , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-6 items-end"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 122}}
+                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 123}}
+                  , React.createElement(Label, { htmlFor: "Zone-name", className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 124}}, "Zone Name "
+                      , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 125}}, "*")
+                  )
+                  , React.createElement(Input, {
+                    id: "Zone-name",
+                    placeholder: "e.g. Punjab Zone" ,
+                    value: provinceName,
+                    onChange: (e) => setProvinceName(e.target.value),
+                    className: "h-10", __self: this, __source: {fileName: _jsxFileName, lineNumber: 127}}
+                  )
+                )
+                , React.createElement('div', { className: "flex flex-row gap-2 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 135}}
+                  , canCreate && editingId === null && (
+                    React.createElement(Button, {
+                      onClick: handleSubmit,
+                      disabled: createMutation.isPending,
+                      className: "bg-secondary hover:bg-secondary/90 text-white flex-1 h-10 min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 137}}
 
-          <Card className="border-none shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    <TableHead className="w-16">#</TableHead>
-                    <TableHead className="w-24">ID</TableHead>
-                    <TableHead>Zone</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                        Loading…
-                      </TableCell>
-                    </TableRow>
+                      , React.createElement(Plus, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 142}} ), " Create Zone"
+                    )
+                  )
+                  , canUpdate && editingId !== null && (
+                    React.createElement(React.Fragment, null
+                      , React.createElement(Button, {
+                        onClick: handleSubmit,
+                        disabled: updateMutation.isPending,
+                        className: "bg-secondary hover:bg-secondary/90 text-white flex-1 h-10 min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 147}}
+, "Update Zone"
+
+                      )
+                      , React.createElement(Button, { variant: "outline", onClick: handleCancel, className: "flex-1 h-10 min-w-0"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 154}}, "Cancel"
+
+                      )
+                    )
+                  )
+                  , editingId === null && canCreate && (
+                    React.createElement(Button, {
+                      variant: "outline",
+                      onClick: () => setProvinceName(""),
+                      className: "flex-1 h-10 min-w-0 text-red-600 bg-white hover:bg-red-50 border-red-200 hover:border-red-300 text-xs font-semibold"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 160}}
+, "Clear"
+
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        , React.createElement('div', { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 174}}
+          , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 175}}
+            , React.createElement('h2', { className: "text-xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 176}}, "Zone List" )
+            , React.createElement('div', { className: "relative w-full sm:w-72"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 177}}
+              , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 178}} )
+              , React.createElement(Input, {
+                placeholder: "Search by name .."   ,
+                className: "pl-10 h-10" ,
+                value: searchQuery,
+                onChange: (e) => setSearchQuery(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 179}}
+              )
+            )
+          )
+
+          , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 188}}
+            , React.createElement('div', { className: "overflow-x-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 189}}
+              , React.createElement(Table, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 190}}
+                , React.createElement(TableHeader, { className: "bg-muted/50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 191}}
+                  , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 192}}
+                    , React.createElement(TableHead, { className: "w-16", __self: this, __source: {fileName: _jsxFileName, lineNumber: 193}}, "#")
+                    , React.createElement(TableHead, { className: "w-24", __self: this, __source: {fileName: _jsxFileName, lineNumber: 194}}, "ID")
+                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 195}}, "Zone")
+                    , React.createElement(TableHead, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 196}}, "Action")
+                  )
+                )
+                , React.createElement(TableBody, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 199}}
+                  , isLoading ? (
+                    React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 201}}
+                      , React.createElement(TableCell, { colSpan: 4, className: "text-center py-8 text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 202}}, "Loading…"
+
+                      )
+                    )
                   ) : filteredProvinces.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                        No zones found. Create one above.
-                      </TableCell>
-                    </TableRow>
+                    React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 207}}
+                      , React.createElement(TableCell, { colSpan: 4, className: "h-24 text-center text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 208}}, "No zones found. Create one above."
+
+                      )
+                    )
                   ) : (
                     filteredProvinces.map((province, index) => (
                       <TableRow key={province.id}>
@@ -253,13 +256,13 @@ export default function ProvinceManagement() {
                         </TableCell>
                       </TableRow>
                     ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        </div>
-      </div>
-    </Layout>
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
   );
 }

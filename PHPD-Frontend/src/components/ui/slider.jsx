@@ -1,4 +1,5 @@
-﻿import * as React from "react"
+const _jsxFileName = "";
+import * as React from "react"
 import * as SliderPrimitive from "@radix-ui/react-slider"
 
 import { cn } from "@/lib/utils"
@@ -13,12 +14,12 @@ const Slider = React.forwardRef
       "relative flex w-full touch-none select-none items-center",
       className
     ),
-    ...props}
+    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 10}}
 
-    , React.createElement(SliderPrimitive.Track, { className: "relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary/20"      }
-      , React.createElement(SliderPrimitive.Range, { className: "absolute h-full bg-primary"  } )
+    , React.createElement(SliderPrimitive.Track, { className: "relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary/20"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 18}}
+      , React.createElement(SliderPrimitive.Range, { className: "absolute h-full bg-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 19}} )
     )
-    , React.createElement(SliderPrimitive.Thumb, { className: "block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"             } )
+    , React.createElement(SliderPrimitive.Thumb, { className: "block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"             , __self: this, __source: {fileName: _jsxFileName, lineNumber: 21}} )
   )
 ))
 Slider.displayName = SliderPrimitive.Root.displayName

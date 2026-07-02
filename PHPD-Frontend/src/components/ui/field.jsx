@@ -1,4 +1,5 @@
-﻿import React from "react";
+import React from "react";
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }"use client"
 
 import { useMemo } from "react"
 import { cva, } from "class-variance-authority"
@@ -6,21 +7,6 @@ import { cva, } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-
-// Transpiler-compatibility helpers
-const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
-const _optionalChain = (ops) => {
-  let lastAccessLHS;
-  let value = ops[0];
-  let i = 1;
-  while (i < ops.length) {
-    const op = ops[i]; const fn = ops[i + 1]; i += 2;
-    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
-    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
-    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
-  }
-  return value;
-};
 
 function FieldSet({ className, ...props }) {
   return (
@@ -31,7 +17,7 @@ function FieldSet({ className, ...props }) {
         "has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 12}}
     )
   )
 }
@@ -51,7 +37,7 @@ function FieldLegend({
         "data-[variant=label]:text-sm",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 30}}
     )
   )
 }
@@ -64,7 +50,7 @@ function FieldGroup({ className, ...props }) {
         "group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 [&>[data-slot=field-group]]:gap-4",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 46}}
     )
   )
 }
@@ -104,7 +90,7 @@ function Field({
       'data-slot': "field",
       'data-orientation': orientation,
       className: cn(fieldVariants({ orientation }), className),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 87}}
     )
   )
 }
@@ -117,7 +103,7 @@ function FieldContent({ className, ...props }) {
         "group/field-content flex flex-1 flex-col gap-1.5 leading-snug",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 99}}
     )
   )
 }
@@ -135,7 +121,7 @@ function FieldLabel({
         "has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-primary dark:has-data-[state=checked]:bg-primary/10",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 115}}
     )
   )
 }
@@ -148,7 +134,7 @@ function FieldTitle({ className, ...props }) {
         "flex w-fit items-center gap-2 text-sm font-medium leading-snug group-data-[disabled=true]/field:opacity-50",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 130}}
     )
   )
 }
@@ -163,7 +149,7 @@ function FieldDescription({ className, ...props }) {
         "[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 143}}
     )
   )
 }
@@ -183,13 +169,13 @@ function FieldSeparator({
         "relative -my-2 h-5 text-sm group-data-[variant=outline]/field-group:-mb-2",
         className
       ),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 164}}
 
-      , React.createElement(Separator, { className: "absolute inset-0 top-1/2"  } )
+      , React.createElement(Separator, { className: "absolute inset-0 top-1/2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 173}} )
       , children && (
         React.createElement('span', {
           className: "bg-background text-muted-foreground relative mx-auto block w-fit px-2"      ,
-          'data-slot': "field-separator-content"}
+          'data-slot': "field-separator-content", __self: this, __source: {fileName: _jsxFileName, lineNumber: 175}}
 
           , children
         )
@@ -220,10 +206,10 @@ function FieldError({
     }
 
     return (
-      React.createElement('ul', { className: "ml-4 flex list-disc flex-col gap-1"    }
+      React.createElement('ul', { className: "ml-4 flex list-disc flex-col gap-1"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 208}}
         , errors.map(
           (error, index) =>
-            _optionalChain([error, 'optionalAccess', _4 => _4.message]) && React.createElement('li', { key: index}, error.message)
+            _optionalChain([error, 'optionalAccess', _4 => _4.message]) && React.createElement('li', { key: index, __self: this, __source: {fileName: _jsxFileName, lineNumber: 211}}, error.message)
         )
       )
     )
@@ -238,7 +224,7 @@ function FieldError({
       role: "alert",
       'data-slot': "field-error",
       className: cn("text-destructive text-sm font-normal", className),
-      ...props}
+      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 222}}
 
       , content
     )

@@ -1,4 +1,5 @@
-﻿
+const _jsxFileName = "";"use client"
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { cva, } from "class-variance-authority"
@@ -17,7 +18,7 @@ const Label = React.forwardRef
   React.createElement(LabelPrimitive.Root, {
     ref: ref,
     className: cn(labelVariants(), className),
-    ...props}
+    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 18}}
   )
 ))
 Label.displayName = LabelPrimitive.Root.displayName
