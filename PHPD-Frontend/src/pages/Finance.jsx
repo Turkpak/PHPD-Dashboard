@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -413,14 +413,14 @@ export default function Finance() {
     React.createElement(Layout, { title: isMobile ? "FINANCIAL ANALYTICS" : "Financial & Budget Analytics", headerActions: financeHeaderActions, __self: this, __source: {fileName: _jsxFileName, lineNumber: 577}}
       , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 578}}
         /* Filters */
-        , React.createElement('div', { className: "flex items-center gap-3 min-w-0"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 580}}
-          , React.createElement(Filter, { className: "h-4 w-4 text-muted-foreground shrink-0"   , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 581}} )
-          , React.createElement('div', { className: "flex w-full flex-nowrap items-end gap-3 overflow-x-auto pr-1 min-w-0"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 582}}
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 583}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 584}}, "Zone")
-              , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, disabled: zonesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 585}}
-                , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 586}}
-                  , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 587}} )
+        , React.createElement('div', { className: "flex items-start gap-2 min-w-0" }
+          , React.createElement(Filter, { className: "h-4 w-4 text-muted-foreground shrink-0 mt-7", 'aria-hidden': true })
+          , React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-3 w-full min-w-0" }
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[140px] lg:w-auto lg:shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Zone")
+              , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, disabled: zonesLoading}
+                , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     }
+                  , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loadingâ€¦" : "All"} )
                 )
                 , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 589}}
                   , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 590}}, "All")
@@ -433,8 +433,8 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 601}}, "Circle")
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[140px] lg:w-auto lg:shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Circle")
               , React.createElement(Select, {
                 value: selectedCircleId,
                 onValueChange: handleCircleChange,
@@ -460,8 +460,8 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 601}}, "District")
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[140px] lg:w-auto lg:shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "District")
               , React.createElement(Select, {
                 value: selectedDistrictId,
                 onValueChange: handleDistrictChange,
@@ -487,8 +487,8 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 627}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 628}}, "Tehsil")
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[140px] lg:w-auto lg:shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Tehsil")
               , React.createElement(Select, {
                 value: selectedTehsilId,
                 onValueChange: handleTehsilChange,
@@ -520,11 +520,11 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[160px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 658}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 659}}, "Project")
-              , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 660}}
-                , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 661}}
-                  , React.createElement(SelectValue, { placeholder: "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 662}} )
+            , React.createElement('div', { className: "flex flex-col gap-1 w-full lg:min-w-[160px] lg:w-auto lg:shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Project")
+              , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId}
+                , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     }
+                  , React.createElement(SelectValue, { placeholder: "All"} )
                 )
                 , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 664}}
                   , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 665}}, "All (" , filteredProjects.length, ")")

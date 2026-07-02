@@ -202,7 +202,7 @@ export default function StakeholderManagement() {
                 }}
               >
                 <DialogTrigger asChild>
-                  <Button className="h-10 px-4 rounded-lg bg-[#054332] hover:bg-[#032d21] text-white font-semibold shadow-sm whitespace-nowrap transition-all text-[12px]">
+                  <Button className="w-full sm:w-auto h-10 px-4 rounded-lg bg-[#054332] hover:bg-[#032d21] text-white font-semibold shadow-sm whitespace-nowrap transition-all text-[12px]">
                     <Plus className="w-3.5 h-3.5 mr-2" />
                     Add Stakeholder
                   </Button>
@@ -313,55 +313,74 @@ export default function StakeholderManagement() {
                   return (
                     <div
                       key={stakeholder.id}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200/60 py-4 px-5 sm:px-6 grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_100px] gap-4 items-center transition-all hover:-translate-y-0.5 duration-300 hover:shadow-[0_10px_34px_-14px_rgba(0,0,0,0.14)] hover:border-gray-200"
+                      className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-4 sm:px-6 sm:py-4 flex flex-col md:grid md:grid-cols-[2fr_1.5fr_1fr_100px] gap-2 md:gap-4 md:items-center transition-all hover:-translate-y-0.5 duration-300 hover:shadow-[0_10px_34px_-14px_rgba(0,0,0,0.14)] hover:border-gray-200"
                     >
-                      {/* Entity Column */}
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`w-[48px] h-[48px] rounded-full flex items-center justify-center font-bold text-[16px] shrink-0 ring-1 ring-black/5 ${colorClass}`}
-                        >
-                          {initials}
-                        </div>
-                        <div>
-                          <div className="font-bold text-[#101828] text-[14px] leading-tight mb-0.5">
-                            {stakeholder.stakeholder_title}
+                      {/* Mobile Top Row: Entity + Status */}
+                      <div className="flex w-full md:contents items-start justify-between">
+                        {/* Entity */}
+                        <div className="flex items-center gap-3 md:gap-4">
+                          <div
+                            className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-[14px] md:text-[16px] shrink-0 ring-1 ring-black/5 ${colorClass}`}
+                          >
+                            {initials}
                           </div>
-                          <div className="text-[12px] font-medium text-[#64748b]">Organization Partner</div>
+                          <div>
+                            <div className="font-bold text-[#101828] text-[14px] leading-tight mb-0.5">
+                              {stakeholder.stakeholder_title}
+                            </div>
+                            <div className="text-[12px] font-medium text-[#64748b]">Organization Partner</div>
+                          </div>
+                        </div>
+
+                        {/* Status (Mobile only) */}
+                        <div className="flex md:hidden items-center shrink-0">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
+                              isActive
+                                ? "bg-[#eaf5ef] text-[#054332] border-[#b9ddc8]"
+                                : "bg-gray-100 text-gray-600 border-gray-200"
+                            }`}
+                          >
+                            {isActive ? "Active" : "Disabled"}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Role Column */}
-                      <div className="font-semibold text-gray-700 text-[13px] text-left md:text-center">
-                        {stakeholder.stakeholder_type}
-                      </div>
+                      {/* Mobile Bottom Row: Role + Actions */}
+                      <div className="flex w-full md:contents items-center justify-between mt-1 md:mt-0">
+                        {/* Role */}
+                        <div className="font-medium text-gray-600 text-[13px] ml-[52px] md:ml-0 md:text-center">
+                          {stakeholder.stakeholder_type}
+                        </div>
 
-                      {/* Status Column */}
-                      <div className="flex items-center md:justify-center">
-                        <span
-                          className={`inline-flex items-center px-4 py-1.5 rounded-[12px] text-[10px] font-bold uppercase tracking-wider border ${
-                            isActive
-                              ? "bg-[#eaf5ef] text-[#054332] border-[#b9ddc8]"
-                              : "bg-gray-100 text-gray-600 border-gray-200"
-                          }`}
-                        >
-                          {isActive ? "Active" : "Disabled"}
-                        </span>
-                      </div>
+                        {/* Status (Desktop only) */}
+                        <div className="hidden md:flex items-center justify-center">
+                          <span
+                            className={`inline-flex items-center px-4 py-1.5 rounded-[12px] text-[10px] font-bold uppercase tracking-wider border ${
+                              isActive
+                                ? "bg-[#eaf5ef] text-[#054332] border-[#b9ddc8]"
+                                : "bg-gray-100 text-gray-600 border-gray-200"
+                            }`}
+                          >
+                            {isActive ? "Active" : "Disabled"}
+                          </span>
+                        </div>
 
-                      {/* Actions Column */}
-                      <div className="flex items-center md:justify-end gap-1">
-                        <button
-                          onClick={() => openEditDialog(stakeholder)}
-                          className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-gray-500 border border-transparent hover:border-[#b9ddc8] hover:text-[#054332] hover:bg-[#eaf5ef] transition-colors"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(stakeholder.id)}
-                          className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-gray-500 border border-transparent hover:border-red-200 hover:text-red-600 hover:bg-red-50 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => openEditDialog(stakeholder)}
+                            className="w-8 h-8 md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-gray-500 border border-transparent hover:border-[#b9ddc8] hover:text-[#054332] hover:bg-[#eaf5ef] transition-colors"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(stakeholder.id)}
+                            className="w-8 h-8 md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-gray-500 border border-transparent hover:border-red-200 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
