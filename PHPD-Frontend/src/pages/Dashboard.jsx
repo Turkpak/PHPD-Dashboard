@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { InstallationCard } from "@/components/dashboard/InstallationCard";
@@ -22,7 +22,7 @@ import {
 } from "recharts";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { CardHeader, CardTitle, } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listProvinces,
   getProjectGanttAll,
@@ -781,6 +781,8 @@ function buildProjectsFeatureCollection(projects, statusByProjectId) {
 export default function Dashboard() {
   const { isCollapsed, setCollapsed, setMobileSidebarOpen } = useSidebar();
   const sidebarPrevCollapsedRef = useRef(null);
+  const skipSidebarCollapseRef = useRef(false);
+  const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
   const [viewType, setViewType] = useState
 
@@ -1281,12 +1283,17 @@ export default function Dashboard() {
     // Only auto-collapse once on open. Do NOT keep forcing it closed,
     // so the user can expand/collapse via the sidebar icon while Gantt is open.
     if (detailsOpen) {
+      if (skipSidebarCollapseRef.current) {
+        skipSidebarCollapseRef.current = false;
+        return;
+      }
       if (sidebarPrevCollapsedRef.current == null) {
         sidebarPrevCollapsedRef.current = isCollapsed;
         setCollapsed(true);
       }
       return;
     }
+    skipSidebarCollapseRef.current = false;
     if (sidebarPrevCollapsedRef.current != null) {
       setCollapsed(sidebarPrevCollapsedRef.current);
       sidebarPrevCollapsedRef.current = null;
@@ -2533,12 +2540,6 @@ export default function Dashboard() {
                                 , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                , "Zone / Circle / Tehsil"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
-                              )
-                            )
                           )
                         )
                         , React.createElement('tbody', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
@@ -2564,9 +2565,13 @@ export default function Dashboard() {
                               "bg-cyan-50 text-cyan-600 border-cyan-200",
                               "bg-lime-50 text-lime-600 border-lime-200",
                             ];
-                            const rowKey = Number(row.id) || 0;
-                            const iconIdx = Math.abs(rowKey) % iconSet.length;
-                            const colorIdx = Math.abs(rowKey) % colorSet.length;
+                            const nameStr = row.name || "";
+                            let nameHash = 0;
+                            for (let i = 0; i < nameStr.length; i++) {
+                              nameHash = nameStr.charCodeAt(i) + ((nameHash << 5) - nameHash);
+                            }
+                            const iconIdx = Math.abs(nameHash) % iconSet.length;
+                            const colorIdx = Math.abs(nameHash) % colorSet.length;
                             const RowIcon = iconSet[iconIdx];
                             const colorClass = colorSet[colorIdx];
                             const progressColor = pct >= 75 ? "from-[#16a34a] to-[#054332]" : pct >= 40 ? "from-[#3b82f6] to-[#1d4ed8]" : "from-[#f59e0b] to-[#d97706]";
@@ -2603,7 +2608,6 @@ export default function Dashboard() {
                                     )
                                   )
                                 )
-                                , React.createElement('td', { className: "px-3 py-2.5 text-[11px] text-[#64748b] font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.locationLabel)
                               )
                             );
                           })
@@ -2627,10 +2631,14 @@ export default function Dashboard() {
                     legendProjects: mapScopeProjects,
                     geoData: dashboardMapGeoData,
                     showGeoBoundary: false,
-                    projectMarkerVariant: "green",
+                    projectMarkerVariant: "table",
                     onProjectSelect: (projectId) => {
                       const p = apiProjects.find((x) => Number(x.id) === Number(projectId));
-                      if (p) setSelectedProjectForDetails(p);
+                      if (p) {
+                        skipSidebarCollapseRef.current = true;
+                        setSelectedProjectForDetails(p);
+                        queryClient.invalidateQueries();
+                      }
                     }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                   }
                   )

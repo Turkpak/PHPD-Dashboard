@@ -1,4 +1,4 @@
-﻿const _jsxFileName = "";
+const _jsxFileName = "";
 import React from "react";
 import { Bell, Menu, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,21 +18,21 @@ export function Header({ title, actions = null }) {
 
         {/* Hamburger — mobile only */}
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className="md:hidden h-8 w-8 shrink-0 bg-card/90 backdrop-blur-sm"
+          className="md:hidden h-8 w-8 shrink-0 hover:bg-transparent"
           onClick={() => setMobileSidebarOpen(true)}
           aria-label="Open sidebar"
         >
-          <Menu className="h-4 w-4" />
+          <Menu className="h-5 w-5 text-gray-700" />
         </Button>
 
         {/* Title — grows to fill available space */}
-        <h1 className="flex-1 min-w-0 text-base sm:text-xl md:text-2xl font-heading font-bold text-foreground truncate md:whitespace-normal md:overflow-visible">
+        <h1 className="flex-1 min-w-0 text-lg sm:text-xl font-heading font-bold text-foreground truncate md:whitespace-normal md:overflow-visible text-center md:text-left">
           <span className="sm:hidden">
             {title.trim().toLowerCase() === "phpd progress dashboard"
               ? "PHPD Dashboard"
-              : title.length > 22 ? title.slice(0, 20) + "…" : title}
+              : title.length > 25 ? title.slice(0, 23) + "…" : title}
           </span>
           <span className="hidden sm:inline">{title}</span>
         </h1>

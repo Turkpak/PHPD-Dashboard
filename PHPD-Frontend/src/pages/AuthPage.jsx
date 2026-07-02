@@ -82,9 +82,7 @@ export default function AuthPage() {
                     <h1 className="text-3xl xl:text-4xl font-bold text-white tracking-tight leading-tight mb-4">
                         PHPD Progress<br />Dashboard
                     </h1>
-                    <p className="text-white/60 text-sm xl:text-base leading-relaxed max-w-xs">
-                        Punjab Health & Population Department — centralised project tracking and analytics platform.
-                    </p>
+
 
                     {/* Feature pills */}
                     <div className="mt-10 flex flex-col gap-3 w-full max-w-xs">
@@ -152,7 +150,7 @@ export default function AuthPage() {
                 </motion.div>
 
                 {/* Login Card */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
