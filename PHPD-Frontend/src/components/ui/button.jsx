@@ -1,5 +1,4 @@
-const _jsxFileName = "";
-import * as React from "react"
+﻿import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, } from "class-variance-authority"
 
@@ -56,7 +55,7 @@ const Button = React.forwardRef(
       React.createElement(Comp, {
         className: cn(buttonVariants({ variant, size, className })),
         ref: ref,
-        ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 55}}
+        ...props}
       )
     )
   }

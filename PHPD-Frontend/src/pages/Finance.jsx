@@ -1,5 +1,22 @@
-import React from "react";
-const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+﻿import React from "react";
+
+// Transpiler-compatibility helpers (nullish coalesce + optional chain)
+const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
+const _optionalChain = (ops) => {
+  let lastAccessLHS;
+  let value = ops[0];
+  let i = 1;
+  while (i < ops.length) {
+    const op = ops[i];
+    const fn = ops[i + 1];
+    i += 2;
+    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
+    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
+    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
+  }
+  return value;
+};
+
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { TrendingUp, Wallet, CheckCircle2, Filter, Pencil } from "lucide-react";
@@ -25,7 +42,7 @@ import {
 
 // Backend project financials are PKR millions (M).
 const formatPKRMillions = (m) => {
-  const sign = m < 0 ? "−" : "";
+  const sign = m < 0 ? "âˆ’" : "";
   const abs = Math.abs(m);
   return `${sign}PKR ${abs.toFixed(2)} M`;
 };
@@ -152,7 +169,7 @@ export default function Finance() {
     );
   }, [selectedProject]);
 
-  // When a project is selected first, list-project/?id=… fills zone/circle/district/tehsil (ids + names).
+  // When a project is selected first, list-project/?id=â€¦ fills zone/circle/district/tehsil (ids + names).
   useEffect(() => {
     if (!selectedProject) return;
     if (selectedProject.zone != null && Number.isFinite(Number(selectedProject.zone))) {
@@ -401,31 +418,30 @@ export default function Finance() {
       size: "sm",
       onClick: () => setIsBudgetEditOpen(true),
       className: "h-9 px-3 text-xs font-semibold border-border/60 bg-background hover:bg-muted/40",
-      disabled: !selectedProject,
-      __self: this, __source: { fileName: _jsxFileName, lineNumber: 576 }
+      disabled: !selectedProject
     }
-      , React.createElement(Pencil, { className: "h-4 w-4 mr-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 576 } })
+      , React.createElement(Pencil, { className: "h-4 w-4 mr-2" })
       , "Update Budget"
     )
   ) : null;
 
   return (
-    React.createElement(Layout, { title: isMobile ? "FINANCIAL ANALYTICS" : "Financial & Budget Analytics", headerActions: financeHeaderActions, __self: this, __source: {fileName: _jsxFileName, lineNumber: 577}}
-      , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 578}}
+    React.createElement(Layout, { title: isMobile ? "FINANCIAL ANALYTICS" : "Financial & Budget Analytics", headerActions: financeHeaderActions}
+      , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     }
         /* Filters */
-        , React.createElement('div', { className: "flex items-center gap-3 min-w-0"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 580}}
-          , React.createElement(Filter, { className: "h-4 w-4 text-muted-foreground shrink-0"   , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 581}} )
-          , React.createElement('div', { className: "flex w-full flex-nowrap items-end gap-3 overflow-x-auto pr-1 min-w-0"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 582}}
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 583}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 584}}, "Zone")
-              , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, disabled: zonesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 585}}
-                , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 586}}
-                  , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 587}} )
+        , React.createElement('div', { className: "flex items-center gap-3 min-w-0"    }
+          , React.createElement(Filter, { className: "h-4 w-4 text-muted-foreground shrink-0"   , 'aria-hidden': true} )
+          , React.createElement('div', { className: "flex w-full flex-nowrap items-end gap-3 overflow-x-auto pr-1 min-w-0"         }
+            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Zone")
+              , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, disabled: zonesLoading}
+                , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     }
+                  , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loadingâ€¦" : "All"} )
                 )
-                , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 589}}
-                  , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 590}}, "All")
+                , React.createElement(SelectContent, {}
+                  , React.createElement(SelectItem, { value: "all"}, "All")
                   , zones.map((z) => (
-                    React.createElement(SelectItem, { key: z.id, value: String(z.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 592}}
+                    React.createElement(SelectItem, { key: z.id, value: String(z.id)}
                       , _nullishCoalesce(z.zone_name, () => ( z.province_name))
                     )
                   ))
@@ -433,26 +449,26 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 601}}, "Circle")
+            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Circle")
               , React.createElement(Select, {
                 value: selectedCircleId,
                 onValueChange: handleCircleChange,
-                disabled: selectedZoneId === "all" || circlesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 602}}
+                disabled: selectedZoneId === "all" || circlesLoading}
 
                 , React.createElement(SelectTrigger, {
                   className: cn(
                     "h-9 w-full border-border/50 bg-background rounded-md",
                     (selectedZoneId === "all" || circlesLoading) && "opacity-50 cursor-not-allowed"
-                  ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 607}}
+                  )}
 
-                  , React.createElement(SelectValue, { placeholder: circlesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 613}} )
+                  , React.createElement(SelectValue, { placeholder: circlesLoading ? "Loadingâ€¦" : "All"} )
                 )
-                , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 615}}
-                  , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 616}}, "All")
+                , React.createElement(SelectContent, {}
+                  , React.createElement(SelectItem, { value: "all"}, "All")
                   , selectedZoneId !== "all" &&
                     circles.map((c) => (
-                      React.createElement(SelectItem, { key: c.id, value: String(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 619}}
+                      React.createElement(SelectItem, { key: c.id, value: String(c.id)}
                         , _nullishCoalesce(c.circle_name, () => ( c.division_name))
                       )
                     ))
@@ -460,26 +476,26 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 601}}, "District")
+            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "District")
               , React.createElement(Select, {
                 value: selectedDistrictId,
                 onValueChange: handleDistrictChange,
-                disabled: selectedCircleId === "all" || districtsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 602}}
+                disabled: selectedCircleId === "all" || districtsLoading}
 
                 , React.createElement(SelectTrigger, {
                   className: cn(
                     "h-9 w-full border-border/50 bg-background rounded-md",
                     (selectedCircleId === "all" || districtsLoading) && "opacity-50 cursor-not-allowed"
-                  ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 607}}
+                  )}
 
-                  , React.createElement(SelectValue, { placeholder: districtsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 613}} )
+                  , React.createElement(SelectValue, { placeholder: districtsLoading ? "Loadingâ€¦" : "All"} )
                 )
-                , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 615}}
-                  , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 616}}, "All")
+                , React.createElement(SelectContent, {}
+                  , React.createElement(SelectItem, { value: "all"}, "All")
                   , selectedCircleId !== "all" &&
                     districts.map((d) => (
-                      React.createElement(SelectItem, { key: d.id, value: String(d.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 619}}
+                      React.createElement(SelectItem, { key: d.id, value: String(d.id)}
                         , d.district_name
                       )
                     ))
@@ -487,12 +503,12 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 627}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 628}}, "Tehsil")
+            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[140px] shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Tehsil")
               , React.createElement(Select, {
                 value: selectedTehsilId,
                 onValueChange: handleTehsilChange,
-                disabled: selectedZoneId === "all" || selectedCircleId === "all" || selectedDistrictId === "all" || tehsilsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 629}}
+                disabled: selectedZoneId === "all" || selectedCircleId === "all" || selectedDistrictId === "all" || tehsilsLoading}
 
                 , React.createElement(SelectTrigger, {
                   className: cn(
@@ -502,17 +518,17 @@ export default function Finance() {
                       selectedDistrictId === "all" ||
                       tehsilsLoading) &&
                       "opacity-50 cursor-not-allowed"
-                  ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 634}}
+                  )}
 
-                  , React.createElement(SelectValue, { placeholder: tehsilsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 643}} )
+                  , React.createElement(SelectValue, { placeholder: tehsilsLoading ? "Loadingâ€¦" : "All"} )
                 )
-                , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 645}}
-                  , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 646}}, "All")
+                , React.createElement(SelectContent, {}
+                  , React.createElement(SelectItem, { value: "all"}, "All")
                   , selectedZoneId !== "all" &&
                     selectedCircleId !== "all" &&
                     selectedDistrictId !== "all" &&
                     tehsils.map((t) => (
-                      React.createElement(SelectItem, { key: t.id, value: String(t.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 650}}
+                      React.createElement(SelectItem, { key: t.id, value: String(t.id)}
                         , t.tehsil_name
                       )
                     ))
@@ -520,16 +536,16 @@ export default function Finance() {
               )
             )
 
-            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[160px] shrink-0"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 658}}
-              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 659}}, "Project")
-              , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 660}}
-                , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 661}}
-                  , React.createElement(SelectValue, { placeholder: "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 662}} )
+            , React.createElement('div', { className: "flex flex-col gap-1 min-w-[160px] shrink-0"        }
+              , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"  }, "Project")
+              , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId}
+                , React.createElement(SelectTrigger, { className: "h-9 w-full border-border/50 bg-background rounded-md"     }
+                  , React.createElement(SelectValue, { placeholder: "All"} )
                 )
-                , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 664}}
-                  , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 665}}, "All (" , filteredProjects.length, ")")
+                , React.createElement(SelectContent, {}
+                  , React.createElement(SelectItem, { value: "all"}, "All (" , filteredProjects.length, ")")
                   , filteredProjects.map((p) => (
-                    React.createElement(SelectItem, { key: p.id, value: String(p.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 667}}
+                    React.createElement(SelectItem, { key: p.id, value: String(p.id)}
                       , p.project_name || `#${p.id}`
                     )
                   ))
@@ -551,56 +567,55 @@ export default function Finance() {
                   setSelectedTehsilId("all");
                   setSelectedProjectId("all");
                 },
-                className: "h-9 px-4 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 border-0 shrink-0 self-end",
-                __self: this, __source: { fileName: _jsxFileName, lineNumber: 679 }
+                className: "h-9 px-4 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 border-0 shrink-0 self-end"
               }, "Clear")
             )
           )
         )
 
         , isBudgetEditOpen && selectedProjectId !== "all" && selectedProject && (
-          React.createElement(Card, { className: "border border-border/60 shadow-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 690}}
-            , React.createElement(CardHeader, { className: "pb-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 691}}
-              , React.createElement(CardTitle, { className: "text-base", __self: this, __source: {fileName: _jsxFileName, lineNumber: 692}}, "Update Budget")
-              , React.createElement(CardDescription, { className: "text-xs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 693}}
+          React.createElement(Card, { className: "border border-border/60 shadow-sm"}
+            , React.createElement(CardHeader, { className: "pb-3"}
+              , React.createElement(CardTitle, { className: "text-base"}, "Update Budget")
+              , React.createElement(CardDescription, { className: "text-xs"}
                 , "Project details are locked. Only budget values can be updated."
               )
             )
-            , React.createElement(CardContent, { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 697}}
-              , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-3 gap-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 698}}
-                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 699}}
-                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 700}}, "Project")
-                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 701}}, selectedProject.project_name || `#${selectedProject.id}`)
+            , React.createElement(CardContent, { className: "space-y-4"}
+              , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-3 gap-3"}
+                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3"}
+                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground"}, "Project")
+                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate"}, selectedProject.project_name || `#${selectedProject.id}`)
                 )
-                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 702}}
-                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 703}}, "Reference No")
-                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 704}}, _nullishCoalesce(selectedProject.project_reference_no, () => ( "—")))
+                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3"}
+                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground"}, "Reference No")
+                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate"}, _nullishCoalesce(selectedProject.project_reference_no, () => ( "â€”")))
                 )
-                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 705}}
-                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 706}}, "Location")
-                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 707}}
-                    , (_nullishCoalesce(selectedProject.division_name, () => ( "")) || "—"), " / "
-                    , (_nullishCoalesce(selectedProject.district_name, () => ( "")) || "—"), " / "
-                    , (_nullishCoalesce(selectedProject.tehsil_name, () => ( "")) || "—")
+                , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3"}
+                  , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground"}, "Location")
+                  , React.createElement('p', { className: "mt-1 text-sm font-semibold truncate"}
+                    , (_nullishCoalesce(selectedProject.division_name, () => ( "")) || "â€”"), " / "
+                    , (_nullishCoalesce(selectedProject.district_name, () => ( "")) || "â€”"), " / "
+                    , (_nullishCoalesce(selectedProject.tehsil_name, () => ( "")) || "â€”")
                   )
                 )
               )
 
-              , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 gap-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 710}}
-                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 711}}
-                  , React.createElement('label', { className: "text-sm font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 712}}, "Total Budget Allocated (M)")
-                  , React.createElement(Input, { value: budgetAllocatedInput, onChange: (e) => setBudgetAllocatedInput(e.target.value), placeholder: "e.g. 120.50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 713}} )
+              , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 gap-4"}
+                , React.createElement('div', { className: "space-y-2"}
+                  , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"}, "Total Budget Allocated (M)")
+                  , React.createElement(Input, { value: budgetAllocatedInput, onChange: (e) => setBudgetAllocatedInput(e.target.value), placeholder: "e.g. 120.50"} )
                 )
-                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 714}}
-                  , React.createElement('label', { className: "text-sm font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 715}}, "Budget Utilized (M)")
-                  , React.createElement(Input, { value: budgetUtilizedInput, onChange: (e) => setBudgetUtilizedInput(e.target.value), placeholder: "e.g. 40.25", __self: this, __source: {fileName: _jsxFileName, lineNumber: 716}} )
+                , React.createElement('div', { className: "space-y-2"}
+                  , React.createElement('label', { className: "text-sm font-medium text-muted-foreground"}, "Budget Utilized (M)")
+                  , React.createElement(Input, { value: budgetUtilizedInput, onChange: (e) => setBudgetUtilizedInput(e.target.value), placeholder: "e.g. 40.25"} )
                 )
               )
 
-              , React.createElement('div', { className: "flex items-center justify-end gap-2 pt-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 720}}
-                , React.createElement(Button, { variant: "outline", size: "sm", onClick: () => setIsBudgetEditOpen(false), className: "h-8", disabled: updateBudgetMutation.isPending, __self: this, __source: {fileName: _jsxFileName, lineNumber: 721}}, "Cancel")
-                , React.createElement(Button, { variant: "default", size: "sm", onClick: handleSaveBudget, className: "h-8 bg-primary text-primary-foreground", disabled: updateBudgetMutation.isPending, __self: this, __source: {fileName: _jsxFileName, lineNumber: 722}}
-                  , updateBudgetMutation.isPending ? "Saving…" : "Save"
+              , React.createElement('div', { className: "flex items-center justify-end gap-2 pt-2"}
+                , React.createElement(Button, { variant: "outline", size: "sm", onClick: () => setIsBudgetEditOpen(false), className: "h-8", disabled: updateBudgetMutation.isPending}, "Cancel")
+                , React.createElement(Button, { variant: "default", size: "sm", onClick: handleSaveBudget, className: "h-8 bg-primary text-primary-foreground", disabled: updateBudgetMutation.isPending}
+                  , updateBudgetMutation.isPending ? "Savingâ€¦" : "Save"
                 )
               )
             )
@@ -608,15 +623,15 @@ export default function Finance() {
         )
 
         , (selectedProjectId !== "all" && !selectedProject) ? (
-          React.createElement('div', { className: "rounded-lg border border-border/50 bg-muted/10 p-4 text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-            , "Loading financial data…"
+          React.createElement('div', { className: "rounded-lg border border-border/50 bg-muted/10 p-4 text-sm text-muted-foreground" }
+            , "Loading financial dataâ€¦"
           )
         ) : null
 
         , (
           React.createElement(React.Fragment, null
             /* KPI row: 3 cards (Budget / Consume / Remaining) */
-            , React.createElement('div', { className: "grid grid-cols-1 items-stretch gap-3 sm:grid-cols-3 sm:gap-3"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 729}}
+            , React.createElement('div', { className: "grid grid-cols-1 items-stretch gap-3 sm:grid-cols-3 sm:gap-3"      }
               , ([
                 {
                   key: "totalBudget",
@@ -653,28 +668,28 @@ export default function Finance() {
                       "border-l-4",
                       variant.accent,
                       variant.bg
-                    ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 777}}
+                    )}
 
-                    , React.createElement('div', { className: cn("pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl", variant.blob), __self: this, __source: {fileName: _jsxFileName, lineNumber: 786}} )
-                    , React.createElement(CardHeader, { className: "relative flex-shrink-0 space-y-0 px-3 pb-1 pt-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 787}}
-                      , React.createElement('div', { className: "flex items-start justify-between gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 788}}
-                        , React.createElement(CardTitle, { className: "min-h-[2.25rem] max-w-[calc(100%-2.25rem)] text-xs font-medium leading-snug text-muted-foreground line-clamp-2"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 789}}
+                    , React.createElement('div', { className: cn("pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl", variant.blob)} )
+                    , React.createElement(CardHeader, { className: "relative flex-shrink-0 space-y-0 px-3 pb-1 pt-3"     }
+                      , React.createElement('div', { className: "flex items-start justify-between gap-2"   }
+                        , React.createElement(CardTitle, { className: "min-h-[2.25rem] max-w-[calc(100%-2.25rem)] text-xs font-medium leading-snug text-muted-foreground line-clamp-2"      }
                           , kpi.label
                         )
                         , React.createElement('div', {
                           className: cn(
                             "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/40 shadow-sm",
                             variant.iconWrap
-                          ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 792}}
-                          , React.createElement(Icon, { className: cn("h-4 w-4", variant.icon), __self: this, __source: {fileName: _jsxFileName, lineNumber: 798}} )
+                          )}
+                          , React.createElement(Icon, { className: cn("h-4 w-4", variant.icon)} )
                         )
                       )
                     )
-                    , React.createElement(CardContent, { className: "relative flex flex-col px-3 pb-3 pt-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 802}}
-                      , React.createElement('div', { className: cn("text-lg font-bold font-heading xl:text-xl", variant.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 803}}
+                    , React.createElement(CardContent, { className: "relative flex flex-col px-3 pb-3 pt-0"     }
+                      , React.createElement('div', { className: cn("text-lg font-bold font-heading xl:text-xl", variant.value)}
                         , formatPKRMillions(Number(_nullishCoalesce(kpi.valueM, () => ( 0))))
                       )
-                      , React.createElement('p', { className: "mt-2 text-[11px] leading-snug text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 810}}
+                      , React.createElement('p', { className: "mt-2 text-[11px] leading-snug text-muted-foreground" }
                         , kpi.hint
                       )
                     )
@@ -684,20 +699,20 @@ export default function Finance() {
             )
 
             /* Budget overview */
-            , React.createElement('div', { className: "grid grid-cols-1 gap-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 818}}
-              , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 819}}
-                , React.createElement(CardHeader, { className: "flex-shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}
-                  , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 821}}, "Budget overview")
-                  , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 822}}, "Totals (PKR millions) — Total Budget → Total Consume → Total Remaining")
+            , React.createElement('div', { className: "grid grid-cols-1 gap-4"}
+              , React.createElement(Card, { className: "flex min-h-0 w-full flex-col border-2 transition-colors hover:border-primary/60"}
+                , React.createElement(CardHeader, { className: "flex-shrink-0"}
+                  , React.createElement(CardTitle, {}, "Budget overview")
+                  , React.createElement(CardDescription, {}, "Totals (PKR millions) â€” Total Budget â†’ Total Consume â†’ Total Remaining")
                 )
-                , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 826}}
-                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 827}}
-                    , React.createElement(ComposedChart, { data: flowChartData, margin: { top: 16, right: 32, left: 16, bottom: isMobile ? 52 : 36 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 828}}
-                      , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 837}} )
-                      , React.createElement(XAxis, { dataKey: "stage", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, angle: isMobile ? -35 : 0, textAnchor: isMobile ? "end" : "middle", height: isMobile ? 70 : 40, __self: this, __source: {fileName: _jsxFileName, lineNumber: 838}} )
-                      , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${v}M`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 846}} )
-                      , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 847}} )
-                      , React.createElement(Bar, { dataKey: "totalM", radius: [4, 4, 0, 0], name: "Total (M)", barCategoryGap: "18%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 859}}
+                , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]"}
+                  , React.createElement(ResponsiveContainer, { width: "100%", height: "100%"}
+                    , React.createElement(ComposedChart, { data: flowChartData, margin: { top: 16, right: 32, left: 16, bottom: isMobile ? 52 : 36 }}
+                      , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))"} )
+                      , React.createElement(XAxis, { dataKey: "stage", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, angle: isMobile ? -35 : 0, textAnchor: isMobile ? "end" : "middle", height: isMobile ? 70 : 40} )
+                      , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${v}M`} )
+                      , React.createElement(Tooltip, { contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }, formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name]} )
+                      , React.createElement(Bar, { dataKey: "totalM", radius: [4, 4, 0, 0], name: "Total (M)", barCategoryGap: "18%"}
                         , flowChartData.map((entry, index) => (
                           React.createElement(Cell, {
                             key: `cell-flow-${index}`,
@@ -706,7 +721,7 @@ export default function Finance() {
                                 ? "#0F4B3A"
                                 : entry.stage === "Total Consume"
                                   ? "#F59E0B"
-                                  : "#8BC34A", __self: this, __source: {fileName: _jsxFileName, lineNumber: 860}}
+                                  : "#8BC34A"}
                           )
                         ))
                       )
@@ -716,38 +731,38 @@ export default function Finance() {
               )
             )
 
-            /* Project comparison — only projects with financial data; duplicate names disambiguated */
-            , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 882}}
-              , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 883}}
-                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 884}}, "Project comparison" )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 885}}, "Total Budget vs Total Consume (PKR millions), projects with data only"         )
+            /* Project comparison â€” only projects with financial data; duplicate names disambiguated */
+            , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60"  }
+              , React.createElement(CardHeader, {}
+                , React.createElement(CardTitle, {}, "Project comparison" )
+                , React.createElement(CardDescription, {}, "Total Budget vs Total Consume (PKR millions), projects with data only"         )
               )
-              , React.createElement(CardContent, { className: "h-[300px] sm:h-[330px] lg:h-[380px]"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 887}}
+              , React.createElement(CardContent, { className: "h-[300px] sm:h-[330px] lg:h-[380px]"  }
                 , divisionComparisonData.length === 0 ? (
-                  React.createElement('div', { className: "flex h-full items-center justify-center text-sm text-muted-foreground"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 889}}, "No projects with budget/consume totals in the current filter."
+                  React.createElement('div', { className: "flex h-full items-center justify-center text-sm text-muted-foreground"     }, "No projects with budget/consume totals in the current filter."
 
                   )
                 ) : (
-                  React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 893}}
+                  React.createElement(ResponsiveContainer, { width: "100%", height: "100%"}
                     , React.createElement(ComposedChart, {
                       data: divisionComparisonData,
                       margin: { top: 10, right: 24, left: 8, bottom: divisionComparisonData.length > 6 ? 72 : 56 },
                       barCategoryGap: "12%",
-                      barGap: 4, __self: this, __source: {fileName: _jsxFileName, lineNumber: 894}}
+                      barGap: 4}
 
-                      , React.createElement(CartesianGrid, { strokeDasharray: "3 3" , vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 900}} )
+                      , React.createElement(CartesianGrid, { strokeDasharray: "3 3" , vertical: false, stroke: "hsl(var(--border))"} )
                       , React.createElement(XAxis, {
                         dataKey: "division",
                         angle: -35,
                         textAnchor: "end",
                         height: divisionComparisonData.length > 6 ? 88 : 72,
                         interval: 0,
-                        tick: { fontSize: 10, fill: "hsl(var(--muted-foreground))" }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 901}}
+                        tick: { fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                       )
                       , React.createElement(YAxis, {
                         tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" },
                         tickFormatter: (v) => `${v}M`,
-                        width: 48, __self: this, __source: {fileName: _jsxFileName, lineNumber: 909}}
+                        width: 48}
                       )
                       , React.createElement(Tooltip, {
                         contentStyle: {
@@ -755,11 +770,11 @@ export default function Finance() {
                           borderColor: "hsl(var(--border))",
                           borderRadius: "8px",
                         },
-                        formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 914}}
+                        formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name]}
                       )
-                      , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 922}} )
-                      , React.createElement(Bar, { dataKey: "budgetM", fill: "#2F8F6C", radius: [4, 4, 0, 0], name: "Budget (M)" , maxBarSize: 56, __self: this, __source: {fileName: _jsxFileName, lineNumber: 923}} )
-                      , React.createElement(Bar, { dataKey: "consumeM", fill: "#F59E0B", radius: [4, 4, 0, 0], name: "Consume (M)" , maxBarSize: 56, __self: this, __source: {fileName: _jsxFileName, lineNumber: 924}} )
+                      , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }} )
+                      , React.createElement(Bar, { dataKey: "budgetM", fill: "#2F8F6C", radius: [4, 4, 0, 0], name: "Budget (M)" , maxBarSize: 56} )
+                      , React.createElement(Bar, { dataKey: "consumeM", fill: "#F59E0B", radius: [4, 4, 0, 0], name: "Consume (M)" , maxBarSize: 56} )
                     )
                   )
                 )
@@ -767,28 +782,28 @@ export default function Finance() {
             )
 
             /* Financial flow curve (API-derived) */
-            , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
-              , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 933}}
-                , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "Financial flow curve"  )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Allocation → P&D release → Spending release → PIFRA utilization (Capital / Revenue / Total), based on current selection."
+            , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60"}
+              , React.createElement(CardHeader, {}
+                , React.createElement(CardTitle, {}, "Financial flow curve"  )
+                , React.createElement(CardDescription, {}, "Allocation â†’ P&D release â†’ Spending release â†’ PIFRA utilization (Capital / Revenue / Total), based on current selection."
 
 
                 )
               )
-              , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 940}}
-                , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 941}}
-                  , React.createElement(ComposedChart, { data: financialFlowCurveData, margin: { top: 12, right: 24, left: 12, bottom: 32 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 942}}
-                    , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 952}} )
-                    , React.createElement(XAxis, { dataKey: "stage", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 953}} )
-                    , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${Math.round(v)}M`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 962}} )
+              , React.createElement(CardContent, { className: "h-[320px] w-full sm:h-[360px] lg:h-[420px]"}
+                , React.createElement(ResponsiveContainer, { width: "100%", height: "100%"}
+                  , React.createElement(ComposedChart, { data: financialFlowCurveData, margin: { top: 12, right: 24, left: 12, bottom: 32 }}
+                    , React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, stroke: "hsl(var(--border))"} )
+                    , React.createElement(XAxis, { dataKey: "stage", tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" }, interval: 0} )
+                    , React.createElement(YAxis, { tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" }, tickFormatter: (v) => `${Math.round(v)}M`} )
                     , React.createElement(Tooltip, {
                       contentStyle: { backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" },
-                      formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name], __self: this, __source: {fileName: _jsxFileName, lineNumber: 963}}
+                      formatter: (value, name) => [`PKR ${Number(value).toFixed(2)} M`, name]}
                     )
-                    , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 972}} )
-                    , React.createElement(Line, { type: "monotone", dataKey: "capitalM", name: "Capital (M)", stroke: STAGE_COLORS[1], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 973}} )
-                    , React.createElement(Line, { type: "monotone", dataKey: "revenueM", name: "Revenue (M)", stroke: STAGE_COLORS[3], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 974}} )
-                    , React.createElement(Line, { type: "monotone", dataKey: "totalM", name: "Total (M)", stroke: STAGE_COLORS[4], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 975}} )
+                    , React.createElement(Legend, { wrapperStyle: { paddingTop: 8 }} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "capitalM", name: "Capital (M)", stroke: STAGE_COLORS[1], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "revenueM", name: "Revenue (M)", stroke: STAGE_COLORS[3], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }} )
+                    , React.createElement(Line, { type: "monotone", dataKey: "totalM", name: "Total (M)", stroke: STAGE_COLORS[4], strokeWidth: 3, dot: { r: 3 }, activeDot: { r: 5 }} )
                   )
                 )
               )

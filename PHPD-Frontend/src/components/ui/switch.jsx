@@ -1,5 +1,4 @@
-const _jsxFileName = "";
-import * as React from "react"
+﻿import * as React from "react"
 import * as SwitchPrimitives from "@radix-ui/react-switch"
 
 import { cn } from "@/lib/utils"
@@ -14,12 +13,12 @@ const Switch = React.forwardRef
       className
     ),
     ...props,
-    ref: ref, __self: this, __source: {fileName: _jsxFileName, lineNumber: 10}}
+    ref: ref}
 
     , React.createElement(SwitchPrimitives.Thumb, {
       className: cn(
         "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
-      ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 18}}
+      )}
     )
   )
 ))

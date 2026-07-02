@@ -1,5 +1,4 @@
-const _jsxFileName = "";"use client"
-
+﻿
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
@@ -15,7 +14,7 @@ const Avatar = React.forwardRef
       "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 12}}
+    ...props}
   )
 ))
 Avatar.displayName = AvatarPrimitive.Root.displayName
@@ -27,7 +26,7 @@ const AvatarImage = React.forwardRef
   React.createElement(AvatarPrimitive.Image, {
     ref: ref,
     className: cn("aspect-square h-full w-full", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 27}}
+    ...props}
   )
 ))
 AvatarImage.displayName = AvatarPrimitive.Image.displayName
@@ -42,7 +41,7 @@ const AvatarFallback = React.forwardRef
       "flex h-full w-full items-center justify-center rounded-full bg-muted",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 39}}
+    ...props}
   )
 ))
 AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName

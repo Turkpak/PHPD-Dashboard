@@ -1,5 +1,4 @@
-const _jsxFileName = "";
-import * as React from "react"
+﻿import * as React from "react"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -10,7 +9,7 @@ const Pagination = ({ className, ...props }) => (
     role: "navigation",
     'aria-label': "pagination",
     className: cn("mx-auto flex w-full justify-center", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 8}}
+    ...props}
   )
 )
 Pagination.displayName = "Pagination"
@@ -22,7 +21,7 @@ const PaginationContent = React.forwardRef
   React.createElement('ul', {
     ref: ref,
     className: cn("flex flex-row items-center gap-1", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 21}}
+    ...props}
   )
 ))
 PaginationContent.displayName = "PaginationContent"
@@ -31,7 +30,7 @@ const PaginationItem = React.forwardRef
 
 
 (({ className, ...props }, ref) => (
-  React.createElement('li', { ref: ref, className: cn("", className), ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 33}} )
+  React.createElement('li', { ref: ref, className: cn("", className), ...props} )
 ))
 PaginationItem.displayName = "PaginationItem"
 
@@ -55,7 +54,7 @@ const PaginationLink = ({
       }),
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 48}}
+    ...props}
   )
 )
 PaginationLink.displayName = "PaginationLink"
@@ -68,10 +67,10 @@ const PaginationPrevious = ({
     'aria-label': "Go to previous page"   ,
     size: "default",
     className: cn("gap-1 pl-2.5", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 66}}
+    ...props}
 
-    , React.createElement(ChevronLeft, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 72}} )
-    , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 73}}, "Previous")
+    , React.createElement(ChevronLeft, { className: "h-4 w-4" } )
+    , React.createElement('span', {}, "Previous")
   )
 )
 PaginationPrevious.displayName = "PaginationPrevious"
@@ -84,10 +83,10 @@ const PaginationNext = ({
     'aria-label': "Go to next page"   ,
     size: "default",
     className: cn("gap-1 pr-2.5 bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:text-primary-foreground", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 82}}
+    ...props}
 
-    , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 88}}, "Next")
-    , React.createElement(ChevronRight, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 89}} )
+    , React.createElement('span', {}, "Next")
+    , React.createElement(ChevronRight, { className: "h-4 w-4" } )
   )
 )
 PaginationNext.displayName = "PaginationNext"
@@ -99,10 +98,10 @@ const PaginationEllipsis = ({
   React.createElement('span', {
     'aria-hidden': true,
     className: cn("flex h-9 w-9 items-center justify-center", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 98}}
+    ...props}
 
-    , React.createElement(MoreHorizontal, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 103}} )
-    , React.createElement('span', { className: "sr-only", __self: this, __source: {fileName: _jsxFileName, lineNumber: 104}}, "More pages" )
+    , React.createElement(MoreHorizontal, { className: "h-4 w-4" } )
+    , React.createElement('span', { className: "sr-only"}, "More pages" )
   )
 )
 PaginationEllipsis.displayName = "PaginationEllipsis"

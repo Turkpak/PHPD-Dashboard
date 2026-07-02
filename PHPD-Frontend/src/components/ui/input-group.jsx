@@ -1,11 +1,25 @@
-const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
-import * as React from "react"
+﻿import * as React from "react"
 import { cva, } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+
+// Transpiler-compatibility helpers
+const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
+const _optionalChain = (ops) => {
+  let lastAccessLHS;
+  let value = ops[0];
+  let i = 1;
+  while (i < ops.length) {
+    const op = ops[i]; const fn = ops[i + 1]; i += 2;
+    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
+    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
+    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
+  }
+  return value;
+};
 
 function InputGroup({ className, ...props }) {
   return (
@@ -30,7 +44,7 @@ function InputGroup({ className, ...props }) {
 
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 11}}
+      ...props}
     )
   )
 }
@@ -73,7 +87,7 @@ function InputGroupAddon({
         }
         _optionalChain([e, 'access', _ => _.currentTarget, 'access', _2 => _2.parentElement, 'optionalAccess', _3 => _3.querySelector, 'call', _4 => _4("input"), 'optionalAccess', _5 => _5.focus, 'call', _6 => _6()])
       },
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 64}}
+      ...props}
     )
   )
 }
@@ -110,7 +124,7 @@ function InputGroupButton({
       'data-size': size,
       variant: variant,
       className: cn(inputGroupButtonVariants({ size }), className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 107}}
+      ...props}
     )
   )
 }
@@ -122,7 +136,7 @@ function InputGroupText({ className, ...props }) {
         "text-muted-foreground flex items-center gap-2 text-sm [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 119}}
+      ...props}
     )
   )
 }
@@ -138,7 +152,7 @@ function InputGroupInput({
         "flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 134}}
+      ...props}
     )
   )
 }
@@ -154,7 +168,7 @@ function InputGroupTextarea({
         "flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:ring-0 dark:bg-transparent",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 150}}
+      ...props}
     )
   )
 }

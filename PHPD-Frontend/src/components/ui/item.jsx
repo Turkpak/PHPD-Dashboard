@@ -1,5 +1,4 @@
-const _jsxFileName = "";
-import * as React from "react"
+﻿import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, } from "class-variance-authority"
 
@@ -12,7 +11,7 @@ function ItemGroup({ className, ...props }) {
       role: "list",
       'data-slot': "item-group",
       className: cn("group/item-group flex flex-col", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 10}}
+      ...props}
     )
   )
 }
@@ -26,7 +25,7 @@ function ItemSeparator({
       'data-slot': "item-separator",
       orientation: "horizontal",
       className: cn("my-0", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 24}}
+      ...props}
     )
   )
 }
@@ -67,7 +66,7 @@ function Item({
       'data-variant': variant,
       'data-size': size,
       className: cn(itemVariants({ variant, size, className })),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 64}}
+      ...props}
     )
   )
 }
@@ -99,7 +98,7 @@ function ItemMedia({
       'data-slot': "item-media",
       'data-variant': variant,
       className: cn(itemMediaVariants({ variant, className })),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 97}}
+      ...props}
     )
   )
 }
@@ -112,7 +111,7 @@ function ItemContent({ className, ...props }) {
         "flex flex-1 flex-col gap-1 [&+[data-slot=item-content]]:flex-none",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 108}}
+      ...props}
     )
   )
 }
@@ -125,7 +124,7 @@ function ItemTitle({ className, ...props }) {
         "flex w-fit items-center gap-2 text-sm font-medium leading-snug",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 121}}
+      ...props}
     )
   )
 }
@@ -139,7 +138,7 @@ function ItemDescription({ className, ...props }) {
         "[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 134}}
+      ...props}
     )
   )
 }
@@ -149,7 +148,7 @@ function ItemActions({ className, ...props }) {
     React.createElement('div', {
       'data-slot': "item-actions",
       className: cn("flex items-center gap-2", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 148}}
+      ...props}
     )
   )
 }
@@ -162,7 +161,7 @@ function ItemHeader({ className, ...props }) {
         "flex basis-full items-center justify-between gap-2",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 158}}
+      ...props}
     )
   )
 }
@@ -175,7 +174,7 @@ function ItemFooter({ className, ...props }) {
         "flex basis-full items-center justify-between gap-2",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 171}}
+      ...props}
     )
   )
 }

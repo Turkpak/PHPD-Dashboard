@@ -1,5 +1,4 @@
-const _jsxFileName = "";"use client"
-
+﻿
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { Check, ChevronRight, Circle } from "lucide-react"
@@ -31,10 +30,10 @@ const DropdownMenuSubTrigger = React.forwardRef
       inset && "pl-8",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 27}}
+    ...props}
 
     , children
-    , React.createElement(ChevronRight, { className: "ml-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 37}} )
+    , React.createElement(ChevronRight, { className: "ml-auto"} )
   )
 ))
 DropdownMenuSubTrigger.displayName =
@@ -50,7 +49,7 @@ const DropdownMenuSubContent = React.forwardRef
       "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 47}}
+    ...props}
   )
 ))
 DropdownMenuSubContent.displayName =
@@ -60,7 +59,7 @@ const DropdownMenuContent = React.forwardRef
 
 
 (({ className, sideOffset = 4, ...props }, ref) => (
-  React.createElement(DropdownMenuPrimitive.Portal, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 63}}
+  React.createElement(DropdownMenuPrimitive.Portal, {}
     , React.createElement(DropdownMenuPrimitive.Content, {
       ref: ref,
       sideOffset: sideOffset,
@@ -69,7 +68,7 @@ const DropdownMenuContent = React.forwardRef
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 64}}
+      ...props}
     )
   )
 ))
@@ -88,7 +87,7 @@ const DropdownMenuItem = React.forwardRef
       inset && "pl-8",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 84}}
+    ...props}
   )
 ))
 DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
@@ -104,11 +103,11 @@ const DropdownMenuCheckboxItem = React.forwardRef
       className
     ),
     checked: checked,
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 100}}
+    ...props}
 
-    , React.createElement('span', { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 109}}
-      , React.createElement(DropdownMenuPrimitive.ItemIndicator, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 110}}
-        , React.createElement(Check, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 111}} )
+    , React.createElement('span', { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center"      }
+      , React.createElement(DropdownMenuPrimitive.ItemIndicator, {}
+        , React.createElement(Check, { className: "h-4 w-4" } )
       )
     )
     , children
@@ -127,11 +126,11 @@ const DropdownMenuRadioItem = React.forwardRef
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 124}}
+    ...props}
 
-    , React.createElement('span', { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 132}}
-      , React.createElement(DropdownMenuPrimitive.ItemIndicator, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 133}}
-        , React.createElement(Circle, { className: "h-2 w-2 fill-current"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 134}} )
+    , React.createElement('span', { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center"      }
+      , React.createElement(DropdownMenuPrimitive.ItemIndicator, {}
+        , React.createElement(Circle, { className: "h-2 w-2 fill-current"  } )
       )
     )
     , children
@@ -152,7 +151,7 @@ const DropdownMenuLabel = React.forwardRef
       inset && "pl-8",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 148}}
+    ...props}
   )
 ))
 DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
@@ -164,7 +163,7 @@ const DropdownMenuSeparator = React.forwardRef
   React.createElement(DropdownMenuPrimitive.Separator, {
     ref: ref,
     className: cn("-mx-1 my-1 h-px bg-muted", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 164}}
+    ...props}
   )
 ))
 DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
@@ -176,7 +175,7 @@ const DropdownMenuShortcut = ({
   return (
     React.createElement('span', {
       className: cn("ml-auto text-xs tracking-widest opacity-60", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 177}}
+      ...props}
     )
   )
 }

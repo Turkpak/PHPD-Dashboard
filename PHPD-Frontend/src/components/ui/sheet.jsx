@@ -1,5 +1,4 @@
-const _jsxFileName = "";"use client"
-
+﻿
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, } from "class-variance-authority"
@@ -25,7 +24,7 @@ const SheetOverlay = React.forwardRef
       className
     ),
     ...props,
-    ref: ref, __self: this, __source: {fileName: _jsxFileName, lineNumber: 22}}
+    ref: ref}
   )
 ))
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
@@ -57,16 +56,16 @@ const SheetContent = React.forwardRef
 
 
 (({ side = "right", className, children, ...props }, ref) => (
-  React.createElement(SheetPortal, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 60}}
-    , React.createElement(SheetOverlay, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 61}} )
+  React.createElement(SheetPortal, {}
+    , React.createElement(SheetOverlay, {} )
     , React.createElement(SheetPrimitive.Content, {
       ref: ref,
       className: cn(sheetVariants({ side }), className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 62}}
+      ...props}
 
-      , React.createElement(SheetPrimitive.Close, { className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"             , __self: this, __source: {fileName: _jsxFileName, lineNumber: 67}}
-        , React.createElement(X, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 68}} )
-        , React.createElement('span', { className: "sr-only", __self: this, __source: {fileName: _jsxFileName, lineNumber: 69}}, "Close")
+      , React.createElement(SheetPrimitive.Close, { className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"             }
+        , React.createElement(X, { className: "h-4 w-4" } )
+        , React.createElement('span', { className: "sr-only"}, "Close")
       )
       , children
     )
@@ -83,7 +82,7 @@ const SheetHeader = ({
       "flex flex-col space-y-2 text-center sm:text-left",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 81}}
+    ...props}
   )
 )
 SheetHeader.displayName = "SheetHeader"
@@ -97,7 +96,7 @@ const SheetFooter = ({
       "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 95}}
+    ...props}
   )
 )
 SheetFooter.displayName = "SheetFooter"
@@ -109,7 +108,7 @@ const SheetTitle = React.forwardRef
   React.createElement(SheetPrimitive.Title, {
     ref: ref,
     className: cn("text-lg font-semibold text-foreground", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 109}}
+    ...props}
   )
 ))
 SheetTitle.displayName = SheetPrimitive.Title.displayName
@@ -121,7 +120,7 @@ const SheetDescription = React.forwardRef
   React.createElement(SheetPrimitive.Description, {
     ref: ref,
     className: cn("text-sm text-muted-foreground", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 121}}
+    ...props}
   )
 ))
 SheetDescription.displayName = SheetPrimitive.Description.displayName

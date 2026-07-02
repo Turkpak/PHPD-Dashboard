@@ -1,39 +1,8 @@
- function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { requestRaw } from "./client";
 
 const CREATE_PROGRESS_IMAGE = "create-progress-image/";
 const LIST_PROGRESS_IMAGE = "list-progress-image/";
 const UPDATE_PROGRESS_IMAGE = "update-progress-image/";
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 export async function createProgressImage(
   payload
@@ -51,21 +20,13 @@ export async function createProgressImage(
 
 export async function listProgressImages(params) {
   const q = {};
-  if (_optionalChain([params, 'optionalAccess', _ => _.project]) != null) q.project = String(params.project);
-  if (_optionalChain([params, 'optionalAccess', _2 => _2.activity]) != null) q.activity = String(params.activity);
+  if (params?.project != null) q.project = String(params.project);
+  if (params?.activity != null) q.activity = String(params.activity);
   const search = new URLSearchParams(q).toString();
   const path = search ? `${LIST_PROGRESS_IMAGE}?${search}` : LIST_PROGRESS_IMAGE;
   const res = await requestRaw(path, { method: "GET" });
-  return Array.isArray(_optionalChain([res, 'optionalAccess', _3 => _3.data])) ? (res.data ) : [];
+  return Array.isArray(res?.data) ? (res.data) : [];
 }
-
- 
-
-
-
-
-
-
 
 export async function updateProgressImage(
   id,
@@ -79,4 +40,3 @@ export async function updateProgressImage(
   if (payload.image != null) form.append("image", payload.image);
   return requestRaw(`${UPDATE_PROGRESS_IMAGE}${id}/`, { method: "PUT", formData: form });
 }
-

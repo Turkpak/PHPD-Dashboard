@@ -8,15 +8,8 @@ import {
     ArrowRight,
     Eye,
     EyeOff,
-    Menu,
-    User,
-    ShieldCheck,
-    MapPin,
-    LogOut,
-    Shield,
-    HelpCircle
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { login as apiLogin } from "@/api/auth";
@@ -26,7 +19,6 @@ export default function AuthPage() {
     const { setUser, startSession } = useAuth();
     const { toast } = useToast();
 
-    const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [email, setEmail] = useState("");
@@ -40,7 +32,7 @@ export default function AuthPage() {
             const data = await apiLogin({ email, password });
             setUser(data);
             startSession();
-            
+
             // Extract role for accurate routing downstream matching original logic
             const roleForNav =
                 data?.role ??
@@ -48,7 +40,7 @@ export default function AuthPage() {
                     ? "admin"
                     : data?.access?.stakeholder_type?.toLowerCase() ||
                       "client");
-                      
+
             localStorage.setItem("userRole", roleForNav);
             setLocation("/");
             toast({ title: "Welcome", description: "Login successful." });
@@ -65,12 +57,12 @@ export default function AuthPage() {
 
     return (
         <div className="min-h-screen w-full flex flex-col relative font-sans text-slate-800 bg-background">
-            
+
             {/* Main scrollable content area */}
             <div className="flex-1 flex flex-col items-center justify-center px-5 py-10">
-                
+
                 {/* Upper Branding Area */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
@@ -82,14 +74,14 @@ export default function AuthPage() {
                 </motion.div>
 
                 {/* Login Card */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                     className="w-full max-w-[420px] bg-white rounded-[2rem] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] p-7 lg:p-8 relative z-10 border border-[#024a35]/25"
                 >
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        
+
                         {/* Email Input */}
                         <div className="space-y-2">
                             <Label className="text-[13px] font-bold text-slate-700 ml-1">Email Address</Label>
@@ -153,7 +145,7 @@ export default function AuthPage() {
                     {/* Meta Security Footer */}
                     <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col items-center text-center pb-2">
                         <p className="text-[12.5px] text-slate-500 font-medium">
-                            Protected by secure institutional encryption.<br/>
+                            Protected by secure institutional encryption.<br />
                             <a href="#" className="font-bold text-[#054332] hover:underline mt-1 inline-block">Security Policy</a>
                         </p>
                     </div>

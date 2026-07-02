@@ -1,14 +1,5 @@
-const _jsxFileName = "";
 import React from "react";
-import { createContext, useContext, useMemo, useState, } from "react";
-
-
-
-
-
-
-
-
+import { createContext, useContext, useMemo, useState } from "react";
 
 const SidebarContext = createContext(undefined);
 
@@ -21,8 +12,8 @@ export function SidebarProvider({ children }) {
   };
 
   return (
-    React.createElement(SidebarContext.Provider, {
-      value: useMemo(
+    <SidebarContext.Provider
+      value={useMemo(
         () => ({
           isCollapsed,
           toggleSidebar,
@@ -30,11 +21,11 @@ export function SidebarProvider({ children }) {
           mobileSidebarOpen,
           setMobileSidebarOpen,
         }),
-        [isCollapsed, mobileSidebarOpen],
-      ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 22}}
-
-      , children
-    )
+        [isCollapsed, mobileSidebarOpen]
+      )}
+    >
+      {children}
+    </SidebarContext.Provider>
   );
 }
 
@@ -45,4 +36,3 @@ export function useSidebar() {
   }
   return context;
 }
-

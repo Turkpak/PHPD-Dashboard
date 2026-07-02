@@ -1,5 +1,4 @@
-const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }"use client"
-
+﻿
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, } from "class-variance-authority"
@@ -19,6 +18,21 @@ import {
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
+
+// Transpiler-compatibility helpers
+const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
+const _optionalChain = (ops) => {
+  let lastAccessLHS;
+  let value = ops[0];
+  let i = 1;
+  while (i < ops.length) {
+    const op = ops[i]; const fn = ops[i + 1]; i += 2;
+    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
+    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
+    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
+  }
+  return value;
+};
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -127,8 +141,8 @@ function SidebarProvider({
   )
 
   return (
-    React.createElement(SidebarContext.Provider, { value: contextValue, __self: this, __source: {fileName: _jsxFileName, lineNumber: 130}}
-      , React.createElement(TooltipProvider, { delayDuration: 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 131}}
+    React.createElement(SidebarContext.Provider, { value: contextValue}
+      , React.createElement(TooltipProvider, { delayDuration: 0}
         , React.createElement('div', {
           'data-slot': "sidebar-wrapper",
           style: 
@@ -142,7 +156,7 @@ function SidebarProvider({
             "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full",
             className
           ),
-          ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 132}}
+          ...props}
 
           , children
         )
@@ -173,7 +187,7 @@ function Sidebar({
           "bg-sidebar text-sidebar-foreground flex h-full w-[var(--sidebar-width)] flex-col",
           className
         ),
-        ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 170}}
+        ...props}
 
         , children
       )
@@ -182,7 +196,7 @@ function Sidebar({
 
   if (isMobile) {
     return (
-      React.createElement(Sheet, { open: openMobile, onOpenChange: setOpenMobile, ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 185}}
+      React.createElement(Sheet, { open: openMobile, onOpenChange: setOpenMobile, ...props}
         , React.createElement(SheetContent, {
           'data-sidebar': "sidebar",
           'data-slot': "sidebar",
@@ -193,13 +207,13 @@ function Sidebar({
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
             } 
           ,
-          side: side, __self: this, __source: {fileName: _jsxFileName, lineNumber: 186}}
+          side: side}
 
-          , React.createElement(SheetHeader, { className: "sr-only", __self: this, __source: {fileName: _jsxFileName, lineNumber: 198}}
-            , React.createElement(SheetTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 199}}, "Sidebar")
-            , React.createElement(SheetDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}, "Displays the mobile sidebar."   )
+          , React.createElement(SheetHeader, { className: "sr-only"}
+            , React.createElement(SheetTitle, {}, "Sidebar")
+            , React.createElement(SheetDescription, {}, "Displays the mobile sidebar."   )
           )
-          , React.createElement('div', { className: "flex h-full w-full flex-col"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 202}}, children)
+          , React.createElement('div', { className: "flex h-full w-full flex-col"   }, children)
         )
       )
     )
@@ -212,7 +226,7 @@ function Sidebar({
       'data-collapsible': state === "collapsed" ? collapsible : "",
       'data-variant': variant,
       'data-side': side,
-      'data-slot': "sidebar", __self: this, __source: {fileName: _jsxFileName, lineNumber: 209}}
+      'data-slot': "sidebar"}
 
       /* This is what handles the sidebar gap on desktop */
       , React.createElement('div', {
@@ -224,7 +238,7 @@ function Sidebar({
           variant === "floating" || variant === "inset"
             ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+var(--spacing-4))]"
             : "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]"
-        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 218}}
+        )}
       )
       , React.createElement('div', {
         'data-slot': "sidebar-container",
@@ -239,12 +253,12 @@ function Sidebar({
             : "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] group-data-[side=left]:border-r group-data-[side=right]:border-l",
           className
         ),
-        ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 229}}
+        ...props}
 
         , React.createElement('div', {
           'data-sidebar': "sidebar",
           'data-slot': "sidebar-inner",
-          className: "bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 244}}
+          className: "bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"        }
 
           , children
         )
@@ -271,10 +285,10 @@ function SidebarTrigger({
         _optionalChain([onClick, 'optionalCall', _ => _(event)])
         toggleSidebar()
       },
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 264}}
+      ...props}
 
-      , React.createElement(PanelLeftIcon, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 276}} )
-      , React.createElement('span', { className: "sr-only", __self: this, __source: {fileName: _jsxFileName, lineNumber: 277}}, "Toggle Sidebar" )
+      , React.createElement(PanelLeftIcon, {} )
+      , React.createElement('span', { className: "sr-only"}, "Toggle Sidebar" )
     )
   )
 }
@@ -300,7 +314,7 @@ function SidebarRail({ className, ...props }) {
         "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 287}}
+      ...props}
     )
   )
 }
@@ -314,7 +328,7 @@ function SidebarInset({ className, ...props }) {
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 310}}
+      ...props}
     )
   )
 }
@@ -328,7 +342,7 @@ function SidebarInput({
       'data-slot': "sidebar-input",
       'data-sidebar': "input",
       className: cn("bg-background h-8 w-full shadow-none", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 327}}
+      ...props}
     )
   )
 }
@@ -339,7 +353,7 @@ function SidebarHeader({ className, ...props }) {
       'data-slot': "sidebar-header",
       'data-sidebar': "header",
       className: cn("flex flex-col gap-2 p-2", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 338}}
+      ...props}
     )
   )
 }
@@ -350,7 +364,7 @@ function SidebarFooter({ className, ...props }) {
       'data-slot': "sidebar-footer",
       'data-sidebar': "footer",
       className: cn("flex flex-col gap-2 p-2", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 349}}
+      ...props}
     )
   )
 }
@@ -364,7 +378,7 @@ function SidebarSeparator({
       'data-slot': "sidebar-separator",
       'data-sidebar': "separator",
       className: cn("bg-sidebar-border mx-2 w-auto", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 363}}
+      ...props}
     )
   )
 }
@@ -378,7 +392,7 @@ function SidebarContent({ className, ...props }) {
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 374}}
+      ...props}
     )
   )
 }
@@ -389,7 +403,7 @@ function SidebarGroup({ className, ...props }) {
       'data-slot': "sidebar-group",
       'data-sidebar': "group",
       className: cn("relative flex w-full min-w-0 flex-col p-2", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 388}}
+      ...props}
     )
   )
 }
@@ -410,7 +424,7 @@ function SidebarGroupLabel({
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 405}}
+      ...props}
     )
   )
 }
@@ -433,7 +447,7 @@ function SidebarGroupAction({
         "group-data-[collapsible=icon]:hidden",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 426}}
+      ...props}
     )
   )
 }
@@ -447,7 +461,7 @@ function SidebarGroupContent({
       'data-slot': "sidebar-group-content",
       'data-sidebar': "group-content",
       className: cn("w-full text-sm", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 446}}
+      ...props}
     )
   )
 }
@@ -458,7 +472,7 @@ function SidebarMenu({ className, ...props }) {
       'data-slot': "sidebar-menu",
       'data-sidebar': "menu",
       className: cn("flex w-full min-w-0 flex-col gap-1", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 457}}
+      ...props}
     )
   )
 }
@@ -469,7 +483,7 @@ function SidebarMenuItem({ className, ...props }) {
       'data-slot': "sidebar-menu-item",
       'data-sidebar': "menu-item",
       className: cn("group/menu-item relative", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 468}}
+      ...props}
     )
   )
 }
@@ -519,7 +533,7 @@ function SidebarMenuButton({
       'data-size': size,
       'data-active': isActive,
       className: cn(sidebarMenuButtonVariants({ variant, size }), className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 516}}
+      ...props}
     )
   )
 
@@ -534,13 +548,13 @@ function SidebarMenuButton({
   }
 
   return (
-    React.createElement(Tooltip, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 537}}
-      , React.createElement(TooltipTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 538}}, button)
+    React.createElement(Tooltip, {}
+      , React.createElement(TooltipTrigger, { asChild: true}, button)
       , React.createElement(TooltipContent, {
         side: "right",
         align: "center",
         hidden: state !== "collapsed" || isMobile,
-        ...tooltip, __self: this, __source: {fileName: _jsxFileName, lineNumber: 539}}
+        ...tooltip}
       )
     )
   )
@@ -573,7 +587,7 @@ function SidebarMenuAction({
           "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 561}}
+      ...props}
     )
   )
 }
@@ -595,7 +609,7 @@ function SidebarMenuBadge({
         "group-data-[collapsible=icon]:hidden",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 586}}
+      ...props}
     )
   )
 }
@@ -617,12 +631,12 @@ function SidebarMenuSkeleton({
       'data-slot': "sidebar-menu-skeleton",
       'data-sidebar': "menu-skeleton",
       className: cn("flex h-8 items-center gap-2 rounded-md px-2", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 616}}
+      ...props}
 
       , showIcon && (
         React.createElement(Skeleton, {
           className: "size-4 rounded-md" ,
-          'data-sidebar': "menu-skeleton-icon", __self: this, __source: {fileName: _jsxFileName, lineNumber: 623}}
+          'data-sidebar': "menu-skeleton-icon"}
         )
       )
       , React.createElement(Skeleton, {
@@ -632,7 +646,7 @@ function SidebarMenuSkeleton({
           {
             "--skeleton-width": width,
           } 
-        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 628}}
+        }
       )
     )
   )
@@ -648,7 +662,7 @@ function SidebarMenuSub({ className, ...props }) {
         "group-data-[collapsible=icon]:hidden",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 643}}
+      ...props}
     )
   )
 }
@@ -662,7 +676,7 @@ function SidebarMenuSubItem({
       'data-slot': "sidebar-menu-sub-item",
       'data-sidebar': "menu-sub-item",
       className: cn("group/menu-sub-item relative", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 661}}
+      ...props}
     )
   )
 }
@@ -694,7 +708,7 @@ function SidebarMenuSubButton({
         "group-data-[collapsible=icon]:hidden",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 684}}
+      ...props}
     )
   )
 }

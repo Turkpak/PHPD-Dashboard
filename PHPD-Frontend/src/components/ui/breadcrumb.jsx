@@ -1,5 +1,4 @@
-const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }
-import * as React from "react"
+﻿import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 
@@ -10,7 +9,7 @@ const Breadcrumb = React.forwardRef
 
 
 
-(({ ...props }, ref) => React.createElement('nav', { ref: ref, 'aria-label': "breadcrumb", ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 12}} ))
+(({ ...props }, ref) => React.createElement('nav', { ref: ref, 'aria-label': "breadcrumb", ...props} ))
 Breadcrumb.displayName = "Breadcrumb"
 
 const BreadcrumbList = React.forwardRef
@@ -23,7 +22,7 @@ const BreadcrumbList = React.forwardRef
       "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 19}}
+    ...props}
   )
 ))
 BreadcrumbList.displayName = "BreadcrumbList"
@@ -35,7 +34,7 @@ const BreadcrumbItem = React.forwardRef
   React.createElement('li', {
     ref: ref,
     className: cn("inline-flex items-center gap-1.5", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 34}}
+    ...props}
   )
 ))
 BreadcrumbItem.displayName = "BreadcrumbItem"
@@ -52,7 +51,7 @@ const BreadcrumbLink = React.forwardRef
     React.createElement(Comp, {
       ref: ref,
       className: cn("transition-colors hover:text-foreground", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 51}}
+      ...props}
     )
   )
 })
@@ -68,7 +67,7 @@ const BreadcrumbPage = React.forwardRef
     'aria-disabled': "true",
     'aria-current': "page",
     className: cn("font-normal text-foreground", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 64}}
+    ...props}
   )
 ))
 BreadcrumbPage.displayName = "BreadcrumbPage"
@@ -82,9 +81,9 @@ const BreadcrumbSeparator = ({
     role: "presentation",
     'aria-hidden': "true",
     className: cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 80}}
+    ...props}
 
-    , _nullishCoalesce(children, () => ( React.createElement(ChevronRight, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 86}} )))
+    , children ?? React.createElement(ChevronRight, {} )
   )
 )
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
@@ -97,10 +96,10 @@ const BreadcrumbEllipsis = ({
     role: "presentation",
     'aria-hidden': "true",
     className: cn("flex h-9 w-9 items-center justify-center", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 95}}
+    ...props}
 
-    , React.createElement(MoreHorizontal, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 101}} )
-    , React.createElement('span', { className: "sr-only", __self: this, __source: {fileName: _jsxFileName, lineNumber: 102}}, "More")
+    , React.createElement(MoreHorizontal, { className: "h-4 w-4" } )
+    , React.createElement('span', { className: "sr-only"}, "More")
   )
 )
 BreadcrumbEllipsis.displayName = "BreadcrumbElipssis"

@@ -1,5 +1,4 @@
-const _jsxFileName = "";"use client"
-
+﻿
 import * as React from "react"
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 
@@ -15,11 +14,11 @@ const Progress = React.forwardRef
       "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 12}}
+    ...props}
 
     , React.createElement(ProgressPrimitive.Indicator, {
       className: "h-full w-full flex-1 bg-primary transition-all"    ,
-      style: { transform: `translateX(-${100 - (value || 0)}%)` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 20}}
+      style: { transform: `translateX(-${100 - (value || 0)}%)` }}
     )
   )
 ))

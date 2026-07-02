@@ -1,5 +1,4 @@
-const _jsxFileName = "";
-import React from "react";
+﻿import React from "react";
 import { cn } from "@/lib/utils"
 
 function Kbd({ className, ...props }) {
@@ -12,7 +11,7 @@ function Kbd({ className, ...props }) {
         "[[data-slot=tooltip-content]_&]:bg-background/20 [[data-slot=tooltip-content]_&]:text-background dark:[[data-slot=tooltip-content]_&]:bg-background/10",
         className
       ),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 5}}
+      ...props}
     )
   )
 }
@@ -22,7 +21,7 @@ function KbdGroup({ className, ...props }) {
     React.createElement('kbd', {
       'data-slot': "kbd-group",
       className: cn("inline-flex items-center gap-1", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 20}}
+      ...props}
     )
   )
 }

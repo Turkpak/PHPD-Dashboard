@@ -1,5 +1,4 @@
-const _jsxFileName = "";
-import React from "react";
+﻿import React from "react";
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -14,22 +13,22 @@ export function Toaster() {
   const { toasts } = useToast()
 
   return (
-    React.createElement(ToastProvider, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 15}}
+    React.createElement(ToastProvider, {}
       , toasts.map(function ({ id, title, description, action, duration, ...props }) {
         return (
-          React.createElement(Toast, { key: id, ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 18}}
-            , React.createElement('div', { className: "grid gap-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 19}}
-              , title && React.createElement(ToastTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 20}}, title)
+          React.createElement(Toast, { key: id, ...props}
+            , React.createElement('div', { className: "grid gap-1" }
+              , title && React.createElement(ToastTitle, {}, title)
               , description && (
-                React.createElement(ToastDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 22}}, description)
+                React.createElement(ToastDescription, {}, description)
               )
             )
             , action
-            , React.createElement(ToastClose, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 26}} )
+            , React.createElement(ToastClose, {} )
           )
         )
       })
-      , React.createElement(ToastViewport, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 30}} )
+      , React.createElement(ToastViewport, {} )
     )
   )
 }

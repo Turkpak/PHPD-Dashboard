@@ -1,4 +1,3 @@
-const _jsxFileName = "";
 import React from "react";
 import {
   createContext,
@@ -7,10 +6,8 @@ import {
   useMemo,
   useState,
   useEffect,
-
 } from "react";
 import { getAccessToken, clearTokens } from "@/api/client";
-
 
 const USER_STORAGE_KEY = "safecity_user";
 const SESSION_EXPIRES_AT_KEY = "safecity_session_expires_at";
@@ -23,12 +20,12 @@ const AUTH_STORAGE_KEYS = [
   "safecity_refresh_token",
   "userRole",
   "safecity_session_expires_at",
-] ;
+];
 
 function getStoredUser() {
   try {
     const raw = localStorage.getItem(USER_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) ) : null;
+    return raw ? JSON.parse(raw) : null;
   } catch (e2) {
     return null;
   }
@@ -48,14 +45,6 @@ function isSessionExpired() {
   if (!expiresAt) return false; // backwards compatible for existing logins
   return Date.now() >= expiresAt;
 }
-
-
-
-
-
-
-
-
 
 const AuthContext = createContext(null);
 
@@ -106,7 +95,7 @@ export function AuthProvider({ children }) {
 
     const onStorage = (e) => {
       if (!e.key) return;
-      if (AUTH_STORAGE_KEYS.includes(e.key )) {
+      if (AUTH_STORAGE_KEYS.includes(e.key)) {
         syncAuthState();
       }
     };
@@ -132,7 +121,7 @@ export function AuthProvider({ children }) {
     [user, setUser, startSession, logout]
   );
 
-  return React.createElement(AuthContext.Provider, { value: value, __self: this, __source: {fileName: _jsxFileName, lineNumber: 133}}, children);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
@@ -146,7 +135,7 @@ export function useAuth() {
       setUser: () => {},
       startSession: () => {},
       logout: () => {},
-    } ;
+    };
   }
   return ctx;
 }

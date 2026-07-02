@@ -1,5 +1,4 @@
-const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
-import React, { useMemo, useState, useEffect } from "react";
+﻿import React, { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
@@ -30,6 +29,20 @@ import { createProjectDocument, listProjectDocuments, updateProjectDocument } fr
 import { mediaUrl } from "@/api/config";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+// Transpiler-compatibility helpers
+const _nullishCoalesce = (lhs, rhsFn) => lhs != null ? lhs : rhsFn();
+const _optionalChain = (ops) => {
+  let lastAccessLHS;
+  let value = ops[0];
+  let i = 1;
+  while (i < ops.length) {
+    const op = ops[i]; const fn = ops[i + 1]; i += 2;
+    if ((op === "optionalAccess" || op === "optionalCall") && value == null) return undefined;
+    if (op === "access" || op === "optionalAccess") { lastAccessLHS = value; value = fn(value); }
+    else if (op === "call" || op === "optionalCall") { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; }
+  }
+  return value;
+};
 
 
 
@@ -172,7 +185,7 @@ function getChildNames(parentName, childCount) {
   const tpl = CHILD_NAME_TEMPLATES[parentName];
   if (tpl && tpl.length) return tpl.slice(0, childCount);
   // Fallback: derive readable labels from parent
-  return Array.from({ length: childCount }).map((_, i) => `${parentName} — Task ${i + 1}`);
+  return Array.from({ length: childCount }).map((_, i) => `${parentName} â€” Task ${i + 1}`);
 }
 
 function buildChildTasks(parent, seed) {
@@ -197,7 +210,7 @@ function buildChildTasks(parent, seed) {
 
     children.push({
       id: `${parent.id}::${i}`,
-      name: _nullishCoalesce(childNames[i], () => ( `${parent.name} — Task ${i + 1}`)),
+      name: _nullishCoalesce(childNames[i], () => ( `${parent.name} â€” Task ${i + 1}`)),
       startIdx,
       endIdx,
       weight: parent.weight * weights[i],
@@ -528,45 +541,45 @@ function DelayLogFormDialog({
   };
 
   return (
-    React.createElement(Dialog, { open: open, onOpenChange: onOpenChange, __self: this, __source: {fileName: _jsxFileName, lineNumber: 530}}
-      , React.createElement(DialogContent, { className: "sm:max-w-[550px] p-0 overflow-hidden border-2 border-primary/10 shadow-2xl max-h-[90vh] flex flex-col"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 531}}
-        , React.createElement(DialogHeader, { className: "p-6 pb-2" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 532}}
-          , React.createElement('div', { className: "flex items-center gap-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 533}}
-            , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 shadow-sm"             , __self: this, __source: {fileName: _jsxFileName, lineNumber: 534}}
-              , React.createElement(Calendar, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 535}} )
+    React.createElement(Dialog, { open: open, onOpenChange: onOpenChange}
+      , React.createElement(DialogContent, { className: "sm:max-w-[550px] p-0 overflow-hidden border-2 border-primary/10 shadow-2xl max-h-[90vh] flex flex-col"        }
+        , React.createElement(DialogHeader, { className: "p-6 pb-2" }
+          , React.createElement('div', { className: "flex items-center gap-3"  }
+            , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 shadow-sm"             }
+              , React.createElement(Calendar, { className: "h-5 w-5" } )
             )
-            , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 537}}
-              , React.createElement(DialogTitle, { className: "text-xl font-bold font-heading"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 538}}
+            , React.createElement('div', {}
+              , React.createElement(DialogTitle, { className: "text-xl font-bold font-heading"  }
                 , existingLog ? "Edit" : "Add", " Delay Log"
               )
-              , React.createElement(DialogDescription, { className: "text-xs mt-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 541}}
+              , React.createElement(DialogDescription, { className: "text-xs mt-1" }
                 , taskName.length > 40 ? taskName.substring(0, 40) + "..." : taskName
               )
             )
           )
         )
 
-        , React.createElement('form', { onSubmit: handleSubmit, className: "flex flex-col flex-1 overflow-hidden"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 548}}
-          , React.createElement(ScrollArea, { className: "flex-1 max-h-[65vh] px-6 py-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 549}}
-            , React.createElement('div', { className: "space-y-5 pb-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 550}}
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 551}}
-                , React.createElement(Label, { htmlFor: "loggedBy", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 552}}, "Logged By "  , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 552}}, "*"))
-                , React.createElement('div', { className: "relative", __self: this, __source: {fileName: _jsxFileName, lineNumber: 553}}
+        , React.createElement('form', { onSubmit: handleSubmit, className: "flex flex-col flex-1 overflow-hidden"   }
+          , React.createElement(ScrollArea, { className: "flex-1 max-h-[65vh] px-6 py-2"   }
+            , React.createElement('div', { className: "space-y-5 pb-4" }
+              , React.createElement('div', { className: "space-y-2"}
+                , React.createElement(Label, { htmlFor: "loggedBy", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    }, "Logged By "  , React.createElement('span', { className: "text-destructive"}, "*"))
+                , React.createElement('div', { className: "relative"}
                   , React.createElement(Input, {
                     id: "loggedBy",
                     placeholder: "Enter your name or ID"    ,
                     value: formData.loggedBy,
                     onChange: (e) => setFormData({ ...formData, loggedBy: e.target.value }),
                     className: "pl-9 h-11 bg-muted/30 border-muted-foreground/20 focus:border-primary/50 transition-all"     ,
-                    required: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 554}}
+                    required: true}
                   )
-                  , React.createElement(AlertCircle, { className: "absolute left-3 top-3.5 h-4 w-4 text-muted-foreground/60"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 562}} )
+                  , React.createElement(AlertCircle, { className: "absolute left-3 top-3.5 h-4 w-4 text-muted-foreground/60"     } )
                 )
               )
 
-              , React.createElement('div', { className: "grid grid-cols-2 gap-4"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 566}}
-                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 567}}
-                  , React.createElement(Label, { htmlFor: "delayDate", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 568}}, "Delay Date "  , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 568}}, "*"))
+              , React.createElement('div', { className: "grid grid-cols-2 gap-4"  }
+                , React.createElement('div', { className: "space-y-2"}
+                  , React.createElement(Label, { htmlFor: "delayDate", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    }, "Delay Date "  , React.createElement('span', { className: "text-destructive"}, "*"))
                   , React.createElement(Input, {
                     id: "delayDate",
                     type: "date",
@@ -575,14 +588,14 @@ function DelayLogFormDialog({
                     value: formData.delayDate,
                     onChange: (e) => setFormData({ ...formData, delayDate: e.target.value }),
                     className: "h-11 bg-muted/30 border-muted-foreground/20 focus:border-primary/50 transition-all"    ,
-                    required: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 569}}
+                    required: true}
                   )
                   , minDate && maxDate && (
-                    React.createElement('p', { className: "text-[10px] text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 580}}, "Within planned timeline: "   , minDate, " to "  , maxDate)
+                    React.createElement('p', { className: "text-[10px] text-muted-foreground" }, "Within planned timeline: "   , minDate, " to "  , maxDate)
                   )
                 )
-                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 583}}
-                  , React.createElement(Label, { htmlFor: "delayDuration", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 584}}, "Duration (Days) "  , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 584}}, "*"))
+                , React.createElement('div', { className: "space-y-2"}
+                  , React.createElement(Label, { htmlFor: "delayDuration", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    }, "Duration (Days) "  , React.createElement('span', { className: "text-destructive"}, "*"))
                   , React.createElement(Input, {
                     id: "delayDuration",
                     type: "number",
@@ -591,13 +604,13 @@ function DelayLogFormDialog({
                     value: formData.delayDuration,
                     onChange: (e) => setFormData({ ...formData, delayDuration: e.target.value }),
                     className: "h-11 bg-muted/30 border-muted-foreground/20 focus:border-primary/50 transition-all"    ,
-                    required: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 585}}
+                    required: true}
                   )
                 )
               )
 
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 598}}
-                , React.createElement(Label, { htmlFor: "reason", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 599}}, "Reason for Delay "   , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 599}}, "*"))
+              , React.createElement('div', { className: "space-y-2"}
+                , React.createElement(Label, { htmlFor: "reason", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    }, "Reason for Delay "   , React.createElement('span', { className: "text-destructive"}, "*"))
                 , React.createElement(Textarea, {
                   id: "reason",
                   placeholder: "Describe the reason for the delay in detail..."       ,
@@ -605,46 +618,46 @@ function DelayLogFormDialog({
                   onChange: (e) => setFormData({ ...formData, reason: e.target.value }),
                   rows: 3,
                   className: "bg-muted/30 border-muted-foreground/20 focus:border-primary/50 transition-all resize-none p-3"     ,
-                  required: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}}
+                  required: true}
                 )
               )
 
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 611}}
-                , React.createElement(Label, { htmlFor: "image", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 612}}, "Evidence Image (Optional)"  )
-                , React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 613}}
+              , React.createElement('div', { className: "space-y-2"}
+                , React.createElement(Label, { htmlFor: "image", className: "text-xs font-bold uppercase tracking-wider text-muted-foreground"    }, "Evidence Image (Optional)"  )
+                , React.createElement('div', { className: "space-y-3"}
                   , formData.imagePreview ? (
-                    React.createElement('div', { className: "relative group rounded-xl overflow-hidden border-2 border-orange-200 dark:border-orange-900 shadow-md"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 615}}
+                    React.createElement('div', { className: "relative group rounded-xl overflow-hidden border-2 border-orange-200 dark:border-orange-900 shadow-md"       }
                       , React.createElement('img', {
                         src: formData.imagePreview,
                         alt: "Delay evidence" ,
-                        className: "w-full h-40 object-cover"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 616}}
+                        className: "w-full h-40 object-cover"  }
                       )
-                      , React.createElement('div', { className: "absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 621}}
+                      , React.createElement('div', { className: "absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"         }
                         , React.createElement(Button, {
                           type: "button",
                           variant: "destructive",
                           size: "sm",
                           className: "h-8 rounded-full shadow-lg"  ,
-                          onClick: handleRemoveImage, __self: this, __source: {fileName: _jsxFileName, lineNumber: 622}}
+                          onClick: handleRemoveImage}
 
-                          , React.createElement(Trash2, { className: "h-3.5 w-3.5 mr-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 629}} ), " Remove"
+                          , React.createElement(Trash2, { className: "h-3.5 w-3.5 mr-1"  } ), " Remove"
                         )
                       )
                     )
                   ) : (
                     React.createElement('div', { className: "relative border-2 border-dashed border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5 transition-all rounded-xl p-8 text-center group cursor-pointer"           ,
-                      onClick: () => _optionalChain([document, 'access', _20 => _20.getElementById, 'call', _21 => _21('image'), 'optionalAccess', _22 => _22.click, 'call', _23 => _23()]), __self: this, __source: {fileName: _jsxFileName, lineNumber: 634}}
-                      , React.createElement(ImageIcon, { className: "h-10 w-10 mx-auto mb-3 text-muted-foreground/40 group-hover:text-primary/60 transition-colors"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 636}} )
-                      , React.createElement('div', { className: "space-y-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 637}}
-                        , React.createElement('p', { className: "text-sm font-semibold text-foreground/80"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 638}}, "Click to upload image"   )
-                        , React.createElement('p', { className: "text-[10px] text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 639}}, "PNG, JPG or JPEG up to 5MB"      )
+                      onClick: () => _optionalChain([document, 'access', _20 => _20.getElementById, 'call', _21 => _21('image'), 'optionalAccess', _22 => _22.click, 'call', _23 => _23()])}
+                      , React.createElement(ImageIcon, { className: "h-10 w-10 mx-auto mb-3 text-muted-foreground/40 group-hover:text-primary/60 transition-colors"      } )
+                      , React.createElement('div', { className: "space-y-1"}
+                        , React.createElement('p', { className: "text-sm font-semibold text-foreground/80"  }, "Click to upload image"   )
+                        , React.createElement('p', { className: "text-[10px] text-muted-foreground" }, "PNG, JPG or JPEG up to 5MB"      )
                       )
                       , React.createElement(Input, {
                         id: "image",
                         type: "file",
                         accept: "image/*",
                         onChange: handleImageChange,
-                        className: "hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 641}}
+                        className: "hidden"}
                       )
                     )
                   )
@@ -653,16 +666,16 @@ function DelayLogFormDialog({
             )
           )
 
-          , React.createElement(DialogFooter, { className: "p-6 pt-2 bg-muted/10 border-t border-border/50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 655}}
-            , React.createElement(Button, { type: "button", variant: "outline", onClick: () => onOpenChange(false), className: "h-11 rounded-xl px-6"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 656}}, "Cancel"
+          , React.createElement(DialogFooter, { className: "p-6 pt-2 bg-muted/10 border-t border-border/50"    }
+            , React.createElement(Button, { type: "button", variant: "outline", onClick: () => onOpenChange(false), className: "h-11 rounded-xl px-6"  }, "Cancel"
 
             )
             , React.createElement(Button, {
               type: "submit",
               disabled: !formData.loggedBy.trim() || !formData.reason.trim(),
-              className: "h-11 rounded-xl px-8 bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-lg shadow-orange-600/20 transition-all active:scale-95"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 659}}
+              className: "h-11 rounded-xl px-8 bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-lg shadow-orange-600/20 transition-all active:scale-95"          }
 
-              , React.createElement(Plus, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 664}} )
+              , React.createElement(Plus, { className: "h-4 w-4 mr-2"  } )
               , existingLog ? "Update" : "Add", " Delay Log"
             )
           )
@@ -722,15 +735,15 @@ function DelayLogCards({
   );
 
   return (
-    React.createElement('div', { className: "mt-6 space-y-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 724}}
-      , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 725}}
-        , React.createElement(AlertTriangle, { className: "h-5 w-5 text-amber-600 dark:text-orange-400"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 726}} )
-        , React.createElement('h3', { className: `${isMobile ? 'text-sm' : 'text-base'} font-semibold text-foreground`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 727}}, "Delay Logs ("
+    React.createElement('div', { className: "mt-6 space-y-4" }
+      , React.createElement('div', { className: "flex items-center gap-2"  }
+        , React.createElement(AlertTriangle, { className: "h-5 w-5 text-amber-600 dark:text-orange-400"   } )
+        , React.createElement('h3', { className: `${isMobile ? 'text-sm' : 'text-base'} font-semibold text-foreground`}, "Delay Logs ("
             , delayLogs.length, " total)"
         )
       )
 
-      , React.createElement('div', { className: `grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-2'}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 732}}
+      , React.createElement('div', { className: `grid gap-4 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-2'}`}
         , sortedLogs.map((log) => {
           const taskName = getTaskName(log.taskId);
           const subProject = _optionalChain([subProjects, 'optionalAccess', _27 => _27.find, 'call', _28 => _28(sp => sp.id === log.taskId)]);
@@ -740,41 +753,41 @@ function DelayLogCards({
           const displayDate = log.loggedAt || log.delayDate;
 
           return (
-            React.createElement(Card, { key: log.id, className: "border-amber-200 dark:border-orange-800 bg-amber-50/80 dark:bg-orange-950/20 rounded-xl overflow-hidden shadow-sm"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 742}}
-              , React.createElement(CardContent, { className: "p-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 743}}
-                , React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 744}}
+            React.createElement(Card, { key: log.id, className: "border-amber-200 dark:border-orange-800 bg-amber-50/80 dark:bg-orange-950/20 rounded-xl overflow-hidden shadow-sm"      }
+              , React.createElement(CardContent, { className: "p-4"}
+                , React.createElement('div', { className: "space-y-3"}
                   /* Task title */
-                  , React.createElement('h4', { className: `${isMobile ? 'text-sm' : 'text-base'} font-semibold text-foreground truncate`, title: taskName, __self: this, __source: {fileName: _jsxFileName, lineNumber: 746}}
+                  , React.createElement('h4', { className: `${isMobile ? 'text-sm' : 'text-base'} font-semibold text-foreground truncate`, title: taskName}
                     , taskName
                   )
 
                   /* Red status badge: X% behind schedule */
                   , variance > 0 && (
-                    React.createElement(Badge, { variant: "destructive", className: "rounded-md px-2.5 py-1 text-xs font-semibold"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 752}}
+                    React.createElement(Badge, { variant: "destructive", className: "rounded-md px-2.5 py-1 text-xs font-semibold"    }
                       , variance.toFixed(1), "% behind schedule"
                     )
                   )
 
                   /* Timeline: Month (calendar) + Duration (clock) - button-like */
-                  , React.createElement('div', { className: "flex items-center gap-2 flex-wrap"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 758}}
-                    , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-lg border border-amber-200 dark:border-orange-700 bg-white dark:bg-orange-950/40 px-2.5 py-1.5 text-xs font-medium text-foreground"             , __self: this, __source: {fileName: _jsxFileName, lineNumber: 759}}
-                      , React.createElement(Calendar, { className: "h-3.5 w-3.5 text-amber-600 dark:text-orange-400"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 760}} )
+                  , React.createElement('div', { className: "flex items-center gap-2 flex-wrap"   }
+                    , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-lg border border-amber-200 dark:border-orange-700 bg-white dark:bg-orange-950/40 px-2.5 py-1.5 text-xs font-medium text-foreground"             }
+                      , React.createElement(Calendar, { className: "h-3.5 w-3.5 text-amber-600 dark:text-orange-400"   } )
                       , months[log.monthIndex] || `M${log.monthIndex + 1}`
                     )
-                    , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-lg border border-amber-200 dark:border-orange-700 bg-white dark:bg-orange-950/40 px-2.5 py-1.5 text-xs font-medium text-foreground"             , __self: this, __source: {fileName: _jsxFileName, lineNumber: 763}}
-                      , React.createElement(Clock, { className: "h-3.5 w-3.5 text-amber-600 dark:text-orange-400"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 764}} )
+                    , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-lg border border-amber-200 dark:border-orange-700 bg-white dark:bg-orange-950/40 px-2.5 py-1.5 text-xs font-medium text-foreground"             }
+                      , React.createElement(Clock, { className: "h-3.5 w-3.5 text-amber-600 dark:text-orange-400"   } )
                       , log.delayDuration, " day" , log.delayDuration !== 1 ? 's' : ''
                     )
                   )
 
                   /* Reason for delay */
-                  , React.createElement('p', { className: "text-sm text-muted-foreground leading-snug"  , title: log.reason, __self: this, __source: {fileName: _jsxFileName, lineNumber: 770}}
+                  , React.createElement('p', { className: "text-sm text-muted-foreground leading-snug"  , title: log.reason}
                     , log.reason
                   )
 
                   /* Image display */
                   , log.imageUrl && (
-                    React.createElement('div', { className: "relative rounded-lg overflow-hidden border border-amber-200 dark:border-orange-800"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 776}}
+                    React.createElement('div', { className: "relative rounded-lg overflow-hidden border border-amber-200 dark:border-orange-800"     }
                       , React.createElement('img', {
                         src: log.imageUrl,
                         alt: "Delay evidence" ,
@@ -791,24 +804,24 @@ function DelayLogCards({
                               </html>
                             `);
                           }
-                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 777}}
+                        }}
                       )
-                      , React.createElement('div', { className: "absolute top-2 right-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 795}}
-                        , React.createElement(ImageIcon, { className: "h-3 w-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 796}} ), "Evidence"
+                      , React.createElement('div', { className: "absolute top-2 right-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1"           }
+                        , React.createElement(ImageIcon, { className: "h-3 w-3" } ), "Evidence"
 
                       )
                     )
                   )
 
                   /* Attribution and date */
-                  , React.createElement('div', { className: "flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-amber-200/80 dark:border-orange-800/80"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 803}}
-                    , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 804}}, "By: " , log.loggedBy)
-                    , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 805}}, new Date(displayDate).toLocaleDateString())
+                  , React.createElement('div', { className: "flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-amber-200/80 dark:border-orange-800/80"        }
+                    , React.createElement('span', {}, "By: " , log.loggedBy)
+                    , React.createElement('span', {}, new Date(displayDate).toLocaleDateString())
                   )
 
                   /* Delete button beneath each delay log card */
                   , onDelete && (
-                    React.createElement('div', { className: "pt-3 mt-2 border-t border-amber-200/80 dark:border-orange-800/80"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 810}}
+                    React.createElement('div', { className: "pt-3 mt-2 border-t border-amber-200/80 dark:border-orange-800/80"    }
                       , React.createElement(Button, {
                         variant: "ghost",
                         size: "sm",
@@ -817,9 +830,9 @@ function DelayLogCards({
                           if (confirm("Delete this delay log?")) {
                             onDelete(log.id);
                           }
-                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 811}}
+                        }}
 
-                        , React.createElement(Trash2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 821}} ), "Delete delay log"
+                        , React.createElement(Trash2, { className: "h-4 w-4" } ), "Delete delay log"
 
                       )
                     )
@@ -878,10 +891,10 @@ function DelayLogsTable({
 
   if (delayLogs.length === 0) {
     return (
-      React.createElement('div', { className: "text-center py-12 text-muted-foreground border border-border rounded-lg"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 880}}
-        , React.createElement(AlertCircle, { className: "h-12 w-12 mx-auto mb-2 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 881}} )
-        , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 882}}, "No delay logs recorded yet"    )
-        , React.createElement('p', { className: "text-xs mt-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 883}}, "Delay logs will appear here when you log delays in the Gantt chart."            )
+      React.createElement('div', { className: "text-center py-12 text-muted-foreground border border-border rounded-lg"     }
+        , React.createElement(AlertCircle, { className: "h-12 w-12 mx-auto mb-2 opacity-50"    } )
+        , React.createElement('p', { className: "text-sm font-medium" }, "No delay logs recorded yet"    )
+        , React.createElement('p', { className: "text-xs mt-1" }, "Delay logs will appear here when you log delays in the Gantt chart."            )
       )
     );
   }
@@ -892,67 +905,67 @@ function DelayLogsTable({
   );
 
   return (
-    React.createElement('div', { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 894}}
-      , React.createElement('div', { className: "flex items-center justify-between"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 895}}
-        , React.createElement('div', { className: "text-sm text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 896}}
+    React.createElement('div', { className: "space-y-4"}
+      , React.createElement('div', { className: "flex items-center justify-between"  }
+        , React.createElement('div', { className: "text-sm text-muted-foreground" }
           , delayLogs.length, " delay log"  , delayLogs.length !== 1 ? 's' : '', " recorded"
         )
       )
 
-      , React.createElement('div', { className: "border border-border rounded-lg overflow-hidden"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 901}}
-        , React.createElement('div', { className: "overflow-x-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 902}}
-          , React.createElement(Table, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 903}}
-            , React.createElement(TableHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 904}}
-              , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 905}}
-                , React.createElement(TableHead, { className: isMobile ? 'w-[120px]' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 906}}, "Task Name" )
-                , React.createElement(TableHead, { className: isMobile ? 'w-[80px]' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 907}}, "Month")
-                , React.createElement(TableHead, { className: isMobile ? 'w-[100px]' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 908}}, "Logged By" )
-                , React.createElement(TableHead, { className: isMobile ? 'w-[80px]' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 909}}, "Duration")
-                , React.createElement(TableHead, { className: isMobile ? 'hidden' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 910}}, "Reason")
-                , React.createElement(TableHead, { className: isMobile ? 'w-[100px]' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 911}}, "Date")
-                , React.createElement(TableHead, { className: "w-[100px] text-right" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 912}}, "Actions")
+      , React.createElement('div', { className: "border border-border rounded-lg overflow-hidden"   }
+        , React.createElement('div', { className: "overflow-x-auto"}
+          , React.createElement(Table, {}
+            , React.createElement(TableHeader, {}
+              , React.createElement(TableRow, {}
+                , React.createElement(TableHead, { className: isMobile ? 'w-[120px]' : ''}, "Task Name" )
+                , React.createElement(TableHead, { className: isMobile ? 'w-[80px]' : ''}, "Month")
+                , React.createElement(TableHead, { className: isMobile ? 'w-[100px]' : ''}, "Logged By" )
+                , React.createElement(TableHead, { className: isMobile ? 'w-[80px]' : ''}, "Duration")
+                , React.createElement(TableHead, { className: isMobile ? 'hidden' : ''}, "Reason")
+                , React.createElement(TableHead, { className: isMobile ? 'w-[100px]' : ''}, "Date")
+                , React.createElement(TableHead, { className: "w-[100px] text-right" }, "Actions")
               )
             )
-            , React.createElement(TableBody, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 915}}
+            , React.createElement(TableBody, {}
               , sortedLogs.map((log) => (
-                React.createElement(TableRow, { key: log.id, __self: this, __source: {fileName: _jsxFileName, lineNumber: 917}}
-                  , React.createElement(TableCell, { className: `font-medium ${isMobile ? 'text-xs' : ''}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 918}}
-                    , React.createElement('div', { className: "max-w-[200px] truncate" , title: getTaskName(log.taskId), __self: this, __source: {fileName: _jsxFileName, lineNumber: 919}}
+                React.createElement(TableRow, { key: log.id}
+                  , React.createElement(TableCell, { className: `font-medium ${isMobile ? 'text-xs' : ''}`}
+                    , React.createElement('div', { className: "max-w-[200px] truncate" , title: getTaskName(log.taskId)}
                       , getTaskName(log.taskId)
                     )
                   )
-                  , React.createElement(TableCell, { className: isMobile ? 'text-xs' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 923}}
-                    , React.createElement(Badge, { variant: "outline", className: "gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 924}}
-                      , React.createElement(Calendar, { className: "h-3 w-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 925}} )
+                  , React.createElement(TableCell, { className: isMobile ? 'text-xs' : ''}
+                    , React.createElement(Badge, { variant: "outline", className: "gap-1"}
+                      , React.createElement(Calendar, { className: "h-3 w-3" } )
                       , months[log.monthIndex] || `M${log.monthIndex + 1}`
                     )
                   )
-                  , React.createElement(TableCell, { className: isMobile ? 'text-xs' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 929}}
+                  , React.createElement(TableCell, { className: isMobile ? 'text-xs' : ''}
                     , log.loggedBy
                   )
-                  , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
-                    , React.createElement(Badge, { variant: "secondary", className: "gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 933}}
+                  , React.createElement(TableCell, {}
+                    , React.createElement(Badge, { variant: "secondary", className: "gap-1"}
                       , log.delayDuration, " day" , log.delayDuration !== 1 ? 's' : ''
                     )
                   )
-                  , React.createElement(TableCell, { className: isMobile ? 'hidden' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 937}}
-                    , React.createElement('div', { className: "max-w-[300px] truncate text-sm text-muted-foreground"   , title: log.reason, __self: this, __source: {fileName: _jsxFileName, lineNumber: 938}}
+                  , React.createElement(TableCell, { className: isMobile ? 'hidden' : ''}
+                    , React.createElement('div', { className: "max-w-[300px] truncate text-sm text-muted-foreground"   , title: log.reason}
                       , log.reason
                     )
                   )
-                  , React.createElement(TableCell, { className: isMobile ? 'text-xs' : 'text-sm', __self: this, __source: {fileName: _jsxFileName, lineNumber: 942}}
+                  , React.createElement(TableCell, { className: isMobile ? 'text-xs' : 'text-sm'}
                     , new Date(log.loggedAt).toLocaleDateString()
                   )
-                  , React.createElement(TableCell, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 945}}
-                    , React.createElement('div', { className: "flex items-center justify-end gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 946}}
+                  , React.createElement(TableCell, {}
+                    , React.createElement('div', { className: "flex items-center justify-end gap-2"   }
                       , React.createElement(Button, {
                         variant: "ghost",
                         size: "sm",
                         onClick: () => onEdit(log),
                         className: "h-8 w-8 p-0"  ,
-                        title: "Edit log" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 947}}
+                        title: "Edit log" }
 
-                        , React.createElement(Edit2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 954}} )
+                        , React.createElement(Edit2, { className: "h-4 w-4" } )
                       )
                       , React.createElement(Button, {
                         variant: "ghost",
@@ -963,9 +976,9 @@ function DelayLogsTable({
                           }
                         },
                         className: "h-8 w-8 p-0 text-destructive hover:text-destructive"    ,
-                        title: "Delete log" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 956}}
+                        title: "Delete log" }
 
-                        , React.createElement(Trash2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 967}} )
+                        , React.createElement(Trash2, { className: "h-4 w-4" } )
                       )
                     )
                   )
@@ -978,24 +991,24 @@ function DelayLogsTable({
 
       /* Mobile view: Show reason in expanded view */
       , isMobile && (
-        React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 980}}
+        React.createElement('div', { className: "space-y-2"}
           , sortedLogs.map((log) => (
-            React.createElement('div', { key: log.id, className: "border border-border rounded-lg p-3 bg-card/50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 982}}
-              , React.createElement('div', { className: "flex items-start justify-between gap-2 mb-2"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 983}}
-                , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 984}}
-                  , React.createElement('div', { className: "font-medium text-sm truncate"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 985}}, getTaskName(log.taskId))
-                  , React.createElement('div', { className: "text-xs text-muted-foreground mt-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 986}}
-                    , months[log.monthIndex] || `Month ${log.monthIndex + 1}`, " • "  , log.loggedBy
+            React.createElement('div', { key: log.id, className: "border border-border rounded-lg p-3 bg-card/50"    }
+              , React.createElement('div', { className: "flex items-start justify-between gap-2 mb-2"    }
+                , React.createElement('div', { className: "flex-1 min-w-0" }
+                  , React.createElement('div', { className: "font-medium text-sm truncate"  }, getTaskName(log.taskId))
+                  , React.createElement('div', { className: "text-xs text-muted-foreground mt-1"  }
+                    , months[log.monthIndex] || `Month ${log.monthIndex + 1}`, " â€¢ "  , log.loggedBy
                   )
                 )
-                , React.createElement('div', { className: "flex items-center gap-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 990}}
+                , React.createElement('div', { className: "flex items-center gap-1"  }
                   , React.createElement(Button, {
                     variant: "ghost",
                     size: "sm",
                     onClick: () => onEdit(log),
-                    className: "h-7 w-7 p-0"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 991}}
+                    className: "h-7 w-7 p-0"  }
 
-                    , React.createElement(Edit2, { className: "h-3.5 w-3.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 997}} )
+                    , React.createElement(Edit2, { className: "h-3.5 w-3.5" } )
                   )
                   , React.createElement(Button, {
                     variant: "ghost",
@@ -1005,18 +1018,18 @@ function DelayLogsTable({
                         onDelete(log.id);
                       }
                     },
-                    className: "h-7 w-7 p-0 text-destructive"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 999}}
+                    className: "h-7 w-7 p-0 text-destructive"   }
 
-                    , React.createElement(Trash2, { className: "h-3.5 w-3.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1009}} )
+                    , React.createElement(Trash2, { className: "h-3.5 w-3.5" } )
                   )
                 )
               )
-              , React.createElement('div', { className: "text-xs text-muted-foreground mb-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1013}}, log.reason)
-              , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1014}}
-                , React.createElement(Badge, { variant: "secondary", className: "text-xs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1015}}
+              , React.createElement('div', { className: "text-xs text-muted-foreground mb-2"  }, log.reason)
+              , React.createElement('div', { className: "flex items-center gap-2"  }
+                , React.createElement(Badge, { variant: "secondary", className: "text-xs"}
                   , log.delayDuration, " day" , log.delayDuration !== 1 ? 's' : ''
                 )
-                , React.createElement('span', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1018}}
+                , React.createElement('span', { className: "text-xs text-muted-foreground" }
                   , new Date(log.loggedAt).toLocaleDateString()
                 )
               )
@@ -1093,77 +1106,77 @@ function DelayLogsListDialog({
         monthName: monthName,
         months: months,
         onSave: handleSave,
-        existingLog: editingLog, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1081}}
+        existingLog: editingLog}
       )
     );
   }
 
   return (
-    React.createElement(Dialog, { open: open, onOpenChange: onOpenChange, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1101}}
-      , React.createElement(DialogContent, { className: "sm:max-w-[600px] max-h-[80vh]" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1102}}
-        , React.createElement(DialogHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1103}}
-          , React.createElement(DialogTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1104}}, "Delay Logs for "   , taskName)
-          , React.createElement(DialogDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1105}}, "View and manage delay logs for "
+    React.createElement(Dialog, { open: open, onOpenChange: onOpenChange}
+      , React.createElement(DialogContent, { className: "sm:max-w-[600px] max-h-[80vh]" }
+        , React.createElement(DialogHeader, {}
+          , React.createElement(DialogTitle, {}, "Delay Logs for "   , taskName)
+          , React.createElement(DialogDescription, {}, "View and manage delay logs for "
                   , monthName, ". Delay logs are displayed as orange bars in the Gantt chart."
           )
         )
-        , React.createElement('div', { className: "space-y-4 py-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1109}}
-          , React.createElement('div', { className: "flex items-center justify-between"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1110}}
-            , React.createElement('div', { className: "text-sm text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1111}}
+        , React.createElement('div', { className: "space-y-4 py-4" }
+          , React.createElement('div', { className: "flex items-center justify-between"  }
+            , React.createElement('div', { className: "text-sm text-muted-foreground" }
               , delayLogs.length, " delay log"  , delayLogs.length !== 1 ? 's' : '', " recorded"
             )
-            , React.createElement(Button, { onClick: handleAddNew, size: "sm", className: "gap-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1114}}
-              , React.createElement(Plus, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1115}} ), "Add New Log"
+            , React.createElement(Button, { onClick: handleAddNew, size: "sm", className: "gap-2"}
+              , React.createElement(Plus, { className: "h-4 w-4" } ), "Add New Log"
 
             )
           )
 
           , delayLogs.length === 0 ? (
-            React.createElement('div', { className: "text-center py-8 text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1121}}
-              , React.createElement(AlertCircle, { className: "h-12 w-12 mx-auto mb-2 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1122}} )
-              , React.createElement('p', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1123}}, "No delay logs recorded yet."    )
-              , React.createElement('p', { className: "text-xs mt-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1124}}, "Click \"Add New Log\" to record a delay."       )
+            React.createElement('div', { className: "text-center py-8 text-muted-foreground"  }
+              , React.createElement(AlertCircle, { className: "h-12 w-12 mx-auto mb-2 opacity-50"    } )
+              , React.createElement('p', {}, "No delay logs recorded yet."    )
+              , React.createElement('p', { className: "text-xs mt-1" }, "Click \"Add New Log\" to record a delay."       )
             )
           ) : (
-            React.createElement(ScrollArea, { className: "h-[400px] pr-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1127}}
-              , React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1128}}
+            React.createElement(ScrollArea, { className: "h-[400px] pr-4" }
+              , React.createElement('div', { className: "space-y-3"}
                 , delayLogs.map((log) => (
                   React.createElement('div', {
                     key: log.id,
-                    className: "border border-border rounded-lg p-4 bg-card hover:bg-muted/30 transition-colors"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1130}}
+                    className: "border border-border rounded-lg p-4 bg-card hover:bg-muted/30 transition-colors"      }
 
-                    , React.createElement('div', { className: "flex items-start justify-between gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1134}}
-                      , React.createElement('div', { className: "flex-1 space-y-2" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1135}}
-                        , React.createElement('div', { className: "flex items-center gap-2 flex-wrap"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1136}}
-                          , React.createElement(Badge, { variant: "outline", className: "gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1137}}
-                            , React.createElement(Calendar, { className: "h-3 w-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1138}} )
+                    , React.createElement('div', { className: "flex items-start justify-between gap-4"   }
+                      , React.createElement('div', { className: "flex-1 space-y-2" }
+                        , React.createElement('div', { className: "flex items-center gap-2 flex-wrap"   }
+                          , React.createElement(Badge, { variant: "outline", className: "gap-1"}
+                            , React.createElement(Calendar, { className: "h-3 w-3" } )
                             , new Date(log.loggedAt).toLocaleDateString()
                           )
-                          , React.createElement(Badge, { variant: "secondary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1141}}
+                          , React.createElement(Badge, { variant: "secondary"}
                             , log.delayDuration, " day" , log.delayDuration !== 1 ? 's' : ''
                           )
                         )
-                        , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1145}}
-                          , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1146}}, "Logged by: "  , log.loggedBy)
-                          , React.createElement('p', { className: "text-sm text-muted-foreground mt-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1147}}, log.reason)
+                        , React.createElement('div', {}
+                          , React.createElement('p', { className: "text-sm font-medium" }, "Logged by: "  , log.loggedBy)
+                          , React.createElement('p', { className: "text-sm text-muted-foreground mt-1"  }, log.reason)
                         )
                       )
-                      , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1150}}
+                      , React.createElement('div', { className: "flex items-center gap-2"  }
                         , React.createElement(Button, {
                           variant: "ghost",
                           size: "sm",
                           onClick: () => handleEdit(log),
-                          className: "h-8 w-8 p-0"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1151}}
+                          className: "h-8 w-8 p-0"  }
 
-                          , React.createElement(Edit2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1157}} )
+                          , React.createElement(Edit2, { className: "h-4 w-4" } )
                         )
                         , React.createElement(Button, {
                           variant: "ghost",
                           size: "sm",
                           onClick: () => handleDelete(log.id),
-                          className: "h-8 w-8 p-0 text-destructive hover:text-destructive"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1159}}
+                          className: "h-8 w-8 p-0 text-destructive hover:text-destructive"    }
 
-                          , React.createElement(Trash2, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1165}} )
+                          , React.createElement(Trash2, { className: "h-4 w-4" } )
                         )
                       )
                     )
@@ -1173,8 +1186,8 @@ function DelayLogsListDialog({
             )
           )
         )
-        , React.createElement(DialogFooter, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1175}}
-          , React.createElement(Button, { variant: "outline", onClick: () => onOpenChange(false), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1176}}, "Close"
+        , React.createElement(DialogFooter, {}
+          , React.createElement(Button, { variant: "outline", onClick: () => onOpenChange(false)}, "Close"
 
           )
         )
@@ -1356,7 +1369,7 @@ function GanttMini({
   const mobileMinChartWidth = isMobile ? `${140 + n * 44 + 48}px` : undefined;
 
   return (
-    React.createElement('div', { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1358}}
+    React.createElement('div', { className: "space-y-4"}
       /* Delay Logs List Dialog */
       , selectedTaskForDelay && (
         React.createElement(DelayLogsListDialog, {
@@ -1369,7 +1382,7 @@ function GanttMini({
           months: months,
           delayLogs: getSelectedTaskDelayLogs(),
           onSave: handleSaveDelayLog,
-          onDelete: handleDeleteDelayLog, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1361}}
+          onDelete: handleDeleteDelayLog}
         )
       )
 
@@ -1389,7 +1402,7 @@ function GanttMini({
           monthName: selectedBarForLog.monthName,
           months: months,
           onSave: handleSaveDelayLog,
-          defaultDate: selectedBarForLog.clickDate, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1377}}
+          defaultDate: selectedBarForLog.clickDate}
         )
       )
 
@@ -1413,7 +1426,7 @@ function GanttMini({
             taskName: selectedRowForDelayLog.taskName,
             taskId: selectedRowForDelayLog.taskId,
             monthIndex: selectedRowForDelayLog.startIdx,
-            monthName: months[selectedRowForDelayLog.startIdx] || "—",
+            monthName: months[selectedRowForDelayLog.startIdx] || "â€”",
             months: months,
             onSave: (log) => {
               handleSaveDelayLog(log);
@@ -1422,7 +1435,7 @@ function GanttMini({
             },
             defaultDate: defaultInRange,
             minDate: minDate,
-            maxDate: maxDate, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1404}}
+            maxDate: maxDate}
           )
         );
       })()
@@ -1430,30 +1443,30 @@ function GanttMini({
       /* Legend removed (delay logs feature removed) */
 
       /* Gantt Chart Container with full border */
-      , React.createElement('div', { className: "border-2 border-border rounded-lg bg-background overflow-x-auto"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1432}}
-        , React.createElement('div', { style: mobileMinChartWidth ? { minWidth: mobileMinChartWidth } : undefined, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1433}}
+      , React.createElement('div', { className: "border-2 border-border rounded-lg bg-background overflow-x-auto"    }
+        , React.createElement('div', { style: mobileMinChartWidth ? { minWidth: mobileMinChartWidth } : undefined}
         /* Header row with month labels */
-        , React.createElement('div', { className: "grid border-b-2 border-border bg-muted/30"   , style: { gridTemplateColumns: gridCols }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1435}}
-          , React.createElement('div', { className: `${isMobile ? 'p-1.5 text-[10px]' : 'p-2 text-xs'} font-bold text-muted-foreground border-r-2 border-border bg-muted/40`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1436}}, "WBS Subprocess" )
+        , React.createElement('div', { className: "grid border-b-2 border-border bg-muted/30"   , style: { gridTemplateColumns: gridCols }}
+          , React.createElement('div', { className: `${isMobile ? 'p-1.5 text-[10px]' : 'p-2 text-xs'} font-bold text-muted-foreground border-r-2 border-border bg-muted/40`}, "WBS Subprocess" )
           , months.map((m, idx) => {
             const { label, dateRange } = getMonthHeaderLabel(m, GANTT_CHART_YEAR);
             return (
               React.createElement('div', {
                 key: m,
-                className: `${isMobile ? 'p-1 text-[9px]' : 'p-2 text-xs'} font-semibold text-center text-muted-foreground border-r-2 border-border bg-muted/40 flex flex-col items-center justify-center gap-0.5`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1440}}
+                className: `${isMobile ? 'p-1 text-[9px]' : 'p-2 text-xs'} font-semibold text-center text-muted-foreground border-r-2 border-border bg-muted/40 flex flex-col items-center justify-center gap-0.5`}
 
-                , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1444}}, isMobile ? label.replace(` ${GANTT_CHART_YEAR}`, "'26") : label)
-                , React.createElement('span', { className: `font-normal opacity-90 ${isMobile ? 'text-[8px]' : 'text-[10px]'}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1445}}, dateRange)
+                , React.createElement('span', {}, isMobile ? label.replace(` ${GANTT_CHART_YEAR}`, "'26") : label)
+                , React.createElement('span', { className: `font-normal opacity-90 ${isMobile ? 'text-[8px]' : 'text-[10px]'}`}, dateRange)
               )
             );
           })
-          , React.createElement('div', { className: `${isMobile ? 'p-1 text-[9px]' : 'p-2 text-xs'} font-semibold text-center text-muted-foreground border-border bg-muted/40 flex items-center justify-center`, title: "Add delay log (within planned timeline)"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1449}}, "Options"
+          , React.createElement('div', { className: `${isMobile ? 'p-1 text-[9px]' : 'p-2 text-xs'} font-semibold text-center text-muted-foreground border-border bg-muted/40 flex items-center justify-center`, title: "Add delay log (within planned timeline)"     }, "Options"
 
           )
         )
 
         /* Task rows */
-        , React.createElement('div', { className: "space-y-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1455}}
+        , React.createElement('div', { className: "space-y-1"}
           , tasks.map((t) => {
             const isExpanded = _nullishCoalesce(expanded[t.id], () => ( true));
             const hasChildren = (_nullishCoalesce(_optionalChain([t, 'access', _38 => _38.children, 'optionalAccess', _39 => _39.length]), () => ( 0))) > 0;
@@ -1464,26 +1477,26 @@ function GanttMini({
             const span = t.endIdx - t.startIdx + 1;
 
             return (
-              React.createElement('div', { key: t.id, className: "space-y-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1466}}
+              React.createElement('div', { key: t.id, className: "space-y-1"}
                 /* Parent task row */
-                , React.createElement('div', { className: "grid border-l-2 border-r-2 border-b-2 border-border relative bg-background overflow-hidden"       , style: { gridTemplateColumns: gridCols }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1468}}
+                , React.createElement('div', { className: "grid border-l-2 border-r-2 border-b-2 border-border relative bg-background overflow-hidden"       , style: { gridTemplateColumns: gridCols }}
                   /* Left label column */
-                  , React.createElement('div', { className: "p-2 border-r-2 border-border flex items-center gap-2 min-w-0 relative z-5 bg-muted/20"         , onClick: (e) => e.stopPropagation(), __self: this, __source: {fileName: _jsxFileName, lineNumber: 1470}}
+                  , React.createElement('div', { className: "p-2 border-r-2 border-border flex items-center gap-2 min-w-0 relative z-5 bg-muted/20"         , onClick: (e) => e.stopPropagation()}
                     , hasChildren && (
                       React.createElement('button', {
                         type: "button",
                         onClick: (e) => toggle(t.id, e),
                         onMouseDown: (e) => e.stopPropagation(),
                         className: "h-5 w-5 rounded border border-border/60 bg-background hover:bg-muted/40 transition-colors flex items-center justify-center flex-shrink-0 relative z-10"             ,
-                        title: isExpanded ? "Collapse" : "Expand", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1472}}
+                        title: isExpanded ? "Collapse" : "Expand"}
 
-                        , React.createElement('span', { className: "text-[10px] font-bold leading-none"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1479}}, isExpanded ? "−" : "+")
+                        , React.createElement('span', { className: "text-[10px] font-bold leading-none"  }, isExpanded ? "âˆ’" : "+")
                       )
                     )
-                    , React.createElement('div', { className: "min-w-0 flex-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1482}}
-                      , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-foreground truncate`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1483}}, t.name)
-                      , React.createElement('div', { className: `${isMobile ? 'text-[9px]' : 'text-[10px]'} text-muted-foreground`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1484}}, "Weight "
-                         , (t.weight * 100).toFixed(0), "% •" , " "
+                    , React.createElement('div', { className: "min-w-0 flex-1" }
+                      , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-foreground truncate`}, t.name)
+                      , React.createElement('div', { className: `${isMobile ? 'text-[9px]' : 'text-[10px]'} text-muted-foreground`}, "Weight "
+                         , (t.weight * 100).toFixed(0), "% â€¢" , " "
                         , React.createElement('span', {
                           className: 
                             t.status === "ahead"
@@ -1491,7 +1504,7 @@ function GanttMini({
                               : t.status === "behind"
                                 ? "text-red-600"
                                 : "text-emerald-700"
-                          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1486}}
+                          }
 
                           , t.status === "ontrack" ? "On track" : t.status === "ahead" ? "Ahead" : "Behind"
                         )
@@ -1500,9 +1513,9 @@ function GanttMini({
                   )
 
                   /* Timeline container - month columns only (Actions column is last) */
-                  , React.createElement('div', { className: "relative border-r-2 border-border"  , style: { gridColumn: `2 / span ${n}` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1502}}
+                  , React.createElement('div', { className: "relative border-r-2 border-border"  , style: { gridColumn: `2 / span ${n}` }}
                     /* Grid cells for timeline - background cells */
-                    , React.createElement('div', { className: "grid h-12" , style: { gridTemplateColumns: `repeat(${n}, 1fr)` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1504}}
+                    , React.createElement('div', { className: "grid h-12" , style: { gridTemplateColumns: `repeat(${n}, 1fr)` }}
                       , months.map((m, monthIdx) => {
                         const taskHasDelay = hasDelay(t);
                         const delayLogsForMonth = getDelayLogsForTask(t.id, monthIdx);
@@ -1511,7 +1524,7 @@ function GanttMini({
                         return (
                           React.createElement('div', {
                             key: m,
-                            className: "border-r-2 border-border last:border-r-0 bg-muted/20 relative"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1511}}
+                            className: "border-r-2 border-border last:border-r-0 bg-muted/20 relative"    }
 
                             /* Clickable area to add delay log - only show if task is in range */
                             , isInTaskRange && (
@@ -1519,12 +1532,12 @@ function GanttMini({
                                 type: "button",
                                 onClick: (e) => handleBarClick(e, t.id, t.name, monthIdx),
                                 className: "absolute inset-0 w-full h-full z-10 opacity-0 hover:opacity-5 hover:bg-emerald-600 transition-opacity cursor-pointer"         ,
-                                title: "Click anywhere on this cell to add a delay log"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1517}}
+                                title: "Click anywhere on this cell to add a delay log"         }
                               )
                             )
                             /* Delay log indicators - positioned based on date within month - more visible with icons */
                             , delayLogsForMonth.length > 0 && (
-                              React.createElement('div', { className: "absolute bottom-0 left-0 right-0 z-11"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1526}}
+                              React.createElement('div', { className: "absolute bottom-0 left-0 right-0 z-11"    }
                                 , delayLogsForMonth.map((log) => {
                                   const positionPercent = getDatePositionInMonth(log.delayDate, monthIdx);
                                   return (
@@ -1533,25 +1546,25 @@ function GanttMini({
                                       className: "absolute group" ,
                                       style: {
                                         left: `${Math.max(0, Math.min(100, positionPercent - 2.5))}%`,
-                                      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1530}}
+                                      }}
 
                                       /* Indicator bar */
-                                      , React.createElement('div', { className: "h-2.5 bg-orange-500 rounded-t border-t-2 border-orange-600 shadow-md w-5 min-w-[4px]"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1538}} )
+                                      , React.createElement('div', { className: "h-2.5 bg-orange-500 rounded-t border-t-2 border-orange-600 shadow-md w-5 min-w-[4px]"       } )
                                       /* Icon badge */
-                                      , React.createElement('div', { className: "absolute -top-1 left-1/2 transform -translate-x-1/2 bg-orange-500 rounded-full p-0.5 shadow-md border border-orange-600"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1540}}
-                                        , React.createElement(AlertTriangle, { className: "h-1.5 w-1.5 text-white"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1541}} )
+                                      , React.createElement('div', { className: "absolute -top-1 left-1/2 transform -translate-x-1/2 bg-orange-500 rounded-full p-0.5 shadow-md border border-orange-600"          }
+                                        , React.createElement(AlertTriangle, { className: "h-1.5 w-1.5 text-white"  } )
                                       )
                                       /* Tooltip */
-                                      , React.createElement('div', { className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-15 bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-xl max-w-xs"                , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1544}}
-                                        , React.createElement('div', { className: "font-semibold flex items-center gap-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1545}}
-                                          , React.createElement(Clock, { className: "h-3 w-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1546}} ), "Delay Logged"
+                                      , React.createElement('div', { className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-15 bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-xl max-w-xs"                }
+                                        , React.createElement('div', { className: "font-semibold flex items-center gap-1"   }
+                                          , React.createElement(Clock, { className: "h-3 w-3" } ), "Delay Logged"
 
                                         )
-                                        , React.createElement('div', { className: "text-[10px] opacity-90 mt-0.5"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1549}}, log.reason)
+                                        , React.createElement('div', { className: "text-[10px] opacity-90 mt-0.5"  }, log.reason)
                                         , log.imageUrl && (
-                                          React.createElement('div', { className: "mt-2 border-t border-gray-700 pt-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1551}}
-                                            , React.createElement('div', { className: "text-[10px] opacity-75 mb-1 flex items-center gap-1"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1552}}
-                                              , React.createElement(ImageIcon, { className: "h-3 w-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1553}} ), "Evidence Image:"
+                                          React.createElement('div', { className: "mt-2 border-t border-gray-700 pt-2"   }
+                                            , React.createElement('div', { className: "text-[10px] opacity-75 mb-1 flex items-center gap-1"     }
+                                              , React.createElement(ImageIcon, { className: "h-3 w-3" } ), "Evidence Image:"
 
                                             )
                                             , React.createElement('img', {
@@ -1571,13 +1584,13 @@ function GanttMini({
                                                   </html>
                                                 `);
                                                 }
-                                              }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1556}}
+                                              }}
                                             )
                                           )
                                         )
-                                        , React.createElement('div', { className: "text-[10px] opacity-75" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1577}}, log.delayDuration, " days • "   , new Date(log.delayDate).toLocaleDateString())
-                                        , React.createElement('div', { className: "text-[10px] opacity-75" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1578}}, "By: " , log.loggedBy)
-                                        , React.createElement('div', { className: "absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"            , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1579}} )
+                                        , React.createElement('div', { className: "text-[10px] opacity-75" }, log.delayDuration, " days â€¢ "   , new Date(log.delayDate).toLocaleDateString())
+                                        , React.createElement('div', { className: "text-[10px] opacity-75" }, "By: " , log.loggedBy)
+                                        , React.createElement('div', { className: "absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"            } )
                                       )
                                     )
                                   );
@@ -1613,24 +1626,24 @@ function GanttMini({
                         const clampedMonthIdx = Math.max(t.startIdx, Math.min(t.endIdx, monthIdx));
                         handleBarClick(e, t.id, t.name, clampedMonthIdx);
                       },
-                      title: "Click on the bar to add a delay log at this position"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1597}}
+                      title: "Click on the bar to add a delay log at this position"           }
 
                       /* Top = Planned (blue), Bottom = Actual (green), Delay stripe = red */
-                      , React.createElement('div', { className: "absolute inset-0 flex flex-col z-8"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1618}}
+                      , React.createElement('div', { className: "absolute inset-0 flex flex-col z-8"    }
                         /* Top half: Planned progress - blue */
-                        , React.createElement('div', { className: "flex-1 min-h-0 flex items-stretch border-b border-black/20"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1620}}
+                        , React.createElement('div', { className: "flex-1 min-h-0 flex items-stretch border-b border-black/20"     }
                           , React.createElement('div', {
                             className: "h-full transition-all duration-300"  ,
                             style: { width: `${Math.min(100, Math.max(0, plannedPct))}%`, backgroundColor: plannedColor },
-                            title: `Planned: ${plannedPct}%`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1621}}
+                            title: `Planned: ${plannedPct}%`}
                           )
                         )
                         /* Bottom half: Actual progress - green */
-                        , React.createElement('div', { className: "flex-1 min-h-0 flex items-stretch relative"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1628}}
+                        , React.createElement('div', { className: "flex-1 min-h-0 flex items-stretch relative"    }
                           , React.createElement('div', {
                             className: "h-full transition-all duration-300"  ,
                             style: { width: `${Math.min(100, Math.max(0, progress))}%`, backgroundColor: actualColor },
-                            title: `Actual: ${progress}%`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1629}}
+                            title: `Actual: ${progress}%`}
                           )
                           /* Delay impact stripe - red */
                           , subProject && (subProject ).delayImpact > 0 && (subProject ).originalProgress > progress && (
@@ -1640,7 +1653,7 @@ function GanttMini({
                                 left: `${Math.min(100, Math.max(0, progress))}%`,
                                 width: `${Math.min(100 - progress, (subProject ).delayImpact)}%`,
                               },
-                              title: `Delay impact: ${((subProject ).delayImpact).toFixed(1)}%`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1636}}
+                              title: `Delay impact: ${((subProject ).delayImpact).toFixed(1)}%`}
                             )
                           )
                         )
@@ -1658,24 +1671,24 @@ function GanttMini({
                             style: {
                               left: `${clampedPosition}%`,
                               transform: 'translateX(-50%)',
-                            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1654}}
+                            }}
 
                             /* Vertical marker line */
-                            , React.createElement('div', { className: "absolute top-0 bottom-0 left-1/2 w-1 bg-orange-500 shadow-lg border-l border-r border-orange-600"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1663}} )
+                            , React.createElement('div', { className: "absolute top-0 bottom-0 left-1/2 w-1 bg-orange-500 shadow-lg border-l border-r border-orange-600"         } )
                             /* Icon indicator at top */
-                            , React.createElement('div', { className: "absolute -top-1 left-1/2 transform -translate-x-1/2 bg-orange-500 rounded-full p-0.5 shadow-md border border-orange-600"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1665}}
-                              , React.createElement(AlertTriangle, { className: "h-2 w-2 text-white"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1666}} )
+                            , React.createElement('div', { className: "absolute -top-1 left-1/2 transform -translate-x-1/2 bg-orange-500 rounded-full p-0.5 shadow-md border border-orange-600"          }
+                              , React.createElement(AlertTriangle, { className: "h-2 w-2 text-white"  } )
                             )
                             /* Tooltip on hover */
-                            , React.createElement('div', { className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-15 bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-xl max-w-xs"                , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1669}}
-                              , React.createElement('div', { className: "font-semibold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1670}}, "Delay Logged" )
-                              , React.createElement('div', { className: "text-[10px] opacity-90" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1671}}, log.reason)
-                              , React.createElement('div', { className: "text-[10px] opacity-75" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1672}}, log.delayDuration, " days • "   , new Date(log.delayDate).toLocaleDateString())
-                              , React.createElement('div', { className: "text-[10px] opacity-75" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1673}}, "By: " , log.loggedBy)
+                            , React.createElement('div', { className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-15 bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-xl max-w-xs"                }
+                              , React.createElement('div', { className: "font-semibold"}, "Delay Logged" )
+                              , React.createElement('div', { className: "text-[10px] opacity-90" }, log.reason)
+                              , React.createElement('div', { className: "text-[10px] opacity-75" }, log.delayDuration, " days â€¢ "   , new Date(log.delayDate).toLocaleDateString())
+                              , React.createElement('div', { className: "text-[10px] opacity-75" }, "By: " , log.loggedBy)
                               , log.imageUrl && (
-                                React.createElement('div', { className: "mt-2 border-t border-gray-700 pt-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1675}}
-                                  , React.createElement('div', { className: "text-[10px] opacity-75 mb-1 flex items-center gap-1"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1676}}
-                                    , React.createElement(ImageIcon, { className: "h-3 w-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1677}} ), "Evidence Image:"
+                                React.createElement('div', { className: "mt-2 border-t border-gray-700 pt-2"   }
+                                  , React.createElement('div', { className: "text-[10px] opacity-75 mb-1 flex items-center gap-1"     }
+                                    , React.createElement(ImageIcon, { className: "h-3 w-3" } ), "Evidence Image:"
 
                                   )
                                   , React.createElement('img', {
@@ -1695,25 +1708,25 @@ function GanttMini({
                                         </html>
                                       `);
                                       }
-                                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1680}}
+                                    }}
                                   )
                                 )
                               )
-                              , React.createElement('div', { className: "absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"            , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1701}} )
+                              , React.createElement('div', { className: "absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"            } )
                             )
                           )
                         );
                       })
                       /* Text content */
-                      , React.createElement('div', { className: `${isMobile ? 'text-[8px]' : 'text-[9px]'} font-semibold text-white truncate flex-1 pointer-events-none relative z-20 px-2 flex items-center h-full`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1707}}
-                        , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1708}}
-                          , React.createElement('div', { className: "truncate flex items-center gap-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1709}}
-                            , React.createElement('span', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1710}}, responsible)
+                      , React.createElement('div', { className: `${isMobile ? 'text-[8px]' : 'text-[9px]'} font-semibold text-white truncate flex-1 pointer-events-none relative z-20 px-2 flex items-center h-full`}
+                        , React.createElement('div', { className: "flex-1 min-w-0" }
+                          , React.createElement('div', { className: "truncate flex items-center gap-1"   }
+                            , React.createElement('span', { className: "truncate"}, responsible)
                           )
-                          , React.createElement('div', { className: `${isMobile ? 'text-[7px]' : 'text-[8px]'} opacity-95 flex items-center gap-1.5 flex-wrap`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1712}}
-                            , React.createElement('span', { title: "Top strip = Planned"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1713}}, React.createElement('span', { className: "opacity-80", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1713}}, "P:"), plannedPct, "%")
-                            , React.createElement('span', { className: "opacity-60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1714}}, "|")
-                            , React.createElement('span', { title: "Bottom strip = Actual"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1715}}, React.createElement('span', { className: "opacity-80", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1715}}, "A:"), progress, "%")
+                          , React.createElement('div', { className: `${isMobile ? 'text-[7px]' : 'text-[8px]'} opacity-95 flex items-center gap-1.5 flex-wrap`}
+                            , React.createElement('span', { title: "Top strip = Planned"   }, React.createElement('span', { className: "opacity-80"}, "P:"), plannedPct, "%")
+                            , React.createElement('span', { className: "opacity-60"}, "|")
+                            , React.createElement('span', { title: "Bottom strip = Actual"   }, React.createElement('span', { className: "opacity-80"}, "A:"), progress, "%")
                           )
                         )
                       )
@@ -1721,14 +1734,14 @@ function GanttMini({
                   ); })()
                   )
                   /* Actions column: options menu (Add delay log / Delete delay log(s)) */
-                  , React.createElement('div', { className: "flex items-center justify-center border-border bg-muted/10 p-1"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1723}}
+                  , React.createElement('div', { className: "flex items-center justify-center border-border bg-muted/10 p-1"     }
                     /* Delay log options removed */
                   )
                 )
 
                 /* Child task rows */
                 , hasChildren && isExpanded && (
-                  React.createElement('div', { className: "space-y-0.5 pl-6" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1730}}
+                  React.createElement('div', { className: "space-y-0.5 pl-6" }
                     , t.children.map((c) => {
                       const childSubProject = getSubProjectForTask(c.id);
                       const childProgress = getProgressPercentage(c, childSubProject);
@@ -1740,20 +1753,20 @@ function GanttMini({
                         React.createElement('div', {
                           key: c.id,
                           className: "grid border-l-2 border-r-2 border-b-2 border-border relative bg-background overflow-hidden"       ,
-                          style: { gridTemplateColumns: gridCols }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1739}}
+                          style: { gridTemplateColumns: gridCols }}
 
                           /* Left label column */
-                          , React.createElement('div', { className: "p-1.5 border-r-2 border-border min-w-0 relative z-10 bg-muted/10"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1745}}
-                            , React.createElement('div', { className: `${isMobile ? 'text-[11px]' : 'text-xs'} font-medium text-foreground/90 truncate`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1746}}, c.name)
-                            , React.createElement('div', { className: `${isMobile ? 'text-[8px]' : 'text-[9px]'} text-muted-foreground`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1747}}, "Weight "
+                          , React.createElement('div', { className: "p-1.5 border-r-2 border-border min-w-0 relative z-10 bg-muted/10"      }
+                            , React.createElement('div', { className: `${isMobile ? 'text-[11px]' : 'text-xs'} font-medium text-foreground/90 truncate`}, c.name)
+                            , React.createElement('div', { className: `${isMobile ? 'text-[8px]' : 'text-[9px]'} text-muted-foreground`}, "Weight "
                                , (c.weight * 100).toFixed(0), "%"
                             )
                           )
 
                           /* Timeline container - month columns only */
-                          , React.createElement('div', { className: "relative border-r-2 border-border"  , style: { gridColumn: `2 / span ${n}` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1753}}
+                          , React.createElement('div', { className: "relative border-r-2 border-border"  , style: { gridColumn: `2 / span ${n}` }}
                             /* Grid cells for timeline - background cells */
-                            , React.createElement('div', { className: "grid h-10" , style: { gridTemplateColumns: `repeat(${n}, 1fr)` }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1755}}
+                            , React.createElement('div', { className: "grid h-10" , style: { gridTemplateColumns: `repeat(${n}, 1fr)` }}
                               , months.map((m, monthIdx) => {
                                 const childHasDelay = c.status === "behind";
                                 const delayLogsForMonth = getDelayLogsForTask(c.id, monthIdx);
@@ -1762,7 +1775,7 @@ function GanttMini({
                                 return (
                                   React.createElement('div', {
                                     key: m,
-                                    className: "border-r-2 border-border last:border-r-0 bg-muted/10 relative"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1762}}
+                                    className: "border-r-2 border-border last:border-r-0 bg-muted/10 relative"    }
 
                                     /* Clickable area to add delay log for child tasks */
                                     , isInTaskRange && (
@@ -1770,12 +1783,12 @@ function GanttMini({
                                         type: "button",
                                         onClick: (e) => handleBarClick(e, c.id, c.name, monthIdx),
                                         className: "absolute inset-0 w-full h-full z-10 opacity-0 hover:opacity-5 hover:bg-emerald-600 transition-opacity cursor-pointer"         ,
-                                        title: "Click anywhere on this cell to add a delay log"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1768}}
+                                        title: "Click anywhere on this cell to add a delay log"         }
                                       )
                                     )
                                     /* Delay log indicators for child tasks - positioned based on date - more visible with icons */
                                     , delayLogsForMonth.length > 0 && (
-                                      React.createElement('div', { className: "absolute bottom-0 left-0 right-0 z-25"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1777}}
+                                      React.createElement('div', { className: "absolute bottom-0 left-0 right-0 z-25"    }
                                         , delayLogsForMonth.map((log) => {
                                           const positionPercent = getDatePositionInMonth(log.delayDate, monthIdx);
                                           return (
@@ -1784,23 +1797,23 @@ function GanttMini({
                                               className: "absolute group" ,
                                               style: {
                                                 left: `${Math.max(0, Math.min(100, positionPercent - 2.5))}%`,
-                                              }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1781}}
+                                              }}
 
                                               /* Indicator bar */
-                                              , React.createElement('div', { className: "h-2 bg-orange-500 rounded-t border-t-2 border-orange-600 shadow-md w-4 min-w-[3px]"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1789}} )
+                                              , React.createElement('div', { className: "h-2 bg-orange-500 rounded-t border-t-2 border-orange-600 shadow-md w-4 min-w-[3px]"       } )
                                               /* Icon badge */
-                                              , React.createElement('div', { className: "absolute -top-0.5 left-1/2 transform -translate-x-1/2 bg-orange-500 rounded-full p-0.5 shadow-md border border-orange-600"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1791}}
-                                                , React.createElement(AlertTriangle, { className: "h-1 w-1 text-white"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1792}} )
+                                              , React.createElement('div', { className: "absolute -top-0.5 left-1/2 transform -translate-x-1/2 bg-orange-500 rounded-full p-0.5 shadow-md border border-orange-600"          }
+                                                , React.createElement(AlertTriangle, { className: "h-1 w-1 text-white"  } )
                                               )
                                               /* Tooltip */
-                                              , React.createElement('div', { className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-50 bg-gray-900 text-white text-[10px] rounded px-1.5 py-0.5 shadow-xl max-w-xs"                , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1795}}
-                                                , React.createElement('div', { className: "font-semibold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1796}}, "Delay")
-                                                , React.createElement('div', { className: "opacity-90", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1797}}, log.reason)
-                                                , React.createElement('div', { className: "opacity-75", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1798}}, log.delayDuration, "d")
+                                              , React.createElement('div', { className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-50 bg-gray-900 text-white text-[10px] rounded px-1.5 py-0.5 shadow-xl max-w-xs"                }
+                                                , React.createElement('div', { className: "font-semibold"}, "Delay")
+                                                , React.createElement('div', { className: "opacity-90"}, log.reason)
+                                                , React.createElement('div', { className: "opacity-75"}, log.delayDuration, "d")
                                                 , log.imageUrl && (
-                                                  React.createElement('div', { className: "mt-1 border-t border-gray-700 pt-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1800}}
-                                                    , React.createElement('div', { className: "opacity-75 mb-1 flex items-center gap-1"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1801}}
-                                                      , React.createElement(ImageIcon, { className: "h-2.5 w-2.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1802}} ), "Evidence:"
+                                                  React.createElement('div', { className: "mt-1 border-t border-gray-700 pt-1"   }
+                                                    , React.createElement('div', { className: "opacity-75 mb-1 flex items-center gap-1"    }
+                                                      , React.createElement(ImageIcon, { className: "h-2.5 w-2.5" } ), "Evidence:"
 
                                                     )
                                                     , React.createElement('img', {
@@ -1820,7 +1833,7 @@ function GanttMini({
                                                           </html>
                                                         `);
                                                         }
-                                                      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1805}}
+                                                      }}
                                                     )
                                                   )
                                                 )
@@ -1859,21 +1872,21 @@ function GanttMini({
                                 const clampedMonthIdx = Math.max(c.startIdx, Math.min(c.endIdx, monthIdx));
                                 handleBarClick(e, c.id, c.name, clampedMonthIdx);
                               },
-                              title: "Click on the bar to add a delay log at this position"           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1843}}
+                              title: "Click on the bar to add a delay log at this position"           }
 
-                              , React.createElement('div', { className: "absolute inset-0 flex flex-col z-8"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1863}}
-                                , React.createElement('div', { className: "flex-1 min-h-0 flex items-stretch border-b border-black/20"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1864}}
+                              , React.createElement('div', { className: "absolute inset-0 flex flex-col z-8"    }
+                                , React.createElement('div', { className: "flex-1 min-h-0 flex items-stretch border-b border-black/20"     }
                                   , React.createElement('div', {
                                     className: "h-full transition-all duration-300"  ,
                                     style: { width: `${Math.min(100, Math.max(0, childPlannedPct))}%`, backgroundColor: plannedColor },
-                                    title: `Planned: ${childPlannedPct}%`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1865}}
+                                    title: `Planned: ${childPlannedPct}%`}
                                   )
                                 )
-                                , React.createElement('div', { className: "flex-1 min-h-0 flex items-stretch relative"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1871}}
+                                , React.createElement('div', { className: "flex-1 min-h-0 flex items-stretch relative"    }
                                   , React.createElement('div', {
                                     className: "h-full transition-all duration-300"  ,
                                     style: { width: `${Math.min(100, Math.max(0, childProgress))}%`, backgroundColor: actualColor },
-                                    title: `Actual: ${childProgress}%`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1872}}
+                                    title: `Actual: ${childProgress}%`}
                                   )
                                   , childSubProject && (childSubProject ).delayImpact > 0 && (childSubProject ).originalProgress > childProgress && (
                                     React.createElement('div', {
@@ -1882,7 +1895,7 @@ function GanttMini({
                                         left: `${Math.min(100, Math.max(0, childProgress))}%`,
                                         width: `${Math.min(100 - childProgress, (childSubProject ).delayImpact)}%`,
                                       },
-                                      title: `Delay impact: ${((childSubProject ).delayImpact).toFixed(1)}%`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1878}}
+                                      title: `Delay impact: ${((childSubProject ).delayImpact).toFixed(1)}%`}
                                     )
                                   )
                                 )
@@ -1900,23 +1913,23 @@ function GanttMini({
                                     style: {
                                       left: `${clampedPosition}%`,
                                       transform: 'translateX(-50%)',
-                                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1896}}
+                                    }}
 
                                     /* Vertical marker line */
-                                    , React.createElement('div', { className: "absolute top-0 bottom-0 left-1/2 w-0.5 bg-orange-500 shadow-md border-l border-r border-orange-600"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1905}} )
+                                    , React.createElement('div', { className: "absolute top-0 bottom-0 left-1/2 w-0.5 bg-orange-500 shadow-md border-l border-r border-orange-600"         } )
                                     /* Icon indicator at top */
-                                    , React.createElement('div', { className: "absolute -top-0.5 left-1/2 transform -translate-x-1/2 bg-orange-500 rounded-full p-0.5 shadow-md border border-orange-600"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1907}}
-                                      , React.createElement(AlertTriangle, { className: "h-1.5 w-1.5 text-white"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1908}} )
+                                    , React.createElement('div', { className: "absolute -top-0.5 left-1/2 transform -translate-x-1/2 bg-orange-500 rounded-full p-0.5 shadow-md border border-orange-600"          }
+                                      , React.createElement(AlertTriangle, { className: "h-1.5 w-1.5 text-white"  } )
                                     )
                                     /* Tooltip on hover */
-                                    , React.createElement('div', { className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-50 bg-gray-900 text-white text-[10px] rounded px-1.5 py-0.5 shadow-xl max-w-xs"                , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1911}}
-                                      , React.createElement('div', { className: "font-semibold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1912}}, "Delay")
-                                      , React.createElement('div', { className: "opacity-90", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1913}}, log.reason)
-                                      , React.createElement('div', { className: "opacity-75", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1914}}, log.delayDuration, "d")
+                                    , React.createElement('div', { className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block z-50 bg-gray-900 text-white text-[10px] rounded px-1.5 py-0.5 shadow-xl max-w-xs"                }
+                                      , React.createElement('div', { className: "font-semibold"}, "Delay")
+                                      , React.createElement('div', { className: "opacity-90"}, log.reason)
+                                      , React.createElement('div', { className: "opacity-75"}, log.delayDuration, "d")
                                       , log.imageUrl && (
-                                        React.createElement('div', { className: "mt-1 border-t border-gray-700 pt-1"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1916}}
-                                          , React.createElement('div', { className: "opacity-75 mb-1 flex items-center gap-1"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1917}}
-                                            , React.createElement(ImageIcon, { className: "h-2.5 w-2.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1918}} ), "Evidence:"
+                                        React.createElement('div', { className: "mt-1 border-t border-gray-700 pt-1"   }
+                                          , React.createElement('div', { className: "opacity-75 mb-1 flex items-center gap-1"    }
+                                            , React.createElement(ImageIcon, { className: "h-2.5 w-2.5" } ), "Evidence:"
 
                                           )
                                           , React.createElement('img', {
@@ -1936,7 +1949,7 @@ function GanttMini({
                                                 </html>
                                               `);
                                               }
-                                            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1921}}
+                                            }}
                                           )
                                         )
                                       )
@@ -1945,13 +1958,13 @@ function GanttMini({
                                 );
                               })
                               /* Text content: Actual / Planned */
-                              , React.createElement('div', { className: `${isMobile ? 'text-[7px]' : 'text-[8px]'} font-medium text-white truncate flex-1 pointer-events-none relative z-20 px-1.5 flex items-center h-full drop-shadow-md`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1947}}
-                                , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1948}}
-                                  , React.createElement('div', { className: "truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1949}}, childResponsible)
-                                  , React.createElement('div', { className: `${isMobile ? 'text-[6px]' : 'text-[7px]'} opacity-95 flex items-center gap-1`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1950}}
-                                    , React.createElement('span', { title: "Top = Planned"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1951}}, "P:", childPlannedPct, "%")
-                                    , React.createElement('span', { className: "opacity-60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1952}}, "|")
-                                    , React.createElement('span', { title: "Bottom = Actual"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1953}}, "A:", childProgress, "%")
+                              , React.createElement('div', { className: `${isMobile ? 'text-[7px]' : 'text-[8px]'} font-medium text-white truncate flex-1 pointer-events-none relative z-20 px-1.5 flex items-center h-full drop-shadow-md`}
+                                , React.createElement('div', { className: "flex-1 min-w-0" }
+                                  , React.createElement('div', { className: "truncate"}, childResponsible)
+                                  , React.createElement('div', { className: `${isMobile ? 'text-[6px]' : 'text-[7px]'} opacity-95 flex items-center gap-1`}
+                                    , React.createElement('span', { title: "Top = Planned"  }, "P:", childPlannedPct, "%")
+                                    , React.createElement('span', { className: "opacity-60"}, "|")
+                                    , React.createElement('span', { title: "Bottom = Actual"  }, "A:", childProgress, "%")
                                   )
                                 )
                               )
@@ -1959,19 +1972,19 @@ function GanttMini({
                           ); })()
                           )
                           /* Actions column for child row: options menu */
-                          , React.createElement('div', { className: "flex items-center justify-center border-border bg-muted/10 p-1"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1961}}
-                            , React.createElement(DropdownMenu, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1962}}
-                              , React.createElement(DropdownMenuTrigger, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1963}}
+                          , React.createElement('div', { className: "flex items-center justify-center border-border bg-muted/10 p-1"     }
+                            , React.createElement(DropdownMenu, {}
+                              , React.createElement(DropdownMenuTrigger, { asChild: true}
                                 , React.createElement('button', {
                                   type: "button",
                                   onClick: (e) => e.stopPropagation(),
                                   className: "h-7 w-7 rounded-md border border-border/60 bg-background hover:bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"            ,
-                                  title: "Options", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1964}}
+                                  title: "Options"}
 
-                                  , React.createElement(MoreVertical, { className: "h-3.5 w-3.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1970}} )
+                                  , React.createElement(MoreVertical, { className: "h-3.5 w-3.5" } )
                                 )
                               )
-                              , React.createElement(DropdownMenuContent, { align: "end", className: "w-56", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1973}}
+                              , React.createElement(DropdownMenuContent, { align: "end", className: "w-56"}
                                 , React.createElement(DropdownMenuItem, {
                                   onSelect: (e) => {
                                     e.preventDefault();
@@ -1982,9 +1995,9 @@ function GanttMini({
                                       endIdx: c.endIdx,
                                     });
                                     setRowAddLogOpen(true);
-                                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1974}}
+                                  }}
 
-                                  , React.createElement(Plus, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1986}} ), "Add delay log"
+                                  , React.createElement(Plus, { className: "h-4 w-4 mr-2"  } ), "Add delay log"
 
                                 )
                                 , onOpenAddPhoto && (
@@ -1992,9 +2005,9 @@ function GanttMini({
                                     onSelect: (e) => {
                                       e.preventDefault();
                                       onOpenAddPhoto(c.id, c.name);
-                                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1990}}
+                                    }}
 
-                                    , React.createElement(ImageIcon, { className: "h-4 w-4 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1996}} ), "Add Photo"
+                                    , React.createElement(ImageIcon, { className: "h-4 w-4 mr-2"  } ), "Add Photo"
 
                                   )
                                 )
@@ -2262,21 +2275,21 @@ export function MilestoneDetailsPanel({
   if (subProjects.length === 0 || timeline.length === 0) return null;
 
   return (
-    React.createElement(Card, { className: "border-2 border-primary/10" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2264}}
-      , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2265}}
-        , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2266}}
-          , React.createElement(CardTitle, { className: isMobile ? 'text-base' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 2267}}, milestoneTitle, " — Milestone KPIs"   )
+    React.createElement(Card, { className: "border-2 border-primary/10" }
+      , React.createElement(CardHeader, {}
+        , React.createElement('div', {}
+          , React.createElement(CardTitle, { className: isMobile ? 'text-base' : ''}, milestoneTitle, " â€” Milestone KPIs"   )
 
         )
       )
-      , React.createElement(CardContent, { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2271}}
+      , React.createElement(CardContent, { className: "space-y-4"}
         , showAllTabs ? (
           React.createElement(React.Fragment, null
             /* Show all charts side by side */
-            , React.createElement('div', { className: "grid grid-cols-1 lg:grid-cols-2 gap-6"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2275}}
+            , React.createElement('div', { className: "grid grid-cols-1 lg:grid-cols-2 gap-6"   }
               /* Gantt Chart */
-              , React.createElement('div', { className: "lg:col-span-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2277}}
-                , React.createElement('h3', { className: `${isMobile ? 'text-sm' : 'text-base'} font-bold mb-3`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2278}}, "Gantt Chart" )
+              , React.createElement('div', { className: "lg:col-span-1"}
+                , React.createElement('h3', { className: `${isMobile ? 'text-sm' : 'text-base'} font-bold mb-3`}, "Gantt Chart" )
                 , React.createElement(GanttMini, {
                   tasks: ganttTasks,
                   months: months,
@@ -2285,21 +2298,21 @@ export function MilestoneDetailsPanel({
                   delayLogs: delayLogs,
                   onAddDelayLog: handleAddDelayLog,
                   onDeleteDelayLog: handleDeleteDelayLog,
-                  onOpenAddPhoto: openAddPhotoFromGantt, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2279}}
+                  onOpenAddPhoto: openAddPhotoFromGantt}
                 )
                 /* Overall Progress Summary with Delay Impact - beneath Gantt chart */
                 /* Delay Logs removed (were hardcoded) */
               )
 
               /* WBS Breakdown */
-              , React.createElement('div', { className: "lg:col-span-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2294}}
-                , React.createElement('h3', { className: `${isMobile ? 'text-sm' : 'text-base'} font-bold mb-3`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2295}}, "WBS Breakdown" )
-                , React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2296}}
-                  , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2297}}
-                    , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold mb-2`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2298}}, "WBS Weight Distribution"  )
-                    , React.createElement('div', { className: `w-full ${isMobile ? 'h-[280px]' : isTablet ? 'h-[320px]' : 'h-[340px]'}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2299}}
-                      , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2300}}
-                        , React.createElement(PieChart, { margin: { top: isMobile ? 18 : 8, right: 0, bottom: 8, left: 0 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2301}}
+              , React.createElement('div', { className: "lg:col-span-1"}
+                , React.createElement('h3', { className: `${isMobile ? 'text-sm' : 'text-base'} font-bold mb-3`}, "WBS Breakdown" )
+                , React.createElement('div', { className: "space-y-6"}
+                  , React.createElement('div', {}
+                    , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold mb-2`}, "WBS Weight Distribution"  )
+                    , React.createElement('div', { className: `w-full ${isMobile ? 'h-[280px]' : isTablet ? 'h-[320px]' : 'h-[340px]'}`}
+                      , React.createElement(ResponsiveContainer, { width: "100%", height: "100%"}
+                        , React.createElement(PieChart, { margin: { top: isMobile ? 18 : 8, right: 0, bottom: 8, left: 0 }}
                           , React.createElement(Pie, {
                             data: wbsPieData,
                             dataKey: "value",
@@ -2308,12 +2321,12 @@ export function MilestoneDetailsPanel({
                             cy: isMobile ? "46%" : "50%",
                             outerRadius: isMobile ? 82 : isTablet ? 90 : 110,
                             labelLine: false,
-                            label: false, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2302}}
+                            label: false}
 
                             , wbsPieData.map((_, idx) => (
                               React.createElement(Cell, {
                                 key: idx,
-                                fill: `hsl(${Math.round((idx / Math.max(1, wbsPieData.length)) * 280)} 75% 55%)`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2313}}
+                                fill: `hsl(${Math.round((idx / Math.max(1, wbsPieData.length)) * 280)} 75% 55%)`}
                               )
                             ))
                           )
@@ -2325,7 +2338,7 @@ export function MilestoneDetailsPanel({
                               borderRadius: "8px",
                               fontSize: isMobile ? '10px' : '12px',
                               padding: isMobile ? '4px 6px' : '8px 12px'
-                            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2319}}
+                            }}
                           )
                           , !isMobile && (
                             React.createElement(Legend, {
@@ -2334,7 +2347,7 @@ export function MilestoneDetailsPanel({
                               },
                               iconSize: isTablet ? 11 : 12,
                               layout: "horizontal",
-                              verticalAlign: "top", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2330}}
+                              verticalAlign: "top"}
                             )
                           )
                         )
@@ -2342,20 +2355,20 @@ export function MilestoneDetailsPanel({
                     )
                     /* Mobile: render activity names as wrapped rows below the pie (avoid slice labels + avoid clipping) */
                     , isMobile && (
-                      React.createElement('div', { className: "mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-muted-foreground"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2344}}
+                      React.createElement('div', { className: "mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-muted-foreground"       }
                         , wbsPieData.map((it, idx) => (
-                          React.createElement('div', { key: it.name, className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2346}}
+                          React.createElement('div', { key: it.name, className: "flex items-center gap-2"  }
                             , React.createElement('span', {
                               className: "inline-block h-2.5 w-2.5 rounded-full"   ,
                               style: {
                                 backgroundColor: `hsl(${Math.round((idx / Math.max(1, wbsPieData.length)) * 280)} 75% 55%)`,
                               },
-                              'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2347}}
+                              'aria-hidden': true}
                             )
-                            , React.createElement('span', { className: "text-foreground/90", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2354}}
+                            , React.createElement('span', { className: "text-foreground/90"}
                               , it.name
                             )
-                            , React.createElement('span', { className: "tabular-nums", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2357}}
+                            , React.createElement('span', { className: "tabular-nums"}
                               , (it.value * 100).toFixed(0), "%"
                             )
                           )
@@ -2363,23 +2376,23 @@ export function MilestoneDetailsPanel({
                       )
                     )
                   )
-                  , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2365}}
-                    , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold mb-2`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2366}}, "WBS Subprocess KPIs"  )
-                    , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2367}}
+                  , React.createElement('div', {}
+                    , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold mb-2`}, "WBS Subprocess KPIs"  )
+                    , React.createElement('div', { className: "space-y-2"}
                       , adjustedSubProjects.map((s) => {
                         const variance = s.actualProgress - s.plannedProgress;
                         return (
-                          React.createElement('div', { key: s.id, className: `flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'} rounded-lg border border-border/50 ${isMobile ? 'p-2' : 'p-3'} bg-card/50`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2371}}
-                            , React.createElement('div', { className: "min-w-0 flex-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2372}}
-                              , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2373}}, s.name)
-                              , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} text-muted-foreground`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2374}}, "Weight " , (s.weight * 100).toFixed(0), "%")
+                          React.createElement('div', { key: s.id, className: `flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'} rounded-lg border border-border/50 ${isMobile ? 'p-2' : 'p-3'} bg-card/50`}
+                            , React.createElement('div', { className: "min-w-0 flex-1" }
+                              , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate`}, s.name)
+                              , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}, "Weight " , (s.weight * 100).toFixed(0), "%")
                             )
-                            , React.createElement('div', { className: `${isMobile ? 'text-left' : 'text-right'}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2376}}
-                              , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} text-muted-foreground`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2377}}, "Actual / Planned"  )
-                              , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-bold tabular-nums`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2378}}
+                            , React.createElement('div', { className: `${isMobile ? 'text-left' : 'text-right'}`}
+                              , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}, "Actual / Planned"  )
+                              , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-bold tabular-nums`}
                                 , s.actualProgress.toFixed(1), "% / "  , s.plannedProgress.toFixed(1), "%"
                               )
-                              , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} font-semibold ${variance >= 0 ? "text-emerald-600" : "text-red-600"}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2381}}
+                              , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} font-semibold ${variance >= 0 ? "text-emerald-600" : "text-red-600"}`}
                                 , variance >= 0 ? "+" : ""
                                 , variance.toFixed(1), "%"
                               )
@@ -2394,17 +2407,17 @@ export function MilestoneDetailsPanel({
             )
           )
         ) : (
-          React.createElement(Tabs, { value: tab, onValueChange: (v) => setTab(v ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2396}}
-            , React.createElement(TabsList, { className: `w-full ${isMobile ? 'flex items-center gap-1 overflow-x-auto whitespace-nowrap p-1' : 'flex flex-wrap justify-start gap-1'}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2397}}
-              , React.createElement(TabsTrigger, { value: "gantt", className: isMobile ? 'text-xs shrink-0 px-3' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 2398}}, "Gantt")
-              , React.createElement(TabsTrigger, { value: "wbs", className: isMobile ? 'text-xs shrink-0 px-3' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 2399}}, "WBS Breakdown" )
-              , React.createElement(TabsTrigger, { value: "photos", className: isMobile ? 'text-xs shrink-0 px-3' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 2400}}, "Photos & Docs"  )
-              , React.createElement(TabsTrigger, { value: "logs", className: isMobile ? 'text-xs shrink-0 px-3' : '', __self: this, __source: {fileName: _jsxFileName, lineNumber: 2401}}, "Delay Logs"
+          React.createElement(Tabs, { value: tab, onValueChange: (v) => setTab(v )}
+            , React.createElement(TabsList, { className: `w-full ${isMobile ? 'flex items-center gap-1 overflow-x-auto whitespace-nowrap p-1' : 'flex flex-wrap justify-start gap-1'}`}
+              , React.createElement(TabsTrigger, { value: "gantt", className: isMobile ? 'text-xs shrink-0 px-3' : ''}, "Gantt")
+              , React.createElement(TabsTrigger, { value: "wbs", className: isMobile ? 'text-xs shrink-0 px-3' : ''}, "WBS Breakdown" )
+              , React.createElement(TabsTrigger, { value: "photos", className: isMobile ? 'text-xs shrink-0 px-3' : ''}, "Photos & Docs"  )
+              , React.createElement(TabsTrigger, { value: "logs", className: isMobile ? 'text-xs shrink-0 px-3' : ''}, "Delay Logs"
 
               )
             )
 
-            , React.createElement(TabsContent, { value: "gantt", className: "mt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2406}}
+            , React.createElement(TabsContent, { value: "gantt", className: "mt-4"}
               , flatGanttTasks && flatGanttTasks.length > 0 ? (
                 React.createElement(ProjectGanttTree, {
                   tasks: flatGanttTasks ,
@@ -2412,7 +2425,7 @@ export function MilestoneDetailsPanel({
                   projectId: ganttProjectId,
                   onOpenAddDocument: openAddDocumentFromGantt,
                   onDelayLogSaved: onProjectGanttRefresh,
-                  onProgressSaved: onProjectGanttRefresh, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2408}}
+                  onProgressSaved: onProjectGanttRefresh}
                 )
               ) : (
                 React.createElement(React.Fragment, null
@@ -2424,20 +2437,20 @@ export function MilestoneDetailsPanel({
                     delayLogs: delayLogs,
                     onAddDelayLog: handleAddDelayLog,
                     onDeleteDelayLog: handleDeleteDelayLog,
-                    onOpenAddPhoto: openAddPhotoFromGantt, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2418}}
+                    onOpenAddPhoto: openAddPhotoFromGantt}
                   )
                   /* Delay Logs removed (were hardcoded) */
                 )
               )
             )
 
-            , React.createElement(TabsContent, { value: "wbs", className: "mt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2433}}
-              , React.createElement('div', { className: "space-y-6", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2434}}
-                , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2435}}
-                  , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold mb-2`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2436}}, "WBS Weight Distribution"  )
-                  , React.createElement('div', { className: `w-full ${isMobile ? 'h-[280px]' : isTablet ? 'h-[320px]' : 'h-[340px]'}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2437}}
-                    , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2438}}
-                      , React.createElement(PieChart, { margin: { top: isMobile ? 18 : 8, right: 0, bottom: 8, left: 0 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2439}}
+            , React.createElement(TabsContent, { value: "wbs", className: "mt-4"}
+              , React.createElement('div', { className: "space-y-6"}
+                , React.createElement('div', {}
+                  , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold mb-2`}, "WBS Weight Distribution"  )
+                  , React.createElement('div', { className: `w-full ${isMobile ? 'h-[280px]' : isTablet ? 'h-[320px]' : 'h-[340px]'}`}
+                    , React.createElement(ResponsiveContainer, { width: "100%", height: "100%"}
+                      , React.createElement(PieChart, { margin: { top: isMobile ? 18 : 8, right: 0, bottom: 8, left: 0 }}
                         , React.createElement(Pie, {
                           data: wbsPieData,
                           dataKey: "value",
@@ -2446,12 +2459,12 @@ export function MilestoneDetailsPanel({
                           cy: isMobile ? "46%" : "50%",
                           outerRadius: isMobile ? 82 : isTablet ? 90 : 110,
                           labelLine: false,
-                          label: false, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2440}}
+                          label: false}
 
                           , wbsPieData.map((_, idx) => (
                             React.createElement(Cell, {
                               key: idx,
-                              fill: `hsl(${Math.round((idx / Math.max(1, wbsPieData.length)) * 280)} 75% 55%)`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2451}}
+                              fill: `hsl(${Math.round((idx / Math.max(1, wbsPieData.length)) * 280)} 75% 55%)`}
                             )
                           ))
                         )
@@ -2463,7 +2476,7 @@ export function MilestoneDetailsPanel({
                             borderRadius: "8px",
                             fontSize: isMobile ? '10px' : '12px',
                             padding: isMobile ? '4px 6px' : '8px 12px'
-                          }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2457}}
+                          }}
                         )
                         , !isMobile && (
                           React.createElement(Legend, {
@@ -2472,7 +2485,7 @@ export function MilestoneDetailsPanel({
                             },
                             iconSize: isTablet ? 11 : 12,
                             layout: "horizontal",
-                            verticalAlign: "top", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2468}}
+                            verticalAlign: "top"}
                           )
                         )
                       )
@@ -2480,20 +2493,20 @@ export function MilestoneDetailsPanel({
                   )
                   /* Mobile: render activity names as wrapped rows below the pie (avoid slice labels + avoid clipping) */
                   , isMobile && (
-                    React.createElement('div', { className: "mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-muted-foreground"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2482}}
+                    React.createElement('div', { className: "mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-muted-foreground"       }
                       , wbsPieData.map((it, idx) => (
-                        React.createElement('div', { key: it.name, className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2484}}
+                        React.createElement('div', { key: it.name, className: "flex items-center gap-2"  }
                           , React.createElement('span', {
                             className: "inline-block h-2.5 w-2.5 rounded-full"   ,
                             style: {
                               backgroundColor: `hsl(${Math.round((idx / Math.max(1, wbsPieData.length)) * 280)} 75% 55%)`,
                             },
-                            'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2485}}
+                            'aria-hidden': true}
                           )
-                          , React.createElement('span', { className: "text-foreground/90", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2492}}
+                          , React.createElement('span', { className: "text-foreground/90"}
                             , it.name
                           )
-                          , React.createElement('span', { className: "tabular-nums", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2495}}
+                          , React.createElement('span', { className: "tabular-nums"}
                             , (it.value * 100).toFixed(0), "%"
                           )
                         )
@@ -2501,23 +2514,23 @@ export function MilestoneDetailsPanel({
                     )
                   )
                 )
-                , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2503}}
-                  , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold mb-2`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2504}}, "WBS Subprocess KPIs"  )
-                  , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2505}}
+                , React.createElement('div', {}
+                  , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold mb-2`}, "WBS Subprocess KPIs"  )
+                  , React.createElement('div', { className: "space-y-2"}
                     , subProjects.map((s) => {
                       const variance = s.actualProgress - s.plannedProgress;
                       return (
-                        React.createElement('div', { key: s.id, className: `flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'} rounded-lg border border-border/50 ${isMobile ? 'p-2' : 'p-3'} bg-card/50`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2509}}
-                          , React.createElement('div', { className: "min-w-0 flex-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2510}}
-                            , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2511}}, s.name)
-                            , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} text-muted-foreground`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2512}}, "Weight " , (s.weight * 100).toFixed(0), "%")
+                        React.createElement('div', { key: s.id, className: `flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'} rounded-lg border border-border/50 ${isMobile ? 'p-2' : 'p-3'} bg-card/50`}
+                          , React.createElement('div', { className: "min-w-0 flex-1" }
+                            , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate`}, s.name)
+                            , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}, "Weight " , (s.weight * 100).toFixed(0), "%")
                           )
-                          , React.createElement('div', { className: `${isMobile ? 'text-left' : 'text-right'}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2514}}
-                            , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} text-muted-foreground`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2515}}, "Actual / Planned"  )
-                            , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-bold tabular-nums`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2516}}
+                          , React.createElement('div', { className: `${isMobile ? 'text-left' : 'text-right'}`}
+                            , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}, "Actual / Planned"  )
+                            , React.createElement('div', { className: `${isMobile ? 'text-xs' : 'text-sm'} font-bold tabular-nums`}
                               , s.actualProgress.toFixed(1), "% / "  , s.plannedProgress.toFixed(1), "%"
                             )
-                            , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} font-semibold ${variance >= 0 ? "text-emerald-600" : "text-red-600"}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2519}}
+                            , React.createElement('div', { className: `${isMobile ? 'text-[10px]' : 'text-xs'} font-semibold ${variance >= 0 ? "text-emerald-600" : "text-red-600"}`}
                               , variance >= 0 ? "+" : ""
                               , variance.toFixed(1), "%"
                             )
@@ -2530,22 +2543,22 @@ export function MilestoneDetailsPanel({
               )
             )
 
-            , React.createElement(TabsContent, { value: "photos", className: "mt-4 space-y-6" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2532}}
-              /* Progress Photos — display only; upload via Gantt activity options (⋮) */
-              , React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2534}}
-                , React.createElement('h3', { className: "text-sm font-semibold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2535}}, "Progress Photos" )
+            , React.createElement(TabsContent, { value: "photos", className: "mt-4 space-y-6" }
+              /* Progress Photos â€” display only; upload via Gantt activity options (â‹®) */
+              , React.createElement('div', { className: "space-y-3"}
+                , React.createElement('h3', { className: "text-sm font-semibold" }, "Progress Photos" )
                 , apiProgressImagesLoading ? (
-                  React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2537}}
-                    , React.createElement(Skeleton, { className: "h-56 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2538}} )
-                    , React.createElement(Skeleton, { className: "h-56 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2539}} )
-                    , React.createElement(Skeleton, { className: "h-56 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2540}} )
+                  React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"    }
+                    , React.createElement(Skeleton, { className: "h-56 w-full" } )
+                    , React.createElement(Skeleton, { className: "h-56 w-full" } )
+                    , React.createElement(Skeleton, { className: "h-56 w-full" } )
                   )
                 ) : apiProgressImages.length === 0 ? (
-                  React.createElement('p', { className: "text-sm text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2543}}, "No photos yet. Use the options menu (⋮) on an activity in the Gantt chart to add a photo."
+                  React.createElement('p', { className: "text-sm text-muted-foreground" }, "No photos yet. Use the options menu (â‹®) on an activity in the Gantt chart to add a photo."
 
                   )
                 ) : (
-                  React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2547}}
+                  React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"    }
                     , [...apiProgressImages]
                       .sort((a, b) => String(b.uploaded_at).localeCompare(String(a.uploaded_at)))
                       .map((item) => {
@@ -2555,24 +2568,24 @@ export function MilestoneDetailsPanel({
                           ? uploaded.toLocaleString()
                           : String(item.uploaded_at);
                         return (
-                          React.createElement(Card, { key: item.id, className: "overflow-hidden border border-border/60"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2557}}
-                            , React.createElement('div', { className: "h-40 sm:h-44 relative bg-muted"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2558}}
+                          React.createElement(Card, { key: item.id, className: "overflow-hidden border border-border/60"  }
+                            , React.createElement('div', { className: "h-40 sm:h-44 relative bg-muted"   }
                               , React.createElement('img', {
                                 src: src,
                                 alt: item.caption || item.image_date,
                                 className: "w-full h-full object-cover"  ,
-                                loading: "lazy", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2559}}
+                                loading: "lazy"}
                               )
-                              , React.createElement('div', { className: "absolute top-1 right-1 flex gap-1"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2565}}
+                              , React.createElement('div', { className: "absolute top-1 right-1 flex gap-1"    }
                                 , React.createElement(Button, {
                                   type: "button",
                                   size: "icon",
                                   variant: "secondary",
                                   className: "h-7 w-7" ,
                                   onClick: () => window.open(src, "_blank"),
-                                  title: "Open", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2566}}
+                                  title: "Open"}
 
-                                  , React.createElement(ImageIcon, { className: "h-3.5 w-3.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2574}} )
+                                  , React.createElement(ImageIcon, { className: "h-3.5 w-3.5" } )
                                 )
                                 , React.createElement(Button, {
                                   type: "button",
@@ -2585,22 +2598,22 @@ export function MilestoneDetailsPanel({
                                     a.download = `progress-${item.image_date || item.id}.png`;
                                     a.click();
                                   },
-                                  title: "Download", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2576}}
+                                  title: "Download"}
 
-                                  , React.createElement(Download, { className: "h-3.5 w-3.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2589}} )
+                                  , React.createElement(Download, { className: "h-3.5 w-3.5" } )
                                 )
                               )
                             )
-                            , React.createElement(CardContent, { className: "p-3 space-y-2" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2593}}
-                              , React.createElement('div', { className: "text-sm font-semibold leading-snug line-clamp-2"   , title: _nullishCoalesce(item.caption, () => ( "")), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2594}}
-                                , item.caption || "—"
+                            , React.createElement(CardContent, { className: "p-3 space-y-2" }
+                              , React.createElement('div', { className: "text-sm font-semibold leading-snug line-clamp-2"   , title: _nullishCoalesce(item.caption, () => ( ""))}
+                                , item.caption || "â€”"
                               )
-                              , React.createElement('div', { className: "flex flex-wrap gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2597}}
+                              , React.createElement('div', { className: "flex flex-wrap gap-2"  }
                                 , React.createElement(Button, {
                                   type: "button",
                                   size: "sm",
                                   variant: "default",
-                                  className: "h-7 px-2.5 text-[11px] rounded-full bg-emerald-700 text-white hover:bg-emerald-700/90"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2598}}
+                                  className: "h-7 px-2.5 text-[11px] rounded-full bg-emerald-700 text-white hover:bg-emerald-700/90"      }
 
                                   , item.image_date
                                 )
@@ -2608,7 +2621,7 @@ export function MilestoneDetailsPanel({
                                   type: "button",
                                   size: "sm",
                                   variant: "outline",
-                                  className: "h-7 px-2.5 text-[11px] rounded-full border-emerald-200 text-emerald-800 hover:text-emerald-900"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2606}}
+                                  className: "h-7 px-2.5 text-[11px] rounded-full border-emerald-200 text-emerald-800 hover:text-emerald-900"      }
 , "Activity #"
                                    , item.activity
                                 )
@@ -2631,7 +2644,7 @@ export function MilestoneDetailsPanel({
                                       previewUrl: null,
                                     });
                                     setUpdateImageOpen(true);
-                                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2614}}
+                                  }}
 , "Update"
 
                                 )
@@ -2644,20 +2657,20 @@ export function MilestoneDetailsPanel({
                 )
               )
 
-              /* Documents — GET list-project-document (by project; each row shows activity id / Gantt label) */
-              , React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2647}}
-                , React.createElement('h3', { className: "text-sm font-semibold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2648}}, "Documents")
+              /* Documents â€” GET list-project-document (by project; each row shows activity id / Gantt label) */
+              , React.createElement('div', { className: "space-y-3"}
+                , React.createElement('h3', { className: "text-sm font-semibold" }, "Documents")
                 , apiProjectDocumentsLoading ? (
-                  React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2650}}
-                    , React.createElement(Skeleton, { className: "h-10 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2651}} )
-                    , React.createElement(Skeleton, { className: "h-10 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2652}} )
+                  React.createElement('div', { className: "space-y-2"}
+                    , React.createElement(Skeleton, { className: "h-10 w-full" } )
+                    , React.createElement(Skeleton, { className: "h-10 w-full" } )
                   )
                 ) : apiProjectDocuments.length === 0 ? (
-                  React.createElement('p', { className: "text-sm text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2655}}, "No documents yet. Use the options menu (⋮) on an activity in the Gantt chart to upload a file."
+                  React.createElement('p', { className: "text-sm text-muted-foreground" }, "No documents yet. Use the options menu (â‹®) on an activity in the Gantt chart to upload a file."
 
                   )
                 ) : (
-                  React.createElement('div', { className: "rounded-lg border border-border/60 divide-y divide-border/60"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2659}}
+                  React.createElement('div', { className: "rounded-lg border border-border/60 divide-y divide-border/60"    }
                     , [...apiProjectDocuments]
                       .sort((a, b) => String(_nullishCoalesce(b.uploaded_at, () => ( ""))).localeCompare(String(_nullishCoalesce(a.uploaded_at, () => ( "")))))
                       .map((item) => {
@@ -2667,7 +2680,7 @@ export function MilestoneDetailsPanel({
                             ? activityLabelByDbId.get(aid)
                             : aid != null
                               ? `Activity #${aid}`
-                              : "—";
+                              : "â€”";
                         const href =
                           item.file_url && String(item.file_url).startsWith("http")
                             ? item.file_url
@@ -2675,26 +2688,26 @@ export function MilestoneDetailsPanel({
                               ? mediaUrl(item.file)
                               : "";
                         return (
-                          React.createElement('div', { key: item.id, className: "flex flex-col gap-1 px-3 py-2.5 hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between sm:gap-3"         , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2677}}
-                            , React.createElement('div', { className: "flex items-start gap-2 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2678}}
-                              , React.createElement(FileText, { className: "h-4 w-4 text-muted-foreground shrink-0 mt-0.5"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2679}} )
-                              , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2680}}
-                                , React.createElement('div', { className: "text-sm font-medium truncate"  , title: _nullishCoalesce(item.title, () => ( undefined)), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2681}}
-                                  , item.title || "—"
+                          React.createElement('div', { key: item.id, className: "flex flex-col gap-1 px-3 py-2.5 hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between sm:gap-3"         }
+                            , React.createElement('div', { className: "flex items-start gap-2 min-w-0"   }
+                              , React.createElement(FileText, { className: "h-4 w-4 text-muted-foreground shrink-0 mt-0.5"    } )
+                              , React.createElement('div', { className: "min-w-0"}
+                                , React.createElement('div', { className: "text-sm font-medium truncate"  , title: _nullishCoalesce(item.title, () => ( undefined))}
+                                  , item.title || "â€”"
                                 )
-                                , React.createElement('div', { className: "text-[11px] text-muted-foreground truncate"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2684}}
+                                , React.createElement('div', { className: "text-[11px] text-muted-foreground truncate"  }
                                   , activityLabel
                                   , item.uploaded_at
-                                    ? ` · ${new Date(item.uploaded_at).toLocaleString()}`
+                                    ? ` Â· ${new Date(item.uploaded_at).toLocaleString()}`
                                     : ""
                                 )
                               )
                             )
-                            , React.createElement('div', { className: "flex items-center gap-1 shrink-0 pl-6 sm:pl-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2692}}
+                            , React.createElement('div', { className: "flex items-center gap-1 shrink-0 pl-6 sm:pl-0"     }
                               , href ? (
-                                React.createElement(Button, { type: "button", size: "sm", variant: "ghost", className: "h-8 gap-1" , asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2694}}
-                                  , React.createElement('a', { href: href, target: "_blank", rel: "noreferrer", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2695}}
-                                    , React.createElement(Download, { className: "h-3.5 w-3.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2696}} ), " Open"
+                                React.createElement(Button, { type: "button", size: "sm", variant: "ghost", className: "h-8 gap-1" , asChild: true}
+                                  , React.createElement('a', { href: href, target: "_blank", rel: "noreferrer"}
+                                    , React.createElement(Download, { className: "h-3.5 w-3.5" } ), " Open"
                                   )
                                 )
                               ) : null
@@ -2713,7 +2726,7 @@ export function MilestoneDetailsPanel({
                                     newFile: null,
                                   });
                                   setUpdateDocOpen(true);
-                                }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2700}}
+                                }}
 , "Update"
 
                               )
@@ -2726,37 +2739,37 @@ export function MilestoneDetailsPanel({
               )
             )
 
-            , React.createElement(TabsContent, { value: "logs", className: "mt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2728}}
+            , React.createElement(TabsContent, { value: "logs", className: "mt-4"}
               , apiDelayLogsLoading ? (
-                React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2730}}
-                  , React.createElement(Skeleton, { className: "h-5 w-56" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2731}} )
-                  , React.createElement(Skeleton, { className: "h-24 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2732}} )
-                  , React.createElement(Skeleton, { className: "h-24 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2733}} )
+                React.createElement('div', { className: "space-y-3"}
+                  , React.createElement(Skeleton, { className: "h-5 w-56" } )
+                  , React.createElement(Skeleton, { className: "h-24 w-full" } )
+                  , React.createElement(Skeleton, { className: "h-24 w-full" } )
                 )
               ) : apiDelayLogs.length === 0 ? (
-                React.createElement('div', { className: "text-center py-12 text-muted-foreground border border-border rounded-lg"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2736}}
-                  , React.createElement(AlertCircle, { className: "h-12 w-12 mx-auto mb-2 opacity-50"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2737}} )
-                  , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2738}}, "No delay logs recorded yet"    )
-                  , React.createElement('p', { className: "text-xs mt-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2739}}, "Delay logs will appear here when you log delays in the Gantt chart."            )
+                React.createElement('div', { className: "text-center py-12 text-muted-foreground border border-border rounded-lg"     }
+                  , React.createElement(AlertCircle, { className: "h-12 w-12 mx-auto mb-2 opacity-50"    } )
+                  , React.createElement('p', { className: "text-sm font-medium" }, "No delay logs recorded yet"    )
+                  , React.createElement('p', { className: "text-xs mt-1" }, "Delay logs will appear here when you log delays in the Gantt chart."            )
                 )
               ) : (
-                React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2742}}
-                  , React.createElement('div', { className: "flex items-center justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2743}}
-                    , React.createElement('div', { className: "text-sm text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2744}}
+                React.createElement('div', { className: "space-y-3"}
+                  , React.createElement('div', { className: "flex items-center justify-between gap-3"   }
+                    , React.createElement('div', { className: "text-sm text-muted-foreground" }
                       , apiDelayLogs.length, " delay log"  , apiDelayLogs.length !== 1 ? "s" : "", " recorded"
                     )
-                    , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2747}}
+                    , React.createElement('div', { className: "flex items-center gap-2"  }
                       , React.createElement(Button, {
                         type: "button",
                         size: "sm",
                         variant: "outline",
                         className: "h-8",
                         onClick: () => setDelayLogsPage((p) => Math.max(0, p - 1)),
-                        disabled: delayLogsPage <= 0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2748}}
+                        disabled: delayLogsPage <= 0}
 , "Prev"
 
                       )
-                      , React.createElement('div', { className: "text-xs text-muted-foreground tabular-nums min-w-[84px] text-center"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2758}}, "Page "
+                      , React.createElement('div', { className: "text-xs text-muted-foreground tabular-nums min-w-[84px] text-center"    }, "Page "
                          , delayLogsPage + 1, " / "  , delayLogsTotalPages
                       )
                       , React.createElement(Button, {
@@ -2765,14 +2778,14 @@ export function MilestoneDetailsPanel({
                         variant: "outline",
                         className: "h-8",
                         onClick: () => setDelayLogsPage((p) => Math.min(delayLogsTotalPages - 1, p + 1)),
-                        disabled: delayLogsPage >= delayLogsTotalPages - 1, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2761}}
+                        disabled: delayLogsPage >= delayLogsTotalPages - 1}
 , "Next"
 
                       )
                     )
                   )
 
-                  , React.createElement('div', { className: "grid gap-4 grid-cols-1 md:grid-cols-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2774}}
+                  , React.createElement('div', { className: "grid gap-4 grid-cols-1 md:grid-cols-3"   }
                     , pagedDelayLogs.map((log) => {
                       const created = new Date(log.created_at);
                       const createdLabel = Number.isFinite(created.getTime())
@@ -2782,7 +2795,7 @@ export function MilestoneDetailsPanel({
                         ? `${log.action_by_info.stakeholder_title} (${log.action_by_info.stakeholder_type})`
                         : log.action_by != null
                           ? `#${log.action_by}`
-                          : "—";
+                          : "â€”";
                       const severity =
                         log.delay_days >= 10 ? "high" : log.delay_days >= 5 ? "medium" : "low";
                       const severityStyles =
@@ -2807,27 +2820,27 @@ export function MilestoneDetailsPanel({
                       return (
                         React.createElement(Card, {
                           key: log.id,
-                          className: "overflow-hidden border border-border/60 bg-card shadow-sm hover:shadow-md transition-shadow"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2807}}
+                          className: "overflow-hidden border border-border/60 bg-card shadow-sm hover:shadow-md transition-shadow"      }
 
-                          , React.createElement(CardContent, { className: "p-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2811}}
-                            , React.createElement('div', { className: "flex", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2812}}
-                              , React.createElement('div', { className: `w-1.5 ${severityStyles.accent}`, 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2813}} )
-                              , React.createElement('div', { className: "flex-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2814}}
-                                , React.createElement('div', { className: "p-4 border-b border-border/60 bg-muted/15"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2815}}
-                                  , React.createElement('div', { className: "flex items-start justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2816}}
-                                    , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2817}}
-                                      , React.createElement('div', { className: "flex items-center gap-2 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2818}}
-                                        , React.createElement(AlertTriangle, { className: `h-4 w-4 ${severityStyles.icon} shrink-0`, 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2819}} )
-                                        , React.createElement('div', { className: "text-sm font-semibold truncate"  , title: `Activity #${log.activity}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2820}}, "Activity #"
+                          , React.createElement(CardContent, { className: "p-0"}
+                            , React.createElement('div', { className: "flex"}
+                              , React.createElement('div', { className: `w-1.5 ${severityStyles.accent}`, 'aria-hidden': true} )
+                              , React.createElement('div', { className: "flex-1"}
+                                , React.createElement('div', { className: "p-4 border-b border-border/60 bg-muted/15"   }
+                                  , React.createElement('div', { className: "flex items-start justify-between gap-3"   }
+                                    , React.createElement('div', { className: "min-w-0"}
+                                      , React.createElement('div', { className: "flex items-center gap-2 min-w-0"   }
+                                        , React.createElement(AlertTriangle, { className: `h-4 w-4 ${severityStyles.icon} shrink-0`, 'aria-hidden': true} )
+                                        , React.createElement('div', { className: "text-sm font-semibold truncate"  , title: `Activity #${log.activity}`}, "Activity #"
                                            , log.activity
                                         )
                                       )
-                                      , React.createElement('div', { className: "mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2824}}
-                                        , React.createElement(Calendar, { className: "h-3.5 w-3.5" , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2825}} )
+                                      , React.createElement('div', { className: "mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground"     }
+                                        , React.createElement(Calendar, { className: "h-3.5 w-3.5" , 'aria-hidden': true} )
                                         , createdLabel
                                       )
                                     )
-                                    , React.createElement('div', { className: "flex items-center gap-2 shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2829}}
+                                    , React.createElement('div', { className: "flex items-center gap-2 shrink-0"   }
                                       , React.createElement(Button, {
                                         type: "button",
                                         size: "sm",
@@ -2845,11 +2858,11 @@ export function MilestoneDetailsPanel({
                                             recommended_action: _nullishCoalesce(log.recommended_action, () => ( "")),
                                           });
                                           setUpdateDelayOpen(true);
-                                        }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2830}}
+                                        }}
 , "Update"
 
                                       )
-                                      , React.createElement(Badge, { className: `shrink-0 ${severityStyles.badge}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2851}}
+                                      , React.createElement(Badge, { className: `shrink-0 ${severityStyles.badge}`}
                                         , log.delay_days, " day" , log.delay_days !== 1 ? "s" : "", " delay"
                                       )
                                     )
@@ -2858,55 +2871,55 @@ export function MilestoneDetailsPanel({
                               )
                             )
 
-                            , React.createElement('div', { className: "p-4 space-y-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2860}}
-                              , React.createElement('div', { className: "grid grid-cols-2 gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2861}}
-                                , React.createElement('div', { className: "rounded-lg border border-border/60 bg-background p-2"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2862}}
-                                  , React.createElement('div', { className: "flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2863}}
-                                    , React.createElement(CalendarRange, { className: "h-3.5 w-3.5" , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2864}} ), "Start"
+                            , React.createElement('div', { className: "p-4 space-y-3" }
+                              , React.createElement('div', { className: "grid grid-cols-2 gap-2"  }
+                                , React.createElement('div', { className: "rounded-lg border border-border/60 bg-background p-2"    }
+                                  , React.createElement('div', { className: "flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase"      }
+                                    , React.createElement(CalendarRange, { className: "h-3.5 w-3.5" , 'aria-hidden': true} ), "Start"
 
                                   )
-                                  , React.createElement('div', { className: "text-xs font-medium mt-0.5"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2867}}, log.delay_start_date)
+                                  , React.createElement('div', { className: "text-xs font-medium mt-0.5"  }, log.delay_start_date)
                                 )
-                                , React.createElement('div', { className: "rounded-lg border border-border/60 bg-background p-2"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2869}}
-                                  , React.createElement('div', { className: "flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2870}}
-                                    , React.createElement(CalendarRange, { className: "h-3.5 w-3.5" , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2871}} ), "End"
+                                , React.createElement('div', { className: "rounded-lg border border-border/60 bg-background p-2"    }
+                                  , React.createElement('div', { className: "flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase"      }
+                                    , React.createElement(CalendarRange, { className: "h-3.5 w-3.5" , 'aria-hidden': true} ), "End"
 
                                   )
-                                  , React.createElement('div', { className: "text-xs font-medium mt-0.5"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2874}}, log.delay_end_date)
+                                  , React.createElement('div', { className: "text-xs font-medium mt-0.5"  }, log.delay_end_date)
                                 )
                               )
 
-                              , React.createElement('div', { className: "flex flex-wrap gap-2 text-xs"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2878}}
-                                , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2879}}
-                                  , React.createElement(Tag, { className: "h-3.5 w-3.5 text-muted-foreground"  , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2880}} )
-                                  , React.createElement('span', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2881}}, "Category")
-                                  , React.createElement('span', { className: "font-semibold text-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2882}}, _nullishCoalesce(log.category, () => ( "—")))
+                              , React.createElement('div', { className: "flex flex-wrap gap-2 text-xs"   }
+                                , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1"        }
+                                  , React.createElement(Tag, { className: "h-3.5 w-3.5 text-muted-foreground"  , 'aria-hidden': true} )
+                                  , React.createElement('span', { className: "text-muted-foreground"}, "Category")
+                                  , React.createElement('span', { className: "font-semibold text-foreground" }, _nullishCoalesce(log.category, () => ( "â€”")))
                                 )
-                                , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2884}}
-                                  , React.createElement(User, { className: "h-3.5 w-3.5 text-muted-foreground"  , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2885}} )
-                                  , React.createElement('span', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2886}}, "Originator")
-                                  , React.createElement('span', { className: "font-semibold text-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2887}}, _nullishCoalesce(log.originator, () => ( "—")))
+                                , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1"        }
+                                  , React.createElement(User, { className: "h-3.5 w-3.5 text-muted-foreground"  , 'aria-hidden': true} )
+                                  , React.createElement('span', { className: "text-muted-foreground"}, "Originator")
+                                  , React.createElement('span', { className: "font-semibold text-foreground" }, _nullishCoalesce(log.originator, () => ( "â€”")))
                                 )
-                                , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2889}}
-                                  , React.createElement(Building2, { className: "h-3.5 w-3.5 text-muted-foreground"  , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2890}} )
-                                  , React.createElement('span', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2891}}, "Action by" )
-                                  , React.createElement('span', { className: "font-semibold text-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2892}}, actionByLabel)
+                                , React.createElement('span', { className: "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1"        }
+                                  , React.createElement(Building2, { className: "h-3.5 w-3.5 text-muted-foreground"  , 'aria-hidden': true} )
+                                  , React.createElement('span', { className: "text-muted-foreground"}, "Action by" )
+                                  , React.createElement('span', { className: "font-semibold text-foreground" }, actionByLabel)
                                 )
                               )
 
-                              , React.createElement('div', { className: "grid gap-2" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2896}}
-                                , React.createElement('div', { className: "rounded-lg border border-border/60 bg-background p-3"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2897}}
-                                  , React.createElement('div', { className: "flex items-center justify-between gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2898}}
-                                    , React.createElement('div', { className: "text-[10px] font-semibold text-muted-foreground uppercase"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2899}}, "Issue")
+                              , React.createElement('div', { className: "grid gap-2" }
+                                , React.createElement('div', { className: "rounded-lg border border-border/60 bg-background p-3"    }
+                                  , React.createElement('div', { className: "flex items-center justify-between gap-2"   }
+                                    , React.createElement('div', { className: "text-[10px] font-semibold text-muted-foreground uppercase"   }, "Issue")
                                   )
-                                  , React.createElement('div', { className: "text-xs text-foreground/90 whitespace-pre-wrap mt-1 leading-relaxed"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2901}}
-                                    , _nullishCoalesce(log.issue, () => ( "—"))
+                                  , React.createElement('div', { className: "text-xs text-foreground/90 whitespace-pre-wrap mt-1 leading-relaxed"    }
+                                    , _nullishCoalesce(log.issue, () => ( "â€”"))
                                   )
                                 )
-                                , React.createElement('div', { className: "rounded-lg border border-border/60 bg-background p-3"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2905}}
-                                  , React.createElement('div', { className: "text-[10px] font-semibold text-muted-foreground uppercase"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2906}}, "Recommended action" )
-                                  , React.createElement('div', { className: "text-xs text-foreground/90 whitespace-pre-wrap mt-1 leading-relaxed"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2907}}
-                                    , _nullishCoalesce(log.recommended_action, () => ( "—"))
+                                , React.createElement('div', { className: "rounded-lg border border-border/60 bg-background p-3"    }
+                                  , React.createElement('div', { className: "text-[10px] font-semibold text-muted-foreground uppercase"   }, "Recommended action" )
+                                  , React.createElement('div', { className: "text-xs text-foreground/90 whitespace-pre-wrap mt-1 leading-relaxed"    }
+                                    , _nullishCoalesce(log.recommended_action, () => ( "â€”"))
                                   )
                                 )
                               )
@@ -2924,11 +2937,11 @@ export function MilestoneDetailsPanel({
       )
 
       /* Add Photo dialog (opened from Gantt activity options) */
-      , React.createElement(Dialog, { open: addPhotoDialogOpen, onOpenChange: (open) => { if (!open) closePhotoDialog(); }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2926}}
-        , React.createElement(DialogContent, { className: "sm:max-w-md", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2927}}
-          , React.createElement(DialogHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2928}}
-            , React.createElement(DialogTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2929}}, "Add Photo" )
-            , React.createElement(DialogDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2930}}
+      , React.createElement(Dialog, { open: addPhotoDialogOpen, onOpenChange: (open) => { if (!open) closePhotoDialog(); }}
+        , React.createElement(DialogContent, { className: "sm:max-w-md"}
+          , React.createElement(DialogHeader, {}
+            , React.createElement(DialogTitle, {}, "Add Photo" )
+            , React.createElement(DialogDescription, {}
               , selectedTaskForMedia ? `Add a progress photo for: ${selectedTaskForMedia.taskName}` : "Add a progress photo. Set the progress date for the timeline."
             )
           )
@@ -2941,56 +2954,56 @@ export function MilestoneDetailsPanel({
               const file = _optionalChain([e, 'access', _48 => _48.target, 'access', _49 => _49.files, 'optionalAccess', _50 => _50[0]]);
               if (file) setPhotoDialogForm({ file, objectUrl: URL.createObjectURL(file), date: new Date().toISOString().slice(0, 10), caption: "" });
               e.target.value = "";
-            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2934}}
+            }}
           )
           , photoDialogForm ? (
-            React.createElement('div', { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2946}}
-              , React.createElement('div', { className: "flex gap-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2947}}
-                , React.createElement('div', { className: "shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-muted border"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2948}}
-                  , React.createElement('img', { src: photoDialogForm.objectUrl, alt: "Preview", className: "w-full h-full object-cover"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2949}} )
+            React.createElement('div', { className: "space-y-4"}
+              , React.createElement('div', { className: "flex gap-4" }
+                , React.createElement('div', { className: "shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-muted border"      }
+                  , React.createElement('img', { src: photoDialogForm.objectUrl, alt: "Preview", className: "w-full h-full object-cover"  } )
                 )
-                , React.createElement('div', { className: "flex-1 space-y-3" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2951}}
-                  , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2952}}
-                    , React.createElement(Label, { className: "text-xs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2953}}, "Progress date (timeline)"  )
+                , React.createElement('div', { className: "flex-1 space-y-3" }
+                  , React.createElement('div', {}
+                    , React.createElement(Label, { className: "text-xs"}, "Progress date (timeline)"  )
                     , React.createElement(Input, {
                       type: "date",
                       value: photoDialogForm.date,
                       onChange: (e) => setPhotoDialogForm((p) => (p ? { ...p, date: e.target.value } : null)),
-                      className: "mt-1 h-9" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2954}}
+                      className: "mt-1 h-9" }
                     )
                   )
-                  , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2961}}
-                    , React.createElement(Label, { className: "text-xs", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2962}}, "Caption (optional)" )
+                  , React.createElement('div', {}
+                    , React.createElement(Label, { className: "text-xs"}, "Caption (optional)" )
                     , React.createElement(Input, {
                       placeholder: "e.g. Site visit"  ,
                       value: photoDialogForm.caption,
                       onChange: (e) => setPhotoDialogForm((p) => (p ? { ...p, caption: e.target.value } : null)),
-                      className: "mt-1 h-9" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2963}}
+                      className: "mt-1 h-9" }
                     )
                   )
                 )
               )
-              , React.createElement(DialogFooter, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2972}}
-                , React.createElement(Button, { type: "button", variant: "ghost", onClick: closePhotoDialog, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2973}}, "Cancel")
-                , React.createElement(Button, { type: "button", onClick: closePhotoDialog, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2974}}, "Close")
+              , React.createElement(DialogFooter, {}
+                , React.createElement(Button, { type: "button", variant: "ghost", onClick: closePhotoDialog}, "Cancel")
+                , React.createElement(Button, { type: "button", onClick: closePhotoDialog}, "Close")
               )
             )
           ) : (
-            React.createElement('div', { className: "py-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2978}}
-              , React.createElement(Button, { type: "button", variant: "outline", className: "w-full gap-2" , onClick: () => _optionalChain([photoDialogInputRef, 'access', _51 => _51.current, 'optionalAccess', _52 => _52.click, 'call', _53 => _53()]), __self: this, __source: {fileName: _jsxFileName, lineNumber: 2979}}
-                , React.createElement(Upload, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2980}} ), " Choose image"
+            React.createElement('div', { className: "py-4"}
+              , React.createElement(Button, { type: "button", variant: "outline", className: "w-full gap-2" , onClick: () => _optionalChain([photoDialogInputRef, 'access', _51 => _51.current, 'optionalAccess', _52 => _52.click, 'call', _53 => _53()])}
+                , React.createElement(Upload, { className: "h-4 w-4" } ), " Choose image"
               )
             )
           )
         )
       )
 
-      /* Add Documents dialog (opened from Gantt activity options) — POST create-project-document */
-      , React.createElement(Dialog, { open: addDocumentDialogOpen, onOpenChange: (open) => { if (!open) closeDocumentDialog(); }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2988}}
-        , React.createElement(DialogContent, { className: "sm:max-w-md", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2989}}
-          , React.createElement(DialogHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2990}}
-            , React.createElement(DialogTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2991}}, "Add document" )
-            , React.createElement(DialogDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2992}}
+      /* Add Documents dialog (opened from Gantt activity options) â€” POST create-project-document */
+      , React.createElement(Dialog, { open: addDocumentDialogOpen, onOpenChange: (open) => { if (!open) closeDocumentDialog(); }}
+        , React.createElement(DialogContent, { className: "sm:max-w-md"}
+          , React.createElement(DialogHeader, {}
+            , React.createElement(DialogTitle, {}, "Add document" )
+            , React.createElement(DialogDescription, {}
               , selectedTaskForMedia
                 ? `Attach a file to: ${selectedTaskForMedia.taskName}`
                 : "Upload a project document."
@@ -3038,16 +3051,16 @@ export function MilestoneDetailsPanel({
               } finally {
                 setDocumentUploading(false);
               }
-            }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2998}}
+            }}
           )
-          , React.createElement('div', { className: "space-y-4 py-2" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3042}}
-            , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3043}}
-              , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3044}}, "Title")
+          , React.createElement('div', { className: "space-y-4 py-2" }
+            , React.createElement('div', { className: "space-y-1.5"}
+              , React.createElement(Label, {}, "Title")
               , React.createElement(Input, {
                 placeholder: "e.g. Site handover checklist"   ,
                 value: documentTitle,
                 onChange: (e) => setDocumentTitle(e.target.value),
-                disabled: documentUploading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3045}}
+                disabled: documentUploading}
               )
             )
             , React.createElement(Button, {
@@ -3055,11 +3068,11 @@ export function MilestoneDetailsPanel({
               variant: "outline",
               className: "w-full gap-2" ,
               disabled: documentUploading,
-              onClick: () => _optionalChain([docDialogInputRef, 'access', _58 => _58.current, 'optionalAccess', _59 => _59.click, 'call', _60 => _60()]), __self: this, __source: {fileName: _jsxFileName, lineNumber: 3052}}
+              onClick: () => _optionalChain([docDialogInputRef, 'access', _58 => _58.current, 'optionalAccess', _59 => _59.click, 'call', _60 => _60()])}
 
-              , React.createElement(Upload, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3059}} ), " " , documentUploading ? "Uploading…" : "Choose file & upload"
+              , React.createElement(Upload, { className: "h-4 w-4" } ), " " , documentUploading ? "Uploadingâ€¦" : "Choose file & upload"
             )
-            , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3061}}, "Allowed types: PDF, Word (.doc/.docx), Excel (.xlsx). The server saves the file against this activity."
+            , React.createElement('p', { className: "text-xs text-muted-foreground" }, "Allowed types: PDF, Word (.doc/.docx), Excel (.xlsx). The server saves the file against this activity."
 
             )
           )
@@ -3067,45 +3080,45 @@ export function MilestoneDetailsPanel({
       )
 
       /* Update Progress Image dialog (from Photos & Docs grid) */
-      , React.createElement(Dialog, { open: updateImageOpen, onOpenChange: (open) => { if (!open) closeUpdateImageDialog(); }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3069}}
-        , React.createElement(DialogContent, { className: "w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3070}}
-          , React.createElement(DialogHeader, { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3071}}
-            , React.createElement(DialogTitle, { className: "text-xl font-bold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3072}}, "Update Progress Image"  )
-            , React.createElement(DialogDescription, { className: "text-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3073}}, "Update caption/date/activity or replace the image file."
+      , React.createElement(Dialog, { open: updateImageOpen, onOpenChange: (open) => { if (!open) closeUpdateImageDialog(); }}
+        , React.createElement(DialogContent, { className: "w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto"   }
+          , React.createElement(DialogHeader, { className: "space-y-2"}
+            , React.createElement(DialogTitle, { className: "text-xl font-bold" }, "Update Progress Image"  )
+            , React.createElement(DialogDescription, { className: "text-sm"}, "Update caption/date/activity or replace the image file."
 
             )
           )
 
           , updateImageForm ? (
-            React.createElement('div', { className: "space-y-5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3079}}
-              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3080}}
-                , React.createElement('div', { className: "space-y-1.5 sm:col-span-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3081}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3082}}, "Project")
-                  , React.createElement(Input, { value: String(updateImageForm.project), readOnly: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3083}} )
+            React.createElement('div', { className: "space-y-5"}
+              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-3"  }
+                , React.createElement('div', { className: "space-y-1.5 sm:col-span-1" }
+                  , React.createElement(Label, {}, "Project")
+                  , React.createElement(Input, { value: String(updateImageForm.project), readOnly: true} )
                 )
-                , React.createElement('div', { className: "space-y-1.5 sm:col-span-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3085}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3086}}, "Activity")
+                , React.createElement('div', { className: "space-y-1.5 sm:col-span-1" }
+                  , React.createElement(Label, {}, "Activity")
                   , React.createElement(Input, {
                     type: "number",
                     value: String(updateImageForm.activity),
                     onChange: (e) =>
                       setUpdateImageForm((p) => (p ? { ...p, activity: Number(e.target.value || 0) } : p))
-                    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3087}}
+                    }
                   )
                 )
-                , React.createElement('div', { className: "space-y-1.5 sm:col-span-1" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3095}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3096}}, "Image date" )
+                , React.createElement('div', { className: "space-y-1.5 sm:col-span-1" }
+                  , React.createElement(Label, {}, "Image date" )
                   , React.createElement(Input, {
                     type: "date",
                     value: updateImageForm.image_date,
-                    onChange: (e) => setUpdateImageForm((p) => (p ? { ...p, image_date: e.target.value } : p)), __self: this, __source: {fileName: _jsxFileName, lineNumber: 3097}}
+                    onChange: (e) => setUpdateImageForm((p) => (p ? { ...p, image_date: e.target.value } : p))}
                   )
                 )
               )
 
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3105}}
-                , React.createElement('div', { className: "flex items-center justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3106}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3107}}, "Image")
+              , React.createElement('div', { className: "space-y-2"}
+                , React.createElement('div', { className: "flex items-center justify-between gap-3"   }
+                  , React.createElement(Label, {}, "Image")
                   , updateImageForm.newImageFile ? (
                     React.createElement(Button, {
                       type: "button",
@@ -3118,34 +3131,34 @@ export function MilestoneDetailsPanel({
                           if (p.previewUrl) URL.revokeObjectURL(p.previewUrl);
                           return { ...p, newImageFile: null, previewUrl: null };
                         });
-                      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3109}}
+                      }}
 , "Remove selected"
 
                     )
                   ) : (
-                    React.createElement('span', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3125}}, "Optional: replace file"  )
+                    React.createElement('span', { className: "text-xs text-muted-foreground" }, "Optional: replace file"  )
                   )
                 )
 
-                , React.createElement('div', { className: "grid gap-4 lg:grid-cols-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3129}}
-                  , React.createElement('div', { className: "rounded-xl border border-border/60 overflow-hidden bg-muted/30"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3130}}
-                    , React.createElement('div', { className: "px-4 py-2 text-xs font-semibold text-muted-foreground border-b border-border/50 bg-background/50 flex items-center justify-between"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3131}}
-                      , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3132}}, updateImageForm.newImageFile ? "New preview" : "Current image")
-                      , React.createElement('span', { className: "text-[11px] font-normal" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3133}}, "ID #" , updateImageForm.id)
+                , React.createElement('div', { className: "grid gap-4 lg:grid-cols-2"  }
+                  , React.createElement('div', { className: "rounded-xl border border-border/60 overflow-hidden bg-muted/30"    }
+                    , React.createElement('div', { className: "px-4 py-2 text-xs font-semibold text-muted-foreground border-b border-border/50 bg-background/50 flex items-center justify-between"          }
+                      , React.createElement('span', {}, updateImageForm.newImageFile ? "New preview" : "Current image")
+                      , React.createElement('span', { className: "text-[11px] font-normal" }, "ID #" , updateImageForm.id)
                     )
-                    , React.createElement('div', { className: "p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3135}}
-                      , React.createElement('div', { className: "rounded-lg overflow-hidden bg-muted"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3136}}
+                    , React.createElement('div', { className: "p-3"}
+                      , React.createElement('div', { className: "rounded-lg overflow-hidden bg-muted"  }
                         , React.createElement('img', {
                           src: updateImageForm.previewUrl || updateImageForm.currentImageUrl,
                           alt: "Preview",
                           className: "w-full h-56 object-cover"  ,
-                          loading: "lazy", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3137}}
+                          loading: "lazy"}
                         )
                       )
                     )
                   )
 
-                  , React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3147}}
+                  , React.createElement('div', { className: "space-y-3"}
                     , React.createElement('input', {
                       id: "update-progress-image-file",
                       type: "file",
@@ -3163,7 +3176,7 @@ export function MilestoneDetailsPanel({
                           };
                         });
                         e.target.value = "";
-                      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3148}}
+                      }}
                     )
 
                     , React.createElement('div', {
@@ -3180,43 +3193,43 @@ export function MilestoneDetailsPanel({
                           e.preventDefault();
                           _optionalChain([document, 'access', _68 => _68.getElementById, 'call', _69 => _69("update-progress-image-file"), 'optionalAccess', _70 => _70.click, 'call', _71 => _71()]);
                         }
-                      }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3168}}
+                      }}
 
-                      , React.createElement('div', { className: "flex items-center gap-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3184}}
-                        , React.createElement('div', { className: "shrink-0 rounded-lg bg-background p-2 border border-border/60"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3185}}
-                          , React.createElement(Upload, { className: "h-5 w-5 text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3186}} )
+                      , React.createElement('div', { className: "flex items-center gap-3"  }
+                        , React.createElement('div', { className: "shrink-0 rounded-lg bg-background p-2 border border-border/60"     }
+                          , React.createElement(Upload, { className: "h-5 w-5 text-muted-foreground"  } )
                         )
-                        , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3188}}
-                          , React.createElement('div', { className: "text-sm font-semibold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3189}}
+                        , React.createElement('div', { className: "min-w-0"}
+                          , React.createElement('div', { className: "text-sm font-semibold" }
                             , updateImageForm.newImageFile ? "Selected file" : "Click to choose a new image"
                           )
-                          , React.createElement('div', { className: "text-xs text-muted-foreground mt-0.5"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3192}}
+                          , React.createElement('div', { className: "text-xs text-muted-foreground mt-0.5"  }
                             , updateImageForm.newImageFile ? updateImageForm.newImageFile.name : "PNG, JPG, JPEG"
                           )
                         )
                       )
-                      , React.createElement('div', { className: "mt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3197}}
-                        , React.createElement(Button, { type: "button", variant: "outline", size: "sm", className: "h-9 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3198}}
+                      , React.createElement('div', { className: "mt-4"}
+                        , React.createElement(Button, { type: "button", variant: "outline", size: "sm", className: "h-9 w-full" }
                           , updateImageForm.newImageFile ? "Change file" : "Choose file"
                         )
                       )
                     )
 
-                    , React.createElement('div', { className: "rounded-xl border border-border/60 p-4 bg-background/40"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3204}}
-                      , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3205}}, "Caption")
+                    , React.createElement('div', { className: "rounded-xl border border-border/60 p-4 bg-background/40"    }
+                      , React.createElement(Label, {}, "Caption")
                       , React.createElement(Textarea, {
                         className: "mt-2",
                         value: updateImageForm.caption,
                         onChange: (e) => setUpdateImageForm((p) => (p ? { ...p, caption: e.target.value } : p)),
-                        rows: 4, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3206}}
+                        rows: 4}
                       )
                     )
                   )
                 )
               )
 
-              , React.createElement(DialogFooter, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3217}}
-                , React.createElement(Button, { type: "button", variant: "outline", onClick: closeUpdateImageDialog, disabled: updatingImage, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3218}}, "Cancel"
+              , React.createElement(DialogFooter, {}
+                , React.createElement(Button, { type: "button", variant: "outline", onClick: closeUpdateImageDialog, disabled: updatingImage}, "Cancel"
 
                 )
                 , React.createElement(Button, {
@@ -3238,7 +3251,7 @@ export function MilestoneDetailsPanel({
                     } finally {
                       setUpdatingImage(false);
                     }
-                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3221}}
+                  }}
 
                   , updatingImage ? "Updating..." : "Update"
                 )
@@ -3249,76 +3262,76 @@ export function MilestoneDetailsPanel({
       )
 
       /* Update Delay Log dialog (from Delay Logs cards) */
-      , React.createElement(Dialog, { open: updateDelayOpen, onOpenChange: (open) => { if (!open) closeUpdateDelayDialog(); }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3251}}
-        , React.createElement(DialogContent, { className: "w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3252}}
-          , React.createElement(DialogHeader, { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3253}}
-            , React.createElement(DialogTitle, { className: "text-xl font-bold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3254}}, "Update Delay Log"  )
-            , React.createElement(DialogDescription, { className: "text-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3255}}, "Update the delay details for this activity."
+      , React.createElement(Dialog, { open: updateDelayOpen, onOpenChange: (open) => { if (!open) closeUpdateDelayDialog(); }}
+        , React.createElement(DialogContent, { className: "w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto"   }
+          , React.createElement(DialogHeader, { className: "space-y-2"}
+            , React.createElement(DialogTitle, { className: "text-xl font-bold" }, "Update Delay Log"  )
+            , React.createElement(DialogDescription, { className: "text-sm"}, "Update the delay details for this activity."
 
             )
           )
 
           , updateDelayForm ? (
-            React.createElement('div', { className: "space-y-5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3261}}
-              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3262}}
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3263}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3264}}, "Project")
-                  , React.createElement(Input, { value: String(updateDelayForm.project), readOnly: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3265}} )
+            React.createElement('div', { className: "space-y-5"}
+              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-3"  }
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Project")
+                  , React.createElement(Input, { value: String(updateDelayForm.project), readOnly: true} )
                 )
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3267}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3268}}, "Activity")
-                  , React.createElement(Input, { value: String(updateDelayForm.activity), readOnly: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3269}} )
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Activity")
+                  , React.createElement(Input, { value: String(updateDelayForm.activity), readOnly: true} )
                 )
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3271}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3272}}, "Category")
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Category")
                   , React.createElement(Input, {
                     value: updateDelayForm.category,
                     onChange: (e) => setUpdateDelayForm((p) => (p ? { ...p, category: e.target.value } : p)),
-                    placeholder: "e.g. Utility shifting"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3273}}
+                    placeholder: "e.g. Utility shifting"  }
                   )
                 )
               )
 
-              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3281}}
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3282}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3283}}, "Delay start date"  )
+              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2"  }
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Delay start date"  )
                   , React.createElement(Input, {
                     type: "date",
                     value: updateDelayForm.delay_start_date,
-                    onChange: (e) => setUpdateDelayForm((p) => (p ? { ...p, delay_start_date: e.target.value } : p)), __self: this, __source: {fileName: _jsxFileName, lineNumber: 3284}}
+                    onChange: (e) => setUpdateDelayForm((p) => (p ? { ...p, delay_start_date: e.target.value } : p))}
                   )
                 )
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3290}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3291}}, "Delay end date"  )
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Delay end date"  )
                   , React.createElement(Input, {
                     type: "date",
                     value: updateDelayForm.delay_end_date,
-                    onChange: (e) => setUpdateDelayForm((p) => (p ? { ...p, delay_end_date: e.target.value } : p)), __self: this, __source: {fileName: _jsxFileName, lineNumber: 3292}}
+                    onChange: (e) => setUpdateDelayForm((p) => (p ? { ...p, delay_end_date: e.target.value } : p))}
                   )
                 )
               )
 
-              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3300}}
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3301}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3302}}, "Issue")
+              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2"  }
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Issue")
                   , React.createElement(Textarea, {
                     value: updateDelayForm.issue,
                     onChange: (e) => setUpdateDelayForm((p) => (p ? { ...p, issue: e.target.value } : p)),
-                    rows: 4, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3303}}
+                    rows: 4}
                   )
                 )
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3309}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3310}}, "Recommended action" )
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Recommended action" )
                   , React.createElement(Textarea, {
                     value: updateDelayForm.recommended_action,
                     onChange: (e) => setUpdateDelayForm((p) => (p ? { ...p, recommended_action: e.target.value } : p)),
-                    rows: 4, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3311}}
+                    rows: 4}
                   )
                 )
               )
 
-              , React.createElement(DialogFooter, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3319}}
-                , React.createElement(Button, { type: "button", variant: "outline", onClick: closeUpdateDelayDialog, disabled: updatingDelay, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3320}}, "Cancel"
+              , React.createElement(DialogFooter, {}
+                , React.createElement(Button, { type: "button", variant: "outline", onClick: closeUpdateDelayDialog, disabled: updatingDelay}, "Cancel"
 
                 )
                 , React.createElement(Button, {
@@ -3348,7 +3361,7 @@ export function MilestoneDetailsPanel({
                     } finally {
                       setUpdatingDelay(false);
                     }
-                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3323}}
+                  }}
 
                   , updatingDelay ? "Updating..." : "Update"
                 )
@@ -3359,64 +3372,64 @@ export function MilestoneDetailsPanel({
       )
 
       /* Update Project Document dialog (from Documents list) */
-      , React.createElement(Dialog, { open: updateDocOpen, onOpenChange: (open) => { if (!open) closeUpdateDocDialog(); }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3361}}
-        , React.createElement(DialogContent, { className: "w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3362}}
-          , React.createElement(DialogHeader, { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3363}}
-            , React.createElement(DialogTitle, { className: "text-xl font-bold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3364}}, "Update Document" )
-            , React.createElement(DialogDescription, { className: "text-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3365}}, "Update the document title or replace the file."
+      , React.createElement(Dialog, { open: updateDocOpen, onOpenChange: (open) => { if (!open) closeUpdateDocDialog(); }}
+        , React.createElement(DialogContent, { className: "w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto"   }
+          , React.createElement(DialogHeader, { className: "space-y-2"}
+            , React.createElement(DialogTitle, { className: "text-xl font-bold" }, "Update Document" )
+            , React.createElement(DialogDescription, { className: "text-sm"}, "Update the document title or replace the file."
 
             )
           )
 
           , updateDocForm ? (
-            React.createElement('div', { className: "space-y-5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3371}}
-              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3372}}
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3373}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3374}}, "Project")
-                  , React.createElement(Input, { value: String(updateDocForm.project), readOnly: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3375}} )
+            React.createElement('div', { className: "space-y-5"}
+              , React.createElement('div', { className: "grid gap-4 sm:grid-cols-3"  }
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Project")
+                  , React.createElement(Input, { value: String(updateDocForm.project), readOnly: true} )
                 )
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3377}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3378}}, "Activity")
-                  , React.createElement(Input, { value: updateDocForm.activity != null ? String(updateDocForm.activity) : "—", readOnly: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3379}} )
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Activity")
+                  , React.createElement(Input, { value: updateDocForm.activity != null ? String(updateDocForm.activity) : "â€”", readOnly: true} )
                 )
-                , React.createElement('div', { className: "space-y-1.5", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3381}}
-                  , React.createElement(Label, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3382}}, "Title")
+                , React.createElement('div', { className: "space-y-1.5"}
+                  , React.createElement(Label, {}, "Title")
                   , React.createElement(Input, {
                     value: updateDocForm.title,
                     onChange: (e) => setUpdateDocForm((p) => (p ? { ...p, title: e.target.value } : p)),
-                    placeholder: "e.g. Site Book"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3383}}
+                    placeholder: "e.g. Site Book"  }
                   )
                 )
               )
 
-              , React.createElement('div', { className: "rounded-xl border border-border/60 p-4 bg-background/40 space-y-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3391}}
-                , React.createElement('div', { className: "flex items-center justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3392}}
-                  , React.createElement('div', { className: "text-sm font-semibold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3393}}, "File")
+              , React.createElement('div', { className: "rounded-xl border border-border/60 p-4 bg-background/40 space-y-3"     }
+                , React.createElement('div', { className: "flex items-center justify-between gap-3"   }
+                  , React.createElement('div', { className: "text-sm font-semibold" }, "File")
                   , updateDocForm.currentUrl ? (
-                    React.createElement(Button, { type: "button", size: "sm", variant: "outline", className: "h-8", asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3395}}
-                      , React.createElement('a', { href: updateDocForm.currentUrl, target: "_blank", rel: "noreferrer", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3396}}
-                        , React.createElement(Download, { className: "h-3.5 w-3.5 mr-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3397}} ), " Open current"
+                    React.createElement(Button, { type: "button", size: "sm", variant: "outline", className: "h-8", asChild: true}
+                      , React.createElement('a', { href: updateDocForm.currentUrl, target: "_blank", rel: "noreferrer"}
+                        , React.createElement(Download, { className: "h-3.5 w-3.5 mr-1"  } ), " Open current"
                       )
                     )
                   ) : null
                 )
-                , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3402}}
-                  , React.createElement('div', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3403}}
+                , React.createElement('div', { className: "space-y-2"}
+                  , React.createElement('div', { className: "text-xs text-muted-foreground" }
                     , (() => {
                       const u = updateDocForm.currentUrl || "";
                       const name = u ? u.split("/").pop() : "";
-                      const label = name ? decodeURIComponent(name) : "—";
+                      const label = name ? decodeURIComponent(name) : "â€”";
                       return (
-                        React.createElement('span', { className: "inline-flex items-center gap-2 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3409}}
-                          , React.createElement('span', { className: "shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3410}}, "Current:")
-                          , React.createElement('span', { className: "font-medium text-foreground truncate max-w-[520px]"   , title: label, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3411}}
+                        React.createElement('span', { className: "inline-flex items-center gap-2 min-w-0"   }
+                          , React.createElement('span', { className: "shrink-0"}, "Current:")
+                          , React.createElement('span', { className: "font-medium text-foreground truncate max-w-[520px]"   , title: label}
                             , label
                           )
                         )
                       );
                     })()
                   )
-                  , React.createElement('div', { className: "flex items-center justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3418}}
+                  , React.createElement('div', { className: "flex items-center justify-between gap-3"   }
                     , updateDocForm.newFile ? (
                       React.createElement(Button, {
                         type: "button",
@@ -3424,7 +3437,7 @@ export function MilestoneDetailsPanel({
                         variant: "outline",
                         className: "h-8",
                         disabled: updatingDoc,
-                        onClick: () => setUpdateDocForm((p) => (p ? { ...p, newFile: null } : p)), __self: this, __source: {fileName: _jsxFileName, lineNumber: 3420}}
+                        onClick: () => setUpdateDocForm((p) => (p ? { ...p, newFile: null } : p))}
 , "Remove selected"
 
                       )
@@ -3441,7 +3454,7 @@ export function MilestoneDetailsPanel({
                       const file = _nullishCoalesce(_optionalChain([e, 'access', _73 => _73.target, 'access', _74 => _74.files, 'optionalAccess', _75 => _75[0]]), () => ( null));
                       setUpdateDocForm((p) => (p ? { ...p, newFile: file } : p));
                       e.target.value = "";
-                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3433}}
+                    }}
                   )
 
                   , React.createElement('div', {
@@ -3458,31 +3471,31 @@ export function MilestoneDetailsPanel({
                         e.preventDefault();
                         _optionalChain([document, 'access', _80 => _80.getElementById, 'call', _81 => _81("update-project-document-file"), 'optionalAccess', _82 => _82.click, 'call', _83 => _83()]);
                       }
-                    }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3446}}
+                    }}
 
-                    , React.createElement('div', { className: "flex items-center justify-between gap-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3462}}
-                      , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 3463}}
-                        , React.createElement('div', { className: "text-sm font-semibold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3464}}
+                    , React.createElement('div', { className: "flex items-center justify-between gap-3"   }
+                      , React.createElement('div', { className: "min-w-0"}
+                        , React.createElement('div', { className: "text-sm font-semibold" }
                           , updateDocForm.newFile ? "New file selected" : "Choose a new file (optional)"
                         )
-                        , React.createElement('div', { className: "text-xs text-muted-foreground mt-0.5 truncate"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3467}}
+                        , React.createElement('div', { className: "text-xs text-muted-foreground mt-0.5 truncate"   }
                           , updateDocForm.newFile ? updateDocForm.newFile.name : "PDF, DOC/DOCX, XLSX"
                         )
                       )
-                      , React.createElement(Button, { type: "button", variant: "outline", size: "sm", className: "h-9 px-4" , disabled: updatingDoc, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3471}}
+                      , React.createElement(Button, { type: "button", variant: "outline", size: "sm", className: "h-9 px-4" , disabled: updatingDoc}
                         , updateDocForm.newFile ? "Change" : "Choose"
                       )
                     )
                   )
 
-                  , React.createElement('p', { className: "text-[11px] text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 3477}}, "Allowed: PDF, DOC/DOCX, XLSX"
+                  , React.createElement('p', { className: "text-[11px] text-muted-foreground" }, "Allowed: PDF, DOC/DOCX, XLSX"
 
                   )
                 )
               )
 
-              , React.createElement(DialogFooter, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 3483}}
-                , React.createElement(Button, { type: "button", variant: "outline", onClick: closeUpdateDocDialog, disabled: updatingDoc, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3484}}, "Cancel"
+              , React.createElement(DialogFooter, {}
+                , React.createElement(Button, { type: "button", variant: "outline", onClick: closeUpdateDocDialog, disabled: updatingDoc}, "Cancel"
 
                 )
                 , React.createElement(Button, {
@@ -3507,7 +3520,7 @@ export function MilestoneDetailsPanel({
                     } finally {
                       setUpdatingDoc(false);
                     }
-                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 3487}}
+                  }}
 
                   , updatingDoc ? "Updating..." : "Update"
                 )
@@ -3519,5 +3532,4 @@ export function MilestoneDetailsPanel({
     )
   );
 }
-
 

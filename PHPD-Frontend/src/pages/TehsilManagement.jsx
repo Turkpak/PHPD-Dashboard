@@ -1,5 +1,4 @@
 import React from "react";
-const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }
 import { Layout } from "@/components/layout/Layout";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +19,6 @@ import {
   updateTehsil,
   deleteTehsil,
 } from "@/api";
-
 
 export default function TehsilManagement() {
   const [formData, setFormData] = useState({
@@ -81,13 +79,7 @@ export default function TehsilManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }
-
-
-) => updateTehsil(id, payload),
+    mutationFn: ({ id, payload }) => updateTehsil(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tehsils"] });
       setFormData({ zoneId: "", circleId: "", districtId: "", tehsil_name: "" });
@@ -112,8 +104,8 @@ export default function TehsilManagement() {
 
   const handleEdit = (t) => {
     setFormData({
-      zoneId: String(_nullishCoalesce(t.zone, () => (t.province))),
-      circleId: String(_nullishCoalesce(t.circle, () => (t.division))),
+      zoneId: String(t.zone ?? t.province),
+      circleId: String(t.circle ?? t.division),
       districtId: String(t.district),
       tehsil_name: t.tehsil_name,
     });
@@ -167,8 +159,8 @@ export default function TehsilManagement() {
     (t) =>
       t.tehsil_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (t.district_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (_nullishCoalesce(_nullishCoalesce(t.circle_name, () => (t.division_name)), () => ( ""))).toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (_nullishCoalesce(_nullishCoalesce(t.zone_name, () => (t.province_name)), () => ( ""))).toLowerCase().includes(searchQuery.toLowerCase())
+      ((t.circle_name ?? t.division_name) ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ((t.zone_name ?? t.province_name) ?? "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Reset to first page when filters change
@@ -182,215 +174,223 @@ export default function TehsilManagement() {
   const paginatedTehsils = filteredTehsils.slice(startIdx, startIdx + pageSize);
 
   return (
-    React.createElement(Layout, { title: "Area Hierarchy Management"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 183}}
-      , React.createElement('div', { className: "flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 184}}
-        , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 185}}
-          , React.createElement('h1', { className: "text-2xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 186}}, "Tehsil — Add / Edit"    )
-          , React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 187}}, "Select Zone → Circle → District, then enter tehsil name and click Create Tehsil."             )
-        )
+    <Layout title="Area Hierarchy Management">
+      <div className="flex flex-col gap-8 w-full max-w-[1400px] mx-auto min-w-0 pb-20">
+        <div>
+          <h1 className="text-2xl font-bold text-primary">Tehsil — Add / Edit</h1>
+          <p className="text-muted-foreground text-sm">Select Zone → Circle → District, then enter tehsil name and click Create Tehsil.</p>
+        </div>
 
-        , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden rounded-lg"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 190}}
-          , React.createElement('div', { className: "h-1 bg-secondary w-full"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 191}} )
-          , React.createElement(CardHeader, { className: "pb-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 192}}
-            , React.createElement(CardTitle, { className: "text-sm font-bold uppercase tracking-widest text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 193}}, "Basic Information"
+        <Card className="border-none shadow-sm overflow-hidden rounded-lg">
+          <div className="h-1 bg-secondary w-full" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+              Basic Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Zone <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  onValueChange={(v) => setFormData({ ...formData, zoneId: v, circleId: "", districtId: "" })}
+                  value={formData.zoneId}
+                  disabled={zonesLoading}
+                >
+                  <SelectTrigger className="h-10 text-xs text-foreground">
+                    <SelectValue placeholder={zones.length === 0 ? "Add zones first" : "Select zone"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {zones.map((z) => (
+                      <SelectItem key={z.id} value={String(z.id)}>
+                        {z.zone_name ?? z.province_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Circle <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  onValueChange={(v) => setFormData({ ...formData, circleId: v, districtId: "" })}
+                  value={formData.circleId}
+                  disabled={!formData.zoneId}
+                >
+                  <SelectTrigger className="h-10 text-xs text-foreground">
+                    <SelectValue placeholder={!formData.zoneId ? "Select zone first" : "Select circle"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {circlesByZone.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>
+                        {c.circle_name ?? c.division_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  District <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  onValueChange={(v) => setFormData({ ...formData, districtId: v })}
+                  value={formData.districtId}
+                  disabled={!formData.circleId}
+                >
+                  <SelectTrigger className="h-10 text-xs text-foreground">
+                    <SelectValue placeholder={!formData.circleId ? "Select circle first" : "Select district"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {districtsByCircle.map((d) => (
+                      <SelectItem key={d.id} value={String(d.id)}>
+                        {d.district_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Tehsil Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  placeholder="Enter tehsil name"
+                  value={formData.tehsil_name}
+                  onChange={(e) => setFormData({ ...formData, tehsil_name: e.target.value })}
+                  className="h-10 text-xs"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="bg-secondary hover:bg-secondary/90 text-white w-full h-10 text-xs"
+                >
+                  {editingId !== null ? "Update Tehsil" : <><Plus className="h-3 w-3 mr-2" /> Create Tehsil</>}
+                </Button>
+                {editingId !== null && (
+                  <Button variant="outline" onClick={handleCancel} className="w-full h-10 text-xs">
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            )
-          )
-          , React.createElement(CardContent, { className: "pt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 197}}
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 198}}
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 199}}
-                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}, "Zone " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 200}}, "*"))
-                , React.createElement(Select, {
-                  onValueChange: (v) => setFormData({ ...formData, zoneId: v, circleId: "", districtId: "" }),
-                  value: formData.zoneId,
-                  disabled: zonesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 201}}
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-xl font-bold text-primary">Tehsil List</h2>
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name .."
+                className="pl-10 h-10 rounded-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
 
-                  , React.createElement(SelectTrigger, { className: "h-10 text-xs text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 206}}
-                    , React.createElement(SelectValue, { placeholder: zones.length === 0 ? "Add zones first" : "Select zone", __self: this, __source: {fileName: _jsxFileName, lineNumber: 207}} )
-                  )
-                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 209}}
-                    , zones.map((z) => (
-                      React.createElement(SelectItem, { key: z.id, value: String(z.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 211}}
-                        , _nullishCoalesce(z.zone_name, () => (z.province_name))
-                      )
-                    ))
-                  )
-                )
-              )
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 218}}
-                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}, "Circle " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 219}}, "*"))
-                , React.createElement(Select, {
-                  onValueChange: (v) => setFormData({ ...formData, circleId: v, districtId: "" }),
-                  value: formData.circleId,
-                  disabled: !formData.zoneId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 220}}
-
-                  , React.createElement(SelectTrigger, { className: "h-10 text-xs text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 225}}
-                    , React.createElement(SelectValue, { placeholder: !formData.zoneId ? "Select zone first" : "Select circle", __self: this, __source: {fileName: _jsxFileName, lineNumber: 226}} )
-                  )
-                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 228}}
-                    , circlesByZone.map((c) => (
-                      React.createElement(SelectItem, { key: c.id, value: String(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 230}}
-                        , _nullishCoalesce(c.circle_name, () => (c.division_name))
-                      )
-                    ))
-                  )
-                )
-              )
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 237}}
-                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 238}}, "District " , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 238}}, "*"))
-                , React.createElement(Select, {
-                  onValueChange: (v) => setFormData({ ...formData, districtId: v }),
-                  value: formData.districtId,
-                  disabled: !formData.circleId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 239}}
-
-                  , React.createElement(SelectTrigger, { className: "h-10 text-xs text-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 244}}
-                    , React.createElement(SelectValue, { placeholder: !formData.circleId ? "Select circle first" : "Select district", __self: this, __source: {fileName: _jsxFileName, lineNumber: 245}} )
-                  )
-                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 247}}
-                    , districtsByCircle.map((d) => (
-                      React.createElement(SelectItem, { key: d.id, value: String(d.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 249}}
-                        , d.district_name
-                      )
-                    ))
-                  )
-                )
-              )
-              , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 256}}
-                , React.createElement(Label, { className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 257}}, "Tehsil Name "  , React.createElement('span', { className: "text-destructive", __self: this, __source: {fileName: _jsxFileName, lineNumber: 257}}, "*"))
-                , React.createElement(Input, {
-                  placeholder: "Enter tehsil name"  ,
-                  value: formData.tehsil_name,
-                  onChange: (e) => setFormData({ ...formData, tehsil_name: e.target.value }),
-                  className: "h-10 text-xs" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 258}}
-                )
-              )
-              , React.createElement('div', { className: "flex flex-col sm:flex-row gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 265}}
-                , React.createElement(Button, {
-                  onClick: handleSubmit,
-                  disabled: createMutation.isPending || updateMutation.isPending,
-                  className: "bg-secondary hover:bg-secondary/90 text-white w-full h-10 text-xs"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 266}}
-
-                  , editingId !== null ? "Update Tehsil" : React.createElement(React.Fragment, null, React.createElement(Plus, { className: "h-3 w-3 mr-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 271}} ), " Create Tehsil"  )
-                )
-                , editingId !== null && (
-                  React.createElement(Button, { variant: "outline", onClick: handleCancel, className: "w-full h-10 text-xs"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 274}}, "Cancel"
-
-                  )
-                )
-              )
-            )
-          )
-        )
-
-        , React.createElement('div', { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 283}}
-          , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 284}}
-            , React.createElement('h2', { className: "text-xl font-bold text-primary"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 285}}, "Tehsil List" )
-            , React.createElement('div', { className: "relative w-full sm:w-72"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 286}}
-              , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 287}} )
-              , React.createElement(Input, {
-                placeholder: "Search by name .."   ,
-                className: "pl-10 h-10 rounded-lg" ,
-                value: searchQuery,
-                onChange: (e) => setSearchQuery(e.target.value), __self: this, __source: {fileName: _jsxFileName, lineNumber: 288}}
-              )
-            )
-          )
-
-          , React.createElement(Card, { className: "border-none shadow-sm overflow-hidden rounded-lg"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 297}}
-            , React.createElement('div', { className: "overflow-x-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 298}}
-              , React.createElement(Table, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 299}}
-                , React.createElement(TableHeader, { className: "bg-muted/50", __self: this, __source: {fileName: _jsxFileName, lineNumber: 300}}
-                  , React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 301}}
-                    , React.createElement(TableHead, { className: "w-16", __self: this, __source: {fileName: _jsxFileName, lineNumber: 302}}, "#")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 303}}, "Zone")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 304}}, "Circle")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 305}}, "District")
-                    , React.createElement(TableHead, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 306}}, "Tehsil")
-                    , React.createElement(TableHead, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 307}}, "Action")
-                  )
-                )
-                , React.createElement(TableBody, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 310}}
-                  , tehsilsLoading ? (
-                    React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 312}}
-                      , React.createElement(TableCell, { colSpan: 6, className: "text-center py-8 text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 313}}, "Loading…"
-
-                      )
-                    )
+          <Card className="border-none shadow-sm overflow-hidden rounded-lg">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="w-16">#</TableHead>
+                    <TableHead>Zone</TableHead>
+                    <TableHead>Circle</TableHead>
+                    <TableHead>District</TableHead>
+                    <TableHead>Tehsil</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tehsilsLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        Loading…
+                      </TableCell>
+                    </TableRow>
                   ) : (
                     paginatedTehsils.map((tehsil, index) => (
-                      React.createElement(TableRow, { key: tehsil.id, __self: this, __source: {fileName: _jsxFileName, lineNumber: 319}}
-                        , React.createElement(TableCell, { className: "font-medium", __self: this, __source: {fileName: _jsxFileName, lineNumber: 320}}, startIdx + index + 1)
-                        , React.createElement(TableCell, { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 321}}, _nullishCoalesce(_nullishCoalesce(tehsil.zone_name, () => (tehsil.province_name)), () => ( "")))
-                        , React.createElement(TableCell, { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 322}}, _nullishCoalesce(_nullishCoalesce(tehsil.circle_name, () => (tehsil.division_name)), () => ( "")))
-                        , React.createElement(TableCell, { className: "whitespace-nowrap", __self: this, __source: {fileName: _jsxFileName, lineNumber: 323}}, _nullishCoalesce(tehsil.district_name, () => ( "")))
-                        , React.createElement(TableCell, { className: "font-semibold text-primary whitespace-nowrap"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 324}}, tehsil.tehsil_name)
-                        , React.createElement(TableCell, { className: "text-right", __self: this, __source: {fileName: _jsxFileName, lineNumber: 325}}
-                          , React.createElement('div', { className: "flex justify-end gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 326}}
-                            , React.createElement(Button, {
-                              variant: "ghost",
-                              size: "sm",
-                              onClick: () => handleEdit(tehsil),
-                              className: "h-8 border border-muted hover:bg-muted whitespace-nowrap"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 327}}
-
-                              , React.createElement(Edit2, { className: "h-3.5 w-3.5 mr-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 333}} ), " Edit"
-                            )
-                            , React.createElement(Button, {
-                              variant: "ghost",
-                              size: "sm",
-                              onClick: () => handleDelete(tehsil.id),
-                              disabled: deleteMutation.isPending,
-                              className: "h-8 border border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700 whitespace-nowrap"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 335}}
-
-                              , React.createElement(Trash2, { className: "h-3.5 w-3.5 mr-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 342}} ), " Delete"
-                            )
-                          )
-                        )
-                      )
+                      <TableRow key={tehsil.id}>
+                        <TableCell className="font-medium">{startIdx + index + 1}</TableCell>
+                        <TableCell className="whitespace-nowrap">{(tehsil.zone_name ?? tehsil.province_name) ?? ""}</TableCell>
+                        <TableCell className="whitespace-nowrap">{(tehsil.circle_name ?? tehsil.division_name) ?? ""}</TableCell>
+                        <TableCell className="whitespace-nowrap">{tehsil.district_name ?? ""}</TableCell>
+                        <TableCell className="font-semibold text-primary whitespace-nowrap">{tehsil.tehsil_name}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(tehsil)}
+                              className="h-8 border border-muted hover:bg-muted whitespace-nowrap"
+                            >
+                              <Edit2 className="h-3.5 w-3.5 mr-1" /> Edit
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(tehsil.id)}
+                              disabled={deleteMutation.isPending}
+                              className="h-8 border border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700 whitespace-nowrap"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     ))
-                  )
-                  , !tehsilsLoading && filteredTehsils.length === 0 && (
-                    React.createElement(TableRow, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 350}}
-                      , React.createElement(TableCell, { colSpan: 6, className: "h-24 text-center text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 351}}, "No tehsils found."
-
-                      )
-                    )
-                  )
-                )
-              )
-            )
-            , !tehsilsLoading && filteredTehsils.length > 0 && (
-              React.createElement('div', { className: "flex items-center justify-between gap-3 px-4 py-3 border-t bg-muted/10"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 360}}
-                , React.createElement('div', { className: "text-xs text-muted-foreground tabular-nums"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 361}}, "Showing "
-                   , startIdx + 1, "–", Math.min(startIdx + pageSize, filteredTehsils.length), " of "  , filteredTehsils.length
-                )
-                , React.createElement('div', { className: "flex items-center gap-2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 364}}
-                  , React.createElement(Button, {
-                    variant: "outline",
-                    size: "sm",
-                    className: "h-8",
-                    onClick: () => setPage((p) => Math.max(1, p - 1)),
-                    disabled: safePage <= 1, __self: this, __source: {fileName: _jsxFileName, lineNumber: 365}}
-, "Prev"
-
-                  )
-                  , React.createElement('div', { className: "text-xs text-muted-foreground tabular-nums min-w-[88px] text-center"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 374}}, "Page "
-                     , safePage, " / "  , totalPages
-                  )
-                  , React.createElement(Button, {
-                    variant: "outline",
-                    size: "sm",
-                    className: "h-8",
-                    onClick: () => setPage((p) => Math.min(totalPages, p + 1)),
-                    disabled: safePage >= totalPages, __self: this, __source: {fileName: _jsxFileName, lineNumber: 377}}
-, "Next"
-
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
+                  )}
+                  {!tehsilsLoading && filteredTehsils.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                        No tehsils found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            {!tehsilsLoading && filteredTehsils.length > 0 && (
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-t bg-muted/10">
+                <div className="text-xs text-muted-foreground tabular-nums">
+                  Showing {startIdx + 1}–{Math.min(startIdx + pageSize, filteredTehsils.length)} of {filteredTehsils.length}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={safePage <= 1}
+                  >
+                    Prev
+                  </Button>
+                  <div className="text-xs text-muted-foreground tabular-nums min-w-[88px] text-center">
+                    Page {safePage} / {totalPages}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={safePage >= totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+    </Layout>
   );
 }

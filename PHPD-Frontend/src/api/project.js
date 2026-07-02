@@ -1,5 +1,4 @@
- function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
-import { get, post, put, del, request } from "./client";
+﻿import { get, post, put, del, request } from "./client";
 
 
 
@@ -10,9 +9,9 @@ import { get, post, put, del, request } from "./client";
 import { boundaryFileToGeojson } from "@/utils/boundaryToGeojson";
 import { mockProjects } from "./mockData";
 
-/** POST /api/create-project/ — multipart: stakeholder, project_name, ..., xer_file, boundary_file */
+/** POST /api/create-project/ â€” multipart: stakeholder, project_name, ..., xer_file, boundary_file */
 const CREATE = "create-project/";
-/** GET /api/list-project/ — returns GeoJSON FeatureCollection; we normalize to Project[] for the UI */
+/** GET /api/list-project/ â€” returns GeoJSON FeatureCollection; we normalize to Project[] for the UI */
 const LIST = "list-project/";
 const UPDATE = "update-project/";
 const DELETE_PATH = "delete-project/";
@@ -23,10 +22,10 @@ function normalizeProjectFeature(f
 
 
 ) {
-  const props = (_nullishCoalesce(f.properties, () => ( f))) ;
-  const geom = _nullishCoalesce((f ).geometry, () => ( props.geom));
+  const props = (f.properties ?? f) ;
+  const geom = ((f ).geometry ?? props.geom);
   const project = {
-    id: (_nullishCoalesce(f.id, () => ( props.id))) ,
+    id: (f.id ?? props.id) ,
     ...(props ),
     ...(geom !== undefined && { geom }),
   } ;
@@ -36,9 +35,9 @@ function normalizeProjectFeature(f
   if (Array.isArray((project ).activities)) {
     (project ).activities = (project ).activities.map((a) => {
       const percent_complete =
-        _nullishCoalesce(_nullishCoalesce(_optionalChain([a, 'optionalAccess', _ => _.percent_complete]), () => ( _optionalChain([a, 'optionalAccess', _2 => _2.progress]))), () => ( 0));
+        (a?.percent_complete ?? a?.progress) ?? 0;
       const finish_date =
-        _nullishCoalesce(_nullishCoalesce(_optionalChain([a, 'optionalAccess', _3 => _3.finish_date]), () => ( _optionalChain([a, 'optionalAccess', _4 => _4.end_date]))), () => ( null));
+        (a?.finish_date ?? a?.end_date) ?? null;
       return { ...a, percent_complete, finish_date };
     });
   }
@@ -62,7 +61,7 @@ export async function listProjects() {
   }
 }
 
-/** GET /api/top-projects/ — returns list of top projects with progress % */
+/** GET /api/top-projects/ â€” returns list of top projects with progress % */
 export async function listTopProjects() {
   const data = await get(TOP_PROJECTS);
   return Array.isArray(data) ? data : [];
@@ -131,34 +130,34 @@ export async function createProject(payload) {
       appendFormValue(form, "stakeholder", payload.stakeholder);
     }
 
-    appendFormValue(form, "project_name", _nullishCoalesce(payload.project_name, () => ( "")));
-    appendFormValue(form, "project_description", _nullishCoalesce(payload.project_description, () => ( "")));
+    appendFormValue(form, "project_name", payload.project_name ?? "");
+    appendFormValue(form, "project_description", payload.project_description ?? "");
     appendFormValue(
       form,
       "project_starting_date",
-      _nullishCoalesce(normalizeDateFieldForApi(payload.project_starting_date), () => ( undefined)),
+      normalizeDateFieldForApi(payload.project_starting_date) ?? undefined,
     );
-    appendFormValue(form, "project_reference_no", _nullishCoalesce(payload.project_reference_no, () => ( "")));
+    appendFormValue(form, "project_reference_no", payload.project_reference_no ?? "");
 
     // Category: backend expects project_category + (optional) project_category_other
-    appendFormValue(form, "project_category", _nullishCoalesce(payload.project_category, () => ( "")));
-    appendFormValue(form, "project_category_other", _nullishCoalesce(payload.project_category_other, () => ( "")));
+    appendFormValue(form, "project_category", payload.project_category ?? "");
+    appendFormValue(form, "project_category_other", payload.project_category_other ?? "");
 
     // Location fields used by frontend (geom not needed)
-    appendFormValue(form, "latitude", _nullishCoalesce(payload.latitude, () => ( "")));
-    appendFormValue(form, "longitude", _nullishCoalesce(payload.longitude, () => ( "")));
+    appendFormValue(form, "latitude", payload.latitude ?? "");
+    appendFormValue(form, "longitude", payload.longitude ?? "");
 
-    appendFormValue(form, "zone", _nullishCoalesce(payload.zone, () => ( "")));
+    appendFormValue(form, "zone", payload.zone ?? "");
     appendFormValue(form, "district", payload.district);
     appendFormValue(form, "tehsil", payload.tehsil);
 
-    appendFormValue(form, "total_budget", _nullishCoalesce(payload.total_budget, () => ( "")));
-    appendFormValue(form, "total_consume", _nullishCoalesce(payload.total_consume, () => ( "")));
-    appendFormValue(form, "remaining_budget", _nullishCoalesce(payload.remaining_budget, () => ( "")));
+    appendFormValue(form, "total_budget", payload.total_budget ?? "");
+    appendFormValue(form, "total_consume", payload.total_consume ?? "");
+    appendFormValue(form, "remaining_budget", payload.remaining_budget ?? "");
 
     if (payload.xer_file) form.append("xer_file", payload.xer_file);
 
-    let boundaryFile = _nullishCoalesce(payload.boundary_file, () => ( null));
+    let boundaryFile = payload.boundary_file ?? null;
     if (boundaryFile) {
       boundaryFile = await boundaryFileToGeojson(boundaryFile);
       form.append("boundary_file", boundaryFile);
@@ -171,20 +170,20 @@ export async function createProject(payload) {
     CREATE,
     sanitizeProjectDates({
       stakeholder: payload.stakeholder,
-      project_name: _nullishCoalesce(payload.project_name, () => ( null)),
-      project_description: _nullishCoalesce(payload.project_description, () => ( null)),
-      project_starting_date: _nullishCoalesce(payload.project_starting_date, () => ( null)),
-      project_reference_no: _nullishCoalesce(payload.project_reference_no, () => ( null)),
-      project_category: _nullishCoalesce(payload.project_category, () => ( null)),
-      project_category_other: _nullishCoalesce(payload.project_category_other, () => ( null)),
-      latitude: _nullishCoalesce(payload.latitude, () => ( null)),
-      longitude: _nullishCoalesce(payload.longitude, () => ( null)),
-      zone: _nullishCoalesce(payload.zone, () => ( null)),
+      project_name: payload.project_name ?? null,
+      project_description: payload.project_description ?? null,
+      project_starting_date: payload.project_starting_date ?? null,
+      project_reference_no: payload.project_reference_no ?? null,
+      project_category: payload.project_category ?? null,
+      project_category_other: payload.project_category_other ?? null,
+      latitude: payload.latitude ?? null,
+      longitude: payload.longitude ?? null,
+      zone: payload.zone ?? null,
       district: payload.district,
       tehsil: payload.tehsil,
-      total_budget: _nullishCoalesce(payload.total_budget, () => ( null)),
-      total_consume: _nullishCoalesce(payload.total_consume, () => ( null)),
-      remaining_budget: _nullishCoalesce(payload.remaining_budget, () => ( null)),
+      total_budget: payload.total_budget ?? null,
+      total_consume: payload.total_consume ?? null,
+      remaining_budget: payload.remaining_budget ?? null,
     } ),
   );
 }
@@ -205,7 +204,7 @@ export async function updateProject(id, payload) {
     appendFormValue(form, "project_category", p.project_category);
     appendFormValue(form, "project_category_other", p.project_category_other);
     appendFormValue(form, "project_description", p.project_description);
-    appendFormValue(form, "project_starting_date", _nullishCoalesce(normalizeDateFieldForApi(p.project_starting_date), () => ( undefined)));
+    appendFormValue(form, "project_starting_date", normalizeDateFieldForApi(p.project_starting_date) ?? undefined);
     appendFormValue(form, "project_reference_no", p.project_reference_no);
     appendFormValue(form, "latitude", p.latitude);
     appendFormValue(form, "longitude", p.longitude);
@@ -219,7 +218,7 @@ export async function updateProject(id, payload) {
 
     if (p.xer_file) form.append("xer_file", p.xer_file);
 
-    let boundaryFile = _nullishCoalesce(p.boundary_file, () => ( null));
+    let boundaryFile = p.boundary_file ?? null;
     if (boundaryFile) {
       boundaryFile = await boundaryFileToGeojson(boundaryFile);
       form.append("boundary_file", boundaryFile);

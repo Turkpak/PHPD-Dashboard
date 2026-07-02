@@ -1,5 +1,4 @@
-const _jsxFileName = "";
-import React from "react";
+﻿import React from "react";
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWindowSize } from "@/hooks/use-window-size";
@@ -48,27 +47,27 @@ export function PhaseVelocityChart({ phaseData, cityKey = "default" }) {
   }));
 
   return (
-    React.createElement(Card, { className: "shadow-lg border-border/50 border-2 transition-colors hover:border-primary/60"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 49}}
-      , React.createElement(CardHeader, { className: "pb-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 50}}
-        , React.createElement(CardTitle, { className: "font-heading text-xl font-bold"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 51}}, "Phase Progress & Velocity"   )
-        , React.createElement(CardDescription, { className: "text-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 52}}, "Current progress and monthly completion rate by phase"       )
+    React.createElement(Card, { className: "shadow-lg border-border/50 border-2 transition-colors hover:border-primary/60"    }
+      , React.createElement(CardHeader, { className: "pb-4"}
+        , React.createElement(CardTitle, { className: "font-heading text-xl font-bold"  }, "Phase Progress & Velocity"   )
+        , React.createElement(CardDescription, { className: "text-sm"}, "Current progress and monthly completion rate by phase"       )
       )
-      , React.createElement(CardContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 54}}
-        , React.createElement('div', { className: "w-full", style: { height: isMobile ? '280px' : isTablet ? '320px' : '350px' }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 55}}
-          , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 56}}
+      , React.createElement(CardContent, {}
+        , React.createElement('div', { className: "w-full", style: { height: isMobile ? '280px' : isTablet ? '320px' : '350px' }}
+          , React.createElement(ResponsiveContainer, { width: "100%", height: "100%"}
             , React.createElement(ComposedChart, { data: chartData, margin: { 
               top: 10, 
               right: isMobile ? 5 : 10, 
               left: isMobile ? -10 : 0, 
               bottom: isMobile ? 80 : 60 
-            }, key: cityKey, __self: this, __source: {fileName: _jsxFileName, lineNumber: 57}}
-              , React.createElement(CartesianGrid, { strokeDasharray: "3 3" , vertical: false, stroke: "hsl(var(--border))", __self: this, __source: {fileName: _jsxFileName, lineNumber: 63}} )
+            }, key: cityKey}
+              , React.createElement(CartesianGrid, { strokeDasharray: "3 3" , vertical: false, stroke: "hsl(var(--border))"} )
               , React.createElement(XAxis, { 
                 dataKey: "phase", 
                 angle: isMobile ? -60 : -45,
                 textAnchor: "end",
                 height: isMobile ? 100 : 80,
-                tick: { fontSize: isMobile ? 9 : isTablet ? 10 : 11, fill: "hsl(var(--muted-foreground))" }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 64}}
+                tick: { fontSize: isMobile ? 9 : isTablet ? 10 : 11, fill: "hsl(var(--muted-foreground))" }}
               )
               , React.createElement(YAxis, { 
                 yAxisId: "left",
@@ -77,7 +76,7 @@ export function PhaseVelocityChart({ phaseData, cityKey = "default" }) {
                 tick: { fontSize: isMobile ? 10 : isTablet ? 11 : 12, fill: "hsl(var(--muted-foreground))" },
                 axisLine: false,
                 tickLine: false,
-                width: isMobile ? 35 : 50, __self: this, __source: {fileName: _jsxFileName, lineNumber: 71}}
+                width: isMobile ? 35 : 50}
               )
               , React.createElement(YAxis, { 
                 yAxisId: "right",
@@ -87,7 +86,7 @@ export function PhaseVelocityChart({ phaseData, cityKey = "default" }) {
                 tick: { fontSize: isMobile ? 10 : isTablet ? 11 : 12, fill: "hsl(var(--muted-foreground))" },
                 axisLine: false,
                 tickLine: false,
-                width: isMobile ? 40 : 60, __self: this, __source: {fileName: _jsxFileName, lineNumber: 80}}
+                width: isMobile ? 40 : 60}
               )
             , React.createElement(Tooltip, { 
               contentStyle: { 
@@ -101,14 +100,14 @@ export function PhaseVelocityChart({ phaseData, cityKey = "default" }) {
                 if (name === "progress") return [`${value}%`, "Progress"];
                 if (name === "velocity") return [`${value}%`, "Monthly Rate"];
                 return [value, name];
-              }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 90}}
+              }}
             )
             , React.createElement(Legend, { 
-              wrapperStyle: { fontSize: isMobile ? '10px' : '12px' }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 104}}
+              wrapperStyle: { fontSize: isMobile ? '10px' : '12px' }}
             )
-            , React.createElement(Bar, { yAxisId: "left", dataKey: "progress", radius: [4, 4, 0, 0], __self: this, __source: {fileName: _jsxFileName, lineNumber: 107}}
+            , React.createElement(Bar, { yAxisId: "left", dataKey: "progress", radius: [4, 4, 0, 0]}
               , chartData.map((entry, index) => (
-                React.createElement(Cell, { key: `cell-${index}`, fill: getColor(entry.fullPhase), __self: this, __source: {fileName: _jsxFileName, lineNumber: 109}} )
+                React.createElement(Cell, { key: `cell-${index}`, fill: getColor(entry.fullPhase)} )
               ))
             )
             , React.createElement(Line, { 
@@ -118,7 +117,7 @@ export function PhaseVelocityChart({ phaseData, cityKey = "default" }) {
               stroke: "#ef4444", 
               strokeWidth: isMobile ? 2 : 3,
               dot: { fill: "#ef4444", r: isMobile ? 4 : 5 },
-              activeDot: { r: isMobile ? 6 : 7 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 112}}
+              activeDot: { r: isMobile ? 6 : 7 }}
             )
           )
         )

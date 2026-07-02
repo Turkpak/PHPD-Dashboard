@@ -1,5 +1,4 @@
- function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }
-import { get, post, put, del } from "./client";
+﻿import { get, post, put, del } from "./client";
 
 
 /**

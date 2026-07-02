@@ -1,6 +1,4 @@
- function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }
-import { get, del, request } from "./client";
-
+﻿import { get, del, request } from "./client";
 
 const CREATE = "create-pictorial-archive/";
 const LIST = "list-pictorial-archive/";
@@ -9,13 +7,13 @@ const DELETE_PATH = "delete-pictorial-archive/";
 
 export async function listPictorialArchives(projectId) {
   const params = projectId != null ? { project_id: String(projectId) } : undefined;
-  const data = await get(LIST, params );
+  const data = await get(LIST, params);
   return Array.isArray(data) ? data : [];
 }
 
 export async function getPictorialArchiveById(id) {
   const data = await get(LIST, { id: String(id) });
-  return _nullishCoalesce(data, () => ( null));
+  return data ?? null;
 }
 
 export async function createPictorialArchive(payload) {
@@ -27,18 +25,12 @@ export async function createPictorialArchive(payload) {
   return request(CREATE, { method: "POST", formData: form });
 }
 
-export async function updatePictorialArchive(
-  id,
-  payload
-) {
+export async function updatePictorialArchive(id, payload) {
   const form = new FormData();
   if (payload.image != null) form.append("image", payload.image);
   if (payload.image_date != null) form.append("image_date", payload.image_date);
   if (payload.description != null) form.append("description", payload.description);
-  return request(`${UPDATE}${id}/`, {
-    method: "PUT",
-    formData: form,
-  });
+  return request(`${UPDATE}${id}/`, { method: "PUT", formData: form });
 }
 
 export async function deletePictorialArchive(id) {

@@ -1,5 +1,4 @@
-const _jsxFileName = "";"use client"
-
+﻿
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
@@ -22,11 +21,11 @@ const SelectTrigger = React.forwardRef
       "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 19}}
+    ...props}
 
     , children
-    , React.createElement(SelectPrimitive.Icon, { asChild: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 28}}
-      , React.createElement(ChevronDown, { className: "h-4 w-4 opacity-50"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 29}} )
+    , React.createElement(SelectPrimitive.Icon, { asChild: true}
+      , React.createElement(ChevronDown, { className: "h-4 w-4 opacity-50"  } )
     )
   )
 ))
@@ -42,9 +41,9 @@ const SelectScrollUpButton = React.forwardRef
       "flex cursor-default items-center justify-center py-1",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 39}}
+    ...props}
 
-    , React.createElement(ChevronUp, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 47}} )
+    , React.createElement(ChevronUp, { className: "h-4 w-4" } )
   )
 ))
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
@@ -59,9 +58,9 @@ const SelectScrollDownButton = React.forwardRef
       "flex cursor-default items-center justify-center py-1",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 56}}
+    ...props}
 
-    , React.createElement(ChevronDown, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 64}} )
+    , React.createElement(ChevronDown, { className: "h-4 w-4" } )
   )
 ))
 SelectScrollDownButton.displayName =
@@ -71,7 +70,7 @@ const SelectContent = React.forwardRef
 
 
 (({ className, children, position = "popper", ...props }, ref) => (
-  React.createElement(SelectPrimitive.Portal, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 74}}
+  React.createElement(SelectPrimitive.Portal, {}
     , React.createElement(SelectPrimitive.Content, {
       ref: ref,
       className: cn(
@@ -81,19 +80,19 @@ const SelectContent = React.forwardRef
         className
       ),
       position: position,
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 75}}
+      ...props}
 
-      , React.createElement(SelectScrollUpButton, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 86}} )
+      , React.createElement(SelectScrollUpButton, {} )
       , React.createElement(SelectPrimitive.Viewport, {
         className: cn(
           "p-1",
           position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
-        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 87}}
+        )}
 
         , children
       )
-      , React.createElement(SelectScrollDownButton, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 96}} )
+      , React.createElement(SelectScrollDownButton, {} )
     )
   )
 ))
@@ -106,7 +105,7 @@ const SelectLabel = React.forwardRef
   React.createElement(SelectPrimitive.Label, {
     ref: ref,
     className: cn("px-2 py-1.5 text-sm font-semibold", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 106}}
+    ...props}
   )
 ))
 SelectLabel.displayName = SelectPrimitive.Label.displayName
@@ -121,14 +120,14 @@ const SelectItem = React.forwardRef
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 118}}
+    ...props}
 
-    , React.createElement('span', { className: "absolute right-2 flex h-3.5 w-3.5 items-center justify-center"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 126}}
-      , React.createElement(SelectPrimitive.ItemIndicator, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 127}}
-        , React.createElement(Check, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 128}} )
+    , React.createElement('span', { className: "absolute right-2 flex h-3.5 w-3.5 items-center justify-center"      }
+      , React.createElement(SelectPrimitive.ItemIndicator, {}
+        , React.createElement(Check, { className: "h-4 w-4" } )
       )
     )
-    , React.createElement(SelectPrimitive.ItemText, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 131}}, children)
+    , React.createElement(SelectPrimitive.ItemText, {}, children)
   )
 ))
 SelectItem.displayName = SelectPrimitive.Item.displayName
@@ -140,7 +139,7 @@ const SelectSeparator = React.forwardRef
   React.createElement(SelectPrimitive.Separator, {
     ref: ref,
     className: cn("-mx-1 my-1 h-px bg-muted", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 140}}
+    ...props}
   )
 ))
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName

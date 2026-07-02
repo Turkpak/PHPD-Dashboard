@@ -1,5 +1,4 @@
-const _jsxFileName = "";
-import * as React from "react"
+﻿import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -7,11 +6,11 @@ const Table = React.forwardRef
 
 
 (({ className, ...props }, ref) => (
-  React.createElement('div', { className: "relative w-full overflow-auto"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 9}}
+  React.createElement('div', { className: "relative w-full overflow-auto"  }
     , React.createElement('table', {
       ref: ref,
       className: cn("w-full caption-bottom text-sm", className),
-      ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 10}}
+      ...props}
     )
   )
 ))
@@ -21,7 +20,7 @@ const TableHeader = React.forwardRef
 
 
 (({ className, ...props }, ref) => (
-  React.createElement('thead', { ref: ref, className: cn("[&_tr]:border-b", className), ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 23}} )
+  React.createElement('thead', { ref: ref, className: cn("[&_tr]:border-b", className), ...props} )
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -32,7 +31,7 @@ const TableBody = React.forwardRef
   React.createElement('tbody', {
     ref: ref,
     className: cn("[&_tr:last-child]:border-0", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 31}}
+    ...props}
   )
 ))
 TableBody.displayName = "TableBody"
@@ -47,7 +46,7 @@ const TableFooter = React.forwardRef
       "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 43}}
+    ...props}
   )
 ))
 TableFooter.displayName = "TableFooter"
@@ -62,7 +61,7 @@ const TableRow = React.forwardRef
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 58}}
+    ...props}
   )
 ))
 TableRow.displayName = "TableRow"
@@ -77,7 +76,7 @@ const TableHead = React.forwardRef
       "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 73}}
+    ...props}
   )
 ))
 TableHead.displayName = "TableHead"
@@ -92,7 +91,7 @@ const TableCell = React.forwardRef
       "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     ),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 88}}
+    ...props}
   )
 ))
 TableCell.displayName = "TableCell"
@@ -104,7 +103,7 @@ const TableCaption = React.forwardRef
   React.createElement('caption', {
     ref: ref,
     className: cn("mt-4 text-sm text-muted-foreground", className),
-    ...props, __self: this, __source: {fileName: _jsxFileName, lineNumber: 103}}
+    ...props}
   )
 ))
 TableCaption.displayName = "TableCaption"
