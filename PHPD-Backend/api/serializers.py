@@ -20,6 +20,7 @@ class MyUserSerializer(serializers.ModelSerializer):
             "full_name",     
             "first_name",
             "last_name",
+            "full_name",
             # "company_name",
             "role",             # Added role
             "stakeholder",      # Assign stakeholder if needed
@@ -33,6 +34,7 @@ class MyUserSerializer(serializers.ModelSerializer):
         return f"{obj.first_name} {obj.last_name}"
 
     def create(self, validated_data):
+        
         password = validated_data.pop("password", None)
         user = MyUser(**validated_data)
 

@@ -1,5 +1,6 @@
 from ..common_imports import *
 import datetime
+from ..ProjectView.ProjectUpdateLog import ProjectUpdateLog
 
 
 class ProjectUpdateView(viewsets.ViewSet):
