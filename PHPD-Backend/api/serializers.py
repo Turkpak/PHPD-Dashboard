@@ -19,6 +19,7 @@ class MyUserSerializer(serializers.ModelSerializer):
             "email",         
             "first_name",
             "last_name",
+            "full_name",
             # "company_name",
             "role",             # Added role
             "stakeholder",      # Assign stakeholder if needed
@@ -28,8 +29,10 @@ class MyUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "password": {"write_only": True},
         }
-
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
     def create(self, validated_data):
+        
         password = validated_data.pop("password", None)
         user = MyUser(**validated_data)
 
