@@ -1,6 +1,7 @@
 from ..common_imports import *
 import datetime
 
+
 class ProjectUpdateView(viewsets.ViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
