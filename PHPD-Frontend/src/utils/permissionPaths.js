@@ -32,15 +32,15 @@ export function getPermissionForPath(
     "/stakeholder-management": { sidebar_label: "Stakeholders", sub_label: null },
     "/project-management": {
       sidebar_label: "Project Management",
-      sub_label: null,
+      sub_label: "View",
     },
     "/project-management/create": {
       sidebar_label: "Project Management",
-      sub_label: null,
+      sub_label: "Create",
     },
     "/project-management/view": {
       sidebar_label: "Project Management",
-      sub_label: null,
+      sub_label: "View",
     },
     "/project-activity-management": {
       sidebar_label: "Project Activities",
@@ -51,6 +51,6 @@ export function getPermissionForPath(
   const exact = map[path];
   if (exact) return exact;
   if (path.startsWith("/project/"))
-    return { sidebar_label: "Project Management", sub_label: null };
+    return { sidebar_label: "Project Management", sub_label: "View", };
   return null;
 }
