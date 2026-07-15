@@ -5,6 +5,7 @@ class ProjectDeleteView(viewsets.ViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, HasSidebarPermission] 
     sidebar_label = "Project Management"
+    sub_label = "Delete"
 
     def destroy(self, request, *args, **kwargs):
         project_id = kwargs.get('pk')

@@ -439,6 +439,23 @@ class TopProjectSerializer(serializers.ModelSerializer):
             "zone_name",
             "progress"
         ]
+
+class ProjectUpdateLogSerializer(serializers.ModelSerializer):
+    project_name = serializers.ReadOnlyField(source='project.project_name')
+    updated_by_email = serializers.ReadOnlyField(source='updated_by.email')
+
+    class Meta:
+        model = ProjectUpdateLog
+        fields = [
+            'id',
+            'project',
+            'project_name',
+            'updated_by',
+            'updated_by_email',
+            'changes',
+            'created_at',
+        ]
+
 class TaskSerializer(serializers.ModelSerializer):
     parent_id = serializers.PrimaryKeyRelatedField(
         source='parent',

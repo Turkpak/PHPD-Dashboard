@@ -6,6 +6,7 @@ class ProjectUpdateView(viewsets.ViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, HasSidebarPermission] 
     sidebar_label = "Project Management"
+    sub_label = "Update"
 
     def update(self, request, *args, **kwargs):
         data = request.data
