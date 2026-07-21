@@ -4,6 +4,7 @@ from api.models import Project, ProjectActivity, ActivityDelayLog, ProgressImage
 from datetime import datetime
 from django.db.models import Prefetch
 
+gis_mode = request.GET.get("gis") == "1"
 def get_delay_info(activity):
     # delay = ActivityDelayLog.objects.filter(activity=activity).order_by('-created_at').first()
     delay = next(iter(activity.delay_logs.all()), None)
@@ -73,15 +74,22 @@ class ProjectGanttAllView(APIView):
     def get(self, request):
 
         # projects = Project.objects.all()
+        activity_queryset = ProjectActivity.objects.select_related("parent")
+
+        if gis_mode:
+            activity_queryset = activity_queryset.prefetch_related(
+                "delay_logs"
+            )
+        else:
+            activity_queryset = activity_queryset.prefetch_related(
+                "delay_logs",
+                "images",
+            )
+
         projects = Project.objects.prefetch_related(
             Prefetch(
                 "activities",
-                queryset=ProjectActivity.objects.select_related("parent")
-                .prefetch_related(
-                    "delay_logs",
-                    "images",
-                )
-                .order_by("id")
+                queryset=activity_queryset.order_by("id")
             )
         )
 
@@ -113,8 +121,14 @@ class ProjectGanttAllView(APIView):
                 for index, act in enumerate(children, start=1):
                     new_id = f"{prefix}{index}" if prefix else str(index)
 
-                    delay_info = get_delay_info(act)
-                    has_delay_flag = bool(delay_info)
+                    # delay_info = get_delay_info(act)
+                    # has_delay_flag = bool(delay_info)
+                    if gis_mode:
+                        has_delay_flag = act.delay_logs.exists()
+                        delay_info = None
+                    else:
+                        delay_info = get_delay_info(act)
+                        has_delay_flag = bool(delay_info)
 
                     subtasks = build_tree(act.id, new_id)
 
@@ -157,7 +171,13 @@ class ProjectGanttAllView(APIView):
                     else:
                         duration = act.duration or 0
 
-                    activity_images = get_activity_images(act)
+                    if gis_mode:
+                        activity_images = {
+                            "has_images": False,
+                            "images": []
+                        }
+                    else:
+                        activity_images = get_activity_images(act)
 
                     # -----------------------------
                     # ✅ DATE FIX 
@@ -172,30 +192,70 @@ class ProjectGanttAllView(APIView):
                         start_date = act.start_date.isoformat() if act.start_date else None
                         end_date = act.end_date.isoformat() if act.end_date else None
 
-                    node = {
-                        "_id": new_id,
-                        "id": act.id,
-                        "activity_id": act.activity_id,
-                        "name": act.activity_name,
-                        "duration": duration,
-                        "duration_display": f"{int(duration)} day" if duration == 1 else f"{int(duration)} days",
-                        "start_date": start_date,
-                        "end_date": end_date,
-                        "progress": round(avg_progress, 2),
-                        "progress_status": (
-                            "Not Started" if avg_progress <= 0
-                            else "Completed" if avg_progress >= 100
-                            else "In Progress"
-                        ),
-                        "actual_start": act.actual_start.isoformat() if act.actual_start else None,
-                        "actual_end": act.actual_end.isoformat() if act.actual_end else None,
-                        "progress_date": act.progress_date.isoformat() if act.progress_date else None,
-                        "has_images": activity_images["has_images"],
-                        "images": activity_images["images"],
-                        "has_delay": has_delay_flag,
-                        "delay_info": delay_info,
-                        "subtasks": subtasks
-                    }
+                    # node = {
+                    #     "_id": new_id,
+                    #     "id": act.id,
+                    #     "activity_id": act.activity_id,
+                    #     "name": act.activity_name,
+                    #     "duration": duration,
+                    #     "duration_display": f"{int(duration)} day" if duration == 1 else f"{int(duration)} days",
+                    #     "start_date": start_date,
+                    #     "end_date": end_date,
+                    #     "progress": round(avg_progress, 2),
+                    #     "progress_status": (
+                    #         "Not Started" if avg_progress <= 0
+                    #         else "Completed" if avg_progress >= 100
+                    #         else "In Progress"
+                    #     ),
+                    #     "actual_start": act.actual_start.isoformat() if act.actual_start else None,
+                    #     "actual_end": act.actual_end.isoformat() if act.actual_end else None,
+                    #     "progress_date": act.progress_date.isoformat() if act.progress_date else None,
+                    #     "has_images": activity_images["has_images"],
+                    #     "images": activity_images["images"],
+                    #     "has_delay": has_delay_flag,
+                    #     "delay_info": delay_info,
+                    #     "subtasks": subtasks
+                    # }
+                    if gis_mode:
+                        node = {
+                            "_id": new_id,
+                            "id": act.id,
+                            "progress": round(avg_progress, 2),
+                            "progress_status": (
+                                "Not Started" if avg_progress <= 0
+                                else "Completed" if avg_progress >= 100
+                                else "In Progress"
+                            ),
+                            "start_date": start_date,
+                            "end_date": end_date,
+                            "has_delay": has_delay_flag,
+                            "subtasks": subtasks,
+                        }
+                    else:
+                        node = {
+                            "_id": new_id,
+                            "id": act.id,
+                            "activity_id": act.activity_id,
+                            "name": act.activity_name,
+                            "duration": duration,
+                            "duration_display": f"{int(duration)} day" if duration == 1 else f"{int(duration)} days",
+                            "start_date": start_date,
+                            "end_date": end_date,
+                            "progress": round(avg_progress, 2),
+                            "progress_status": (
+                                "Not Started" if avg_progress <= 0
+                                else "Completed" if avg_progress >= 100
+                                else "In Progress"
+                            ),
+                            "actual_start": act.actual_start.isoformat() if act.actual_start else None,
+                            "actual_end": act.actual_end.isoformat() if act.actual_end else None,
+                            "progress_date": act.progress_date.isoformat() if act.progress_date else None,
+                            "has_images": activity_images["has_images"],
+                            "images": activity_images["images"],
+                            "has_delay": has_delay_flag,
+                            "delay_info": delay_info,
+                            "subtasks": subtasks
+                        }
 
                     nodes.append(node)
 

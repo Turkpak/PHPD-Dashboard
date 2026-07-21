@@ -111,15 +111,19 @@ export async function deleteProjectActivity(id) {
 
 
 /** GET /api/project-gantt-all/ — schedules for all projects (nested tasks) */
+// export async function getProjectGanttAll() {
+//   try {
+//     const data = await get("project-gantt-all/");
+//     const schedules = Array.isArray(_optionalChain([(data ), 'optionalAccess', _ => _.schedules])) ? (data ).schedules : [];
+//     return schedules ;
+//   } catch {
+//     // Temporary fallback for Dashboard/Comparison progress calculations.
+//     return mockGanttSchedulesForProjects(mockProjects);
+//   }
+// }
 export async function getProjectGanttAll() {
-  try {
-    const data = await get("project-gantt-all/");
-    const schedules = Array.isArray(_optionalChain([(data ), 'optionalAccess', _ => _.schedules])) ? (data ).schedules : [];
-    return schedules ;
-  } catch {
-    // Temporary fallback for Dashboard/Comparison progress calculations.
-    return mockGanttSchedulesForProjects(mockProjects);
-  }
+  const data = await get("project-gantt-all/?gis=1");
+  return Array.isArray(data?.schedules) ? data.schedules : [];
 }
 
 export async function getProjectGanttData(projectId) {
