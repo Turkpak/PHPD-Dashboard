@@ -1,4 +1,5 @@
 from ..common_imports import *
+from django.db.models import Prefetch
 
 class ListProjectView(viewsets.ViewSet):
     queryset = Project.objects.all()
