@@ -2,14 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from api.models import Project, ProjectActivity, ActivityDelayLog, ProgressImage
 from datetime import datetime
-from django.db.models import Prefetch
+
 def get_delay_info(activity):
-    # delay = ActivityDelayLog.objects.filter(activity=activity).order_by('-created_at').first()
-    delay = (
-        activity.activitydelaylog_set.all()
-        .order_by("-created_at")
-        .first()
-    )
+    delay = ActivityDelayLog.objects.filter(activity=activity).order_by('-created_at').first()
     if delay:
         action_by_info = None
         if delay.action_by:
@@ -32,8 +27,7 @@ def get_delay_info(activity):
     return None
 
 def get_activity_images(activity):
-    # images = ProgressImage.objects.filter(activity=activity)
-    images = activity.progressimage_set.all()
+    images = ProgressImage.objects.filter(activity=activity)
     image_list = []
     if images.exists():
         image_list = [
@@ -75,27 +69,16 @@ class ProjectGanttAllView(APIView):
 
     def get(self, request):
 
-        # projects = Project.objects.all()
-        projects = Project.objects.prefetch_related(
-            Prefetch(
-                "activities",
-                queryset=ProjectActivity.objects.select_related("parent")
-                .prefetch_related(
-                    "activitydelaylog_set",
-                    "progressimage_set",
-                ),
-            )
-        )
-        
+        projects = Project.objects.all()
+
         all_schedules = []
         global_delay_flag = False
 
         for project in projects:
 
-            # activities = ProjectActivity.objects.filter(
-            #     project=project
-            # ).select_related('parent').order_by('id')
-            activities = list(project.activities.all())
+            activities = ProjectActivity.objects.filter(
+                project=project
+            ).select_related('parent').order_by('id')
 
             # -----------------------------
             # group children
