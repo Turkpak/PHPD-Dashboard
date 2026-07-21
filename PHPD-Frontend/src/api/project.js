@@ -70,6 +70,7 @@ export async function listTopProjects() {
 
 export async function getProjectById(id) {
   const data = await get(LIST, { id: String(id) });
+  console.log("Project By ID:", data);
   if (data == null) return null;
   let raw = data;
   // Some endpoints nest again: { data: GeoJSON Feature }
