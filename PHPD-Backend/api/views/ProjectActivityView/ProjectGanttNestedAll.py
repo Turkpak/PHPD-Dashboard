@@ -29,8 +29,7 @@ def get_delay_info(activity):
     return None
 
 def get_activity_images(activity):
-    # images = ProgressImage.objects.filter(activity=activity)
-    images = list(activity.progressimage_set.all())
+    images = list(activity.images.all())
 
     image_list = [
         {
@@ -80,7 +79,7 @@ class ProjectGanttAllView(APIView):
                 queryset=ProjectActivity.objects.select_related("parent")
                 .prefetch_related(
                     "delay_logs",
-                    "progressimage_set",
+                    "images",
                 )
                 .order_by("id")
             )
