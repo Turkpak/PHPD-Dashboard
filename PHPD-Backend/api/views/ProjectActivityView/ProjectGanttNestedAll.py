@@ -4,7 +4,7 @@ from api.models import Project, ProjectActivity, ActivityDelayLog, ProgressImage
 from datetime import datetime
 from django.db.models import Prefetch
 
-gis_mode = request.GET.get("gis") == "1"
+
 def get_delay_info(activity):
     # delay = ActivityDelayLog.objects.filter(activity=activity).order_by('-created_at').first()
     delay = next(iter(activity.delay_logs.all()), None)
@@ -72,7 +72,7 @@ def has_delay(tasks):
 class ProjectGanttAllView(APIView):
 
     def get(self, request):
-
+        gis_mode = request.GET.get("gis") == "1"
         # projects = Project.objects.all()
         activity_queryset = ProjectActivity.objects.select_related("parent")
 
