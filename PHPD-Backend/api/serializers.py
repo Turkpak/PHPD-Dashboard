@@ -245,7 +245,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         queryset=Stakeholder.objects.all(),
         required=False
     )
-    # activities = ProjectActivitySerializer(many=True, read_only=True)
+    activities = ProjectActivitySerializer(many=True, read_only=True)
     project_starting_date = serializers.DateField(
         input_formats=["%Y-%m-%d", "%Y-%m-%d %H:%M"]
     )
@@ -263,7 +263,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'total_budget', 'total_consume', 'remaining_budget',
             'xer_file', 
             'created_at', 'updated_at', 
-            # "activities"
+            "activities"
         ]
 
     # ---------- Readable Names ----------
