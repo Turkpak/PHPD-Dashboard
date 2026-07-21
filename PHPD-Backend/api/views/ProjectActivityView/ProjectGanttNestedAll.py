@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from api.models import Project, ProjectActivity, ActivityDelayLog, ProgressImage
 from datetime import datetime
 
+
 def get_delay_info(activity):
-    delay = ActivityDelayLog.objects.filter(activity=activity).order_by('-created_at').first()
+    # delay = ActivityDelayLog.objects.filter(activity=activity).order_by('-created_at').first()
+    delay = next(iter(activity.delay_logs.all()), None)
     if delay:
         action_by_info = None
         if delay.action_by:
@@ -27,23 +29,25 @@ def get_delay_info(activity):
     return None
 
 def get_activity_images(activity):
-    images = ProgressImage.objects.filter(activity=activity)
-    image_list = []
-    if images.exists():
-        image_list = [
-            {
-                "id": img.id,
-                "url": img.image.url if img.image else None,
-                "caption": img.caption,
-                "image_date": img.image_date.isoformat() if img.image_date else None,
-                "uploaded_at": img.uploaded_at.isoformat() if img.uploaded_at else None,
-            }
-            for img in images
-        ]
+    # images = ProgressImage.objects.filter(activity=activity)
+    images = list(activity.progressimage_set.all())
+
+    image_list = [
+        {
+            "id": img.id,
+            "url": img.image.url if img.image else None,
+            "caption": img.caption,
+            "image_date": img.image_date.isoformat() if img.image_date else None,
+            "uploaded_at": img.uploaded_at.isoformat() if img.uploaded_at else None,
+        }
+        for img in images
+    ]
+
     return {
         "has_images": bool(image_list),
-        "images": image_list
+        "images": image_list,
     }
+
 
 def check_task_delay(task):
     actual_end = task.get("actual_end")
@@ -69,16 +73,28 @@ class ProjectGanttAllView(APIView):
 
     def get(self, request):
 
-        projects = Project.objects.all()
+        # projects = Project.objects.all()
+        projects = Project.objects.prefetch_related(
+            Prefetch(
+                "activities",
+                queryset=ProjectActivity.objects.select_related("parent")
+                .prefetch_related(
+                    "delay_logs",
+                    "progressimage_set",
+                )
+                .order_by("id")
+            )
+        )
 
         all_schedules = []
         global_delay_flag = False
 
         for project in projects:
 
-            activities = ProjectActivity.objects.filter(
-                project=project
-            ).select_related('parent').order_by('id')
+            # activities = ProjectActivity.objects.filter(
+            #     project=project
+            # ).select_related('parent').order_by('id')
+            activities = list(project.activities.all())
 
             # -----------------------------
             # group children
