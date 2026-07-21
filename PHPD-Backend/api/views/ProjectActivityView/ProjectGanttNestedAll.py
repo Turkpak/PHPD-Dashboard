@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from api.models import Project, ProjectActivity, ActivityDelayLog, ProgressImage
 from datetime import datetime
-
+from django.db.models import Prefetch
 
 def get_delay_info(activity):
     # delay = ActivityDelayLog.objects.filter(activity=activity).order_by('-created_at').first()
