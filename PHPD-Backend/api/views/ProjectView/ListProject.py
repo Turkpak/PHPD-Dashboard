@@ -37,8 +37,13 @@ class ListProjectView(viewsets.ViewSet):
                         "district__circle",
                         "tehsil",
                     )
-                    .prefetch_related("stakeholder", "activities")
-                    .all()
+                    .prefetch_related(
+                        "stakeholder",
+                        Prefetch(
+                            "activities",
+                            queryset=ProjectActivity.objects.select_related("parent")
+                        ),
+                    )
                 )
                 serializer = ProjectSerializer(queryset, many=True)
                 return ApiResponse(

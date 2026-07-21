@@ -196,9 +196,12 @@ class ProjectActivitySerializer(serializers.ModelSerializer):
     def get_project_name(self, obj):
         return obj.project.project_name
     
+    # def get_duration_display(self, obj):
+    #     # Use total_duration property to include child durations if needed
+    #     duration = getattr(obj, "total_duration", obj.duration) or 0
+    #     return f"{int(duration)} day" if duration == 1 else f"{int(duration)} days"
     def get_duration_display(self, obj):
-        # Use total_duration property to include child durations if needed
-        duration = getattr(obj, "total_duration", obj.duration) or 0
+        duration = obj.duration or 0
         return f"{int(duration)} day" if duration == 1 else f"{int(duration)} days"
 
 class ProgressImageSerializer(serializers.ModelSerializer):
@@ -242,7 +245,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         queryset=Stakeholder.objects.all(),
         required=False
     )
-    activities = ProjectActivitySerializer(many=True, read_only=True)
+    # activities = ProjectActivitySerializer(many=True, read_only=True)
     project_starting_date = serializers.DateField(
         input_formats=["%Y-%m-%d", "%Y-%m-%d %H:%M"]
     )
@@ -259,7 +262,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             'tehsil', 'tehsil_name', 'latitude', 'longitude',
             'total_budget', 'total_consume', 'remaining_budget',
             'xer_file', 
-            'created_at', 'updated_at', "activities"
+            'created_at', 'updated_at', 
+            # "activities"
         ]
 
     # ---------- Readable Names ----------
