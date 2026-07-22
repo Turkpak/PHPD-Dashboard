@@ -11,6 +11,7 @@ import { CityMap } from "@/components/dashboard/CityMap";
 import { CityCompletionChart } from "@/components/comparison/CityCompletionChart";
 
 import { MilestoneDetailsPanel } from "@/components/dashboard/MilestoneDetailsPanel";
+import { exportDashboardToPPTX } from "@/utils/exportToPPTX";
 import {
   PieChart,
   Pie,
@@ -22,9 +23,8 @@ import {
 } from "recharts";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { CardHeader, CardTitle, } from "@/components/ui/card";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
-  listProvinces,
   getProjectGanttAll,
   getProjectGanttData,
   listDivisions,
@@ -40,6 +40,7 @@ import {
   Home,
   Radio,
   TrendingUp,
+  FileDown,
   Filter,
   ChevronDown,
   ChevronUp,
@@ -53,6 +54,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
@@ -63,6 +72,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { listProjects, } from "@/api/project";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
+
+// Keep large dashboard queries stable across route remounts, tab switches and window focus.
+// React Query still fetches immediately when the cache is empty.
+const HIERARCHY_QUERY_OPTIONS = Object.freeze({
+  staleTime: 30 * 60 * 1000,
+  gcTime: 60 * 60 * 1000,
+  cacheTime: 60 * 60 * 1000,
+  retry: 1,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  refetchOnMount: false,
+});
+
+const LARGE_DATA_QUERY_OPTIONS = Object.freeze({
+  staleTime: 5 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  cacheTime: 30 * 60 * 1000,
+  retry: 1,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  refetchOnMount: false,
+  structuralSharing: false,
+});
+
+const EMPTY_MAP_LAYERS = new Set();
 
 // Enhanced installation progress data with sub-projects and planned vs actual
 
@@ -718,50 +752,74 @@ function geometryBboxCenter(geometry) {
   return [(minLat + maxLat) / 2, (minLng + maxLng) / 2];
 }
 
-function buildProjectsFeatureCollection(projects, statusByProjectId) {
+function buildProjectsFeatureCollection(projects, statusByProjectId, includeGeometry = true) {
   const features = [];
-  for (const p of projects) {
-    let normalized = normalizeProjectGeom(p.geom);
 
-    // Fallback to lat/lng if geom is missing
-    if (!normalized && p.latitude && p.longitude) {
-      const lat = Number(p.latitude);
-      const lng = Number(p.longitude);
-      if (Number.isFinite(lat) && Number.isFinite(lng)) {
-        normalized = {
-          type: "Feature",
-          geometry: { type: "Point", coordinates: [lng, lat] },
-          properties: {},
-        };
+  const getProjectCenter = (project, normalized) => {
+    const lat = Number(project?.latitude);
+    const lng = Number(project?.longitude);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return [lat, lng];
+
+    if (normalized?.type === "FeatureCollection" && Array.isArray(normalized.features)) {
+      for (const feature of normalized.features) {
+        if (!feature?.geometry) continue;
+        const center = geometryBboxCenter(feature.geometry);
+        if (center) return center;
       }
+      return null;
+    }
+
+    if (normalized?.type === "Feature" && normalized.geometry) {
+      return geometryBboxCenter(normalized.geometry);
+    }
+    return null;
+  };
+
+  for (const p of projects) {
+    const normalized = normalizeProjectGeom(p.geom);
+    const center = getProjectCenter(p, normalized);
+    const baseProps = {
+      id: p.id,
+      project_name: p.project_name ?? `Project #${p.id}`,
+      status: statusByProjectId.get(Number(p.id)) ?? "pending",
+    };
+
+    // The dashboard map displays project locations only. A marker-only collection avoids
+    // copying and rendering every polygon vertex for 1,000+ projects.
+    if (!includeGeometry) {
+      if (!center) continue;
+      features.push({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [center[1], center[0]] },
+        properties: {
+          ...baseProps,
+          __center: center,
+          __marker: true,
+        },
+      });
+      continue;
     }
 
     if (!normalized) continue;
     const n = normalized;
-    const baseProps = {
-      id: p.id,
-      project_name: p.project_name ?? `Project #${p.id}`,
-      status: statusByProjectId.get(p.id) ?? "pending",
-    };
     let markerAdded = false;
     if (n.type === "FeatureCollection" && Array.isArray(n.features)) {
       for (const f of n.features) {
         if (!f.geometry) continue;
-        const center = geometryBboxCenter(f.geometry);
+        const featureCenter = geometryBboxCenter(f.geometry);
         features.push({
           type: "Feature",
           geometry: f.geometry,
           properties: {
             ...(f.properties || {}),
             ...baseProps,
-            __center: center ?? undefined,
+            __center: featureCenter ?? undefined,
             __marker: !markerAdded,
           },
         });
         markerAdded = true;
       }
     } else if (n.type === "Feature" && n.geometry) {
-      const center = geometryBboxCenter(n.geometry);
       features.push({
         type: "Feature",
         geometry: n.geometry,
@@ -779,10 +837,8 @@ function buildProjectsFeatureCollection(projects, statusByProjectId) {
 }
 
 export default function Dashboard() {
-  const { isCollapsed, setCollapsed, setMobileSidebarOpen } = useSidebar();
+  const { isCollapsed, setCollapsed } = useSidebar();
   const sidebarPrevCollapsedRef = useRef(null);
-  const skipSidebarCollapseRef = useRef(false);
-  const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
   const [viewType, setViewType] = useState
 
@@ -790,7 +846,9 @@ export default function Dashboard() {
   const [selectedItemName, setSelectedItemName] = useState(null);
   const [selectedItemType, setSelectedItemType] = useState
 
-(null);
+    (null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [expandedDivisions, setExpandedDivisions] = useState(false);
   const [expandedDistricts, setExpandedDistricts] = useState(false);
   const [expandedTehsilGroups, setExpandedTehsilGroups] = useState
@@ -838,34 +896,34 @@ export default function Dashboard() {
   );
   const skipNextUrlSyncRef = useRef(false);
 
-  const EMPTY_ARRAY = useMemo(() => [], []);
-
   // API queries
-  const { data: apiDivisions = EMPTY_ARRAY } = useQuery({
+  const { data: apiDivisions = [] } = useQuery({
     queryKey: ["divisions"],
     queryFn: () => listDivisions(),
+    ...HIERARCHY_QUERY_OPTIONS,
   });
-  const { data: apiZones = EMPTY_ARRAY } = useQuery({
-    queryKey: ["zones"],
-    queryFn: () => listProvinces(),
-  });
-  const { data: apiDistricts = EMPTY_ARRAY } = useQuery({
+  const { data: apiDistricts = [] } = useQuery({
     queryKey: ["districts"],
     queryFn: () => listDistricts(),
+    ...HIERARCHY_QUERY_OPTIONS,
   });
-  const { data: apiTehsils = EMPTY_ARRAY } = useQuery({
+  const { data: apiTehsils = [] } = useQuery({
     queryKey: ["tehsils"],
     queryFn: () => listTehsils(),
+    ...HIERARCHY_QUERY_OPTIONS,
   });
-  const { data: apiProjects = EMPTY_ARRAY } = useQuery({
+  const { data: apiProjects = [] } = useQuery({
     queryKey: ["projects"],
     queryFn: () => listProjects(),
+    ...LARGE_DATA_QUERY_OPTIONS,
   });
 
   // Fetch all gantt schedules once and use root task progress for each project card.
-  const { data: apiProjectGanttAll = EMPTY_ARRAY } = useQuery({
+  const { data: apiProjectGanttAll = [] } = useQuery({
     queryKey: ["project-gantt-all"],
     queryFn: () => getProjectGanttAll(),
+    enabled: apiProjects.length > 0,
+    ...LARGE_DATA_QUERY_OPTIONS,
   });
 
   const ganttProgressByProjectId = useMemo(() => {
@@ -917,19 +975,13 @@ export default function Dashboard() {
     let sum = 0;
     let count = 0;
     for (const p of apiProjects) {
-      const v = ganttProgressByProjectId.get(p.id);
+      const v = ganttProgressByProjectId.get(Number(p.id));
       if (v === undefined) continue;
       sum += v;
       count++;
     }
     return count > 0 ? sum / count : 0;
   }, [apiProjects, ganttProgressByProjectId]);
-
-  const zoneNameById = useMemo(() => {
-    const map = new Map();
-    for (const z of apiZones) map.set(Number(z.id), z.zone_name || z.province_name);
-    return map;
-  }, [apiZones]);
 
   const divisionNameById = useMemo(() => {
     const map = new Map();
@@ -949,24 +1001,71 @@ export default function Dashboard() {
     return map;
   }, [apiTehsils]);
 
+  // Build lookup indexes once. This replaces repeated full-array scans during every render.
+  const projectIndexes = useMemo(() => {
+    const byId = new Map();
+    const byDivision = new Map();
+    const byDistrict = new Map();
+    const byTehsil = new Map();
+
+    const push = (map, key, value) => {
+      const numericKey = Number(key);
+      if (!Number.isFinite(numericKey)) return;
+      const list = map.get(numericKey);
+      if (list) list.push(value);
+      else map.set(numericKey, [value]);
+    };
+
+    for (const project of apiProjects) {
+      const projectId = Number(project.id);
+      if (Number.isFinite(projectId)) byId.set(projectId, project);
+      push(byDivision, project.division ?? project.circle, project);
+      push(byDistrict, project.district, project);
+      push(byTehsil, project.tehsil, project);
+    }
+
+    return { byId, byDivision, byDistrict, byTehsil };
+  }, [apiProjects]);
+
+  const hierarchyIndexes = useMemo(() => {
+    const districtsByDivision = new Map();
+    const tehsilsByDistrict = new Map();
+    const push = (map, key, value) => {
+      const numericKey = Number(key);
+      if (!Number.isFinite(numericKey)) return;
+      const list = map.get(numericKey);
+      if (list) list.push(value);
+      else map.set(numericKey, [value]);
+    };
+    for (const district of apiDistricts) {
+      push(districtsByDivision, district.division ?? district.circle, district);
+    }
+    for (const tehsil of apiTehsils) {
+      push(tehsilsByDistrict, tehsil.district, tehsil);
+    }
+    return { districtsByDivision, tehsilsByDistrict };
+  }, [apiDistricts, apiTehsils]);
+
+  const getProjectsForScope = useCallback((scopeType, scopeId) => {
+    const id = Number(scopeId);
+    if (!Number.isFinite(id)) return [];
+    if (scopeType === "division") return projectIndexes.byDivision.get(id) ?? [];
+    if (scopeType === "district") return projectIndexes.byDistrict.get(id) ?? [];
+    return projectIndexes.byTehsil.get(id) ?? [];
+  }, [projectIndexes]);
+
   const projectsForTable = useMemo(() => {
     const rows = apiProjects.map((p) => {
       const pid = Number(p.id);
       const progressPct = _nullishCoalesce(ganttProgressByProjectId.get(pid), () => (0));
-      const circleName = divisionNameById.get(Number(p.division)) || "—";
-      const circle = apiDivisions.find((d) => Number(d.id) === Number(p.division));
-      const zoneName =
-        zoneNameById.get(Number(circle?.zone ?? circle?.province)) ||
-        circle?.zone_name ||
-        circle?.province_name ||
-        "—";
+      const divName = divisionNameById.get(Number(p.division)) || "—";
       const distName = districtNameById.get(Number(p.district)) || "—";
       const tehName = tehsilNameById.get(Number(p.tehsil)) || "—";
       return {
         id: pid,
         name: _nullishCoalesce(p.project_name, () => (`Project #${pid}`)),
         progressPct,
-        locationLabel: `${zoneName} / ${circleName} / ${distName} / ${tehName}`,
+        locationLabel: `${divName} / ${distName} / ${tehName}`,
       };
     });
 
@@ -975,7 +1074,7 @@ export default function Dashboard() {
       return a.name.localeCompare(b.name);
     });
     return rows;
-  }, [apiProjects, apiDivisions, ganttProgressByProjectId, divisionNameById, districtNameById, tehsilNameById, zoneNameById]);
+  }, [apiProjects, ganttProgressByProjectId, divisionNameById, districtNameById, tehsilNameById]);
 
   const divisionCompletionData = useMemo(() => {
     if (!Array.isArray(apiDivisions) || apiDivisions.length === 0) return [];
@@ -993,7 +1092,7 @@ export default function Dashboard() {
       let sum = 0;
       let count = 0;
       for (const p of ps) {
-        const v = ganttProgressByProjectId.get(p.id);
+        const v = ganttProgressByProjectId.get(Number(p.id));
         if (v === undefined) continue;
         sum += v;
         count++;
@@ -1003,15 +1102,15 @@ export default function Dashboard() {
 
     return apiDivisions
       .map((div) => {
-        const divDistricts = apiDistricts.filter((d) => d.division === div.id);
+        const divDistricts = hierarchyIndexes.districtsByDivision.get(Number(div.id)) ?? [];
         const districtOveralls = [];
 
         for (const dist of divDistricts) {
-          const distTehsils = apiTehsils.filter((t) => t.district === dist.id);
+          const distTehsils = hierarchyIndexes.tehsilsByDistrict.get(Number(dist.id)) ?? [];
           const tehsilOveralls = [];
 
           for (const tehsil of distTehsils) {
-            const tehsilProjects = apiProjects.filter((p) => p.tehsil === tehsil.id);
+            const tehsilProjects = projectIndexes.byTehsil.get(Number(tehsil.id)) ?? [];
             const overall = calcProjectsOverall(tehsilProjects);
             if (tehsilProjects.length > 0) tehsilOveralls.push(overall);
           }
@@ -1026,7 +1125,7 @@ export default function Dashboard() {
         };
       })
       .sort((a, b) => b.completion - a.completion);
-  }, [apiDivisions, apiDistricts, apiTehsils, apiProjects, ganttProgressByProjectId]);
+  }, [apiDivisions, hierarchyIndexes, projectIndexes, ganttProgressByProjectId]);
 
   const toSlug = (value) =>
     value
@@ -1037,40 +1136,16 @@ export default function Dashboard() {
 
   // Hydrate dashboard hierarchy state from clean URL query params (slug-based, no IDs).
   useEffect(() => {
-    if (apiZones.length === 0 || apiDivisions.length === 0 || apiDistricts.length === 0 || apiTehsils.length === 0) return;
+    if (apiDivisions.length === 0 || apiDistricts.length === 0 || apiTehsils.length === 0) return;
 
     const urlParams = new URLSearchParams(window.location.search);
     const level = urlParams.get("level");
     const viewParam = urlParams.get("view");
-
-    // Helper to update state only if it changed, to prevent loops.
-    const safeSet = (setter, current, next) => {
-      if (current !== next) {
-        skipNextUrlSyncRef.current = true;
-        setter(next);
-      }
-    };
-
     if (viewParam === "divisions" || viewParam === "districts" || viewParam === "tehsils" || viewParam === "projects") {
-      safeSet(setViewType, viewType, viewParam);
+      setViewType(viewParam);
     }
 
-    const zoneSlug = urlParams.get("zone");
     const divisionSlug = urlParams.get("division");
-    if (level === "zone" && zoneSlug) {
-      const foundZone = apiZones.find((z) => toSlug(z.zone_name || z.province_name) === zoneSlug);
-      if (foundZone) {
-        safeSet(setSelectedItemType, selectedItemType, "zone");
-        safeSet(setSelectedItemId, selectedItemId, foundZone.id);
-        safeSet(setSelectedItemName, selectedItemName, foundZone.zone_name || foundZone.province_name);
-        safeSet(setParentDivisionId, parentDivisionId, null);
-        safeSet(setParentDivisionName, parentDivisionName, null);
-        safeSet(setParentDistrictId, parentDistrictId, null);
-        safeSet(setParentDistrictName, parentDistrictName, null);
-      }
-      return;
-    }
-
     const districtSlug = urlParams.get("district");
     const tehsilSlug = urlParams.get("tehsil");
 
@@ -1079,17 +1154,17 @@ export default function Dashboard() {
         if (toSlug(t.tehsil_name) !== tehsilSlug) return false;
         if (districtSlug && toSlug(t.district_name) !== districtSlug) return false;
         if (divisionSlug && toSlug(t.division_name) !== divisionSlug) return false;
-        if (zoneSlug && toSlug(t.zone_name || t.province_name) !== zoneSlug) return false;
         return true;
       });
       if (foundTehsil) {
-        safeSet(setSelectedItemType, selectedItemType, "tehsil");
-        safeSet(setSelectedItemId, selectedItemId, foundTehsil.id);
-        safeSet(setSelectedItemName, selectedItemName, foundTehsil.tehsil_name);
-        safeSet(setParentDistrictId, parentDistrictId, foundTehsil.district);
-        safeSet(setParentDistrictName, parentDistrictName, foundTehsil.district_name);
-        safeSet(setParentDivisionId, parentDivisionId, foundTehsil.division);
-        safeSet(setParentDivisionName, parentDivisionName, foundTehsil.division_name);
+        skipNextUrlSyncRef.current = true;
+        setSelectedItemType("tehsil");
+        setSelectedItemId(foundTehsil.id);
+        setSelectedItemName(foundTehsil.tehsil_name);
+        setParentDistrictId(foundTehsil.district);
+        setParentDistrictName(foundTehsil.district_name);
+        setParentDivisionId(foundTehsil.division);
+        setParentDivisionName(foundTehsil.division_name);
       }
       return;
     }
@@ -1098,17 +1173,17 @@ export default function Dashboard() {
       const foundDistrict = apiDistricts.find((d) => {
         if (toSlug(d.district_name) !== districtSlug) return false;
         if (divisionSlug && toSlug(d.division_name) !== divisionSlug) return false;
-        if (zoneSlug && toSlug(d.zone_name || d.province_name) !== zoneSlug) return false;
         return true;
       });
       if (foundDistrict) {
-        safeSet(setSelectedItemType, selectedItemType, "district");
-        safeSet(setSelectedItemId, selectedItemId, foundDistrict.id);
-        safeSet(setSelectedItemName, selectedItemName, foundDistrict.district_name);
-        safeSet(setParentDivisionId, parentDivisionId, foundDistrict.division);
-        safeSet(setParentDivisionName, parentDivisionName, foundDistrict.division_name);
-        safeSet(setParentDistrictId, parentDistrictId, null);
-        safeSet(setParentDistrictName, parentDistrictName, null);
+        skipNextUrlSyncRef.current = true;
+        setSelectedItemType("district");
+        setSelectedItemId(foundDistrict.id);
+        setSelectedItemName(foundDistrict.district_name);
+        setParentDivisionId(foundDistrict.division);
+        setParentDivisionName(foundDistrict.division_name);
+        setParentDistrictId(null);
+        setParentDistrictName(null);
       }
       return;
     }
@@ -1116,13 +1191,14 @@ export default function Dashboard() {
     if (level === "division" && divisionSlug) {
       const foundDivision = apiDivisions.find((d) => toSlug(d.division_name) === divisionSlug);
       if (foundDivision) {
-        safeSet(setSelectedItemType, selectedItemType, "division");
-        safeSet(setSelectedItemId, selectedItemId, foundDivision.id);
-        safeSet(setSelectedItemName, selectedItemName, foundDivision.division_name);
-        safeSet(setParentDivisionId, parentDivisionId, foundDivision.zone || foundDivision.province || null);
-        safeSet(setParentDivisionName, parentDivisionName, foundDivision.zone_name || foundDivision.province_name || null);
-        safeSet(setParentDistrictId, parentDistrictId, null);
-        safeSet(setParentDistrictName, parentDistrictName, null);
+        skipNextUrlSyncRef.current = true;
+        setSelectedItemType("division");
+        setSelectedItemId(foundDivision.id);
+        setSelectedItemName(foundDivision.division_name);
+        setParentDivisionId(null);
+        setParentDivisionName(null);
+        setParentDistrictId(null);
+        setParentDistrictName(null);
       }
       return;
     }
@@ -1134,16 +1210,17 @@ export default function Dashboard() {
         (t) => t.tehsil_name.toLowerCase() === decodeURIComponent(tehsilParam).toLowerCase(),
       );
       if (found) {
-        safeSet(setSelectedItemName, selectedItemName, found.tehsil_name);
-        safeSet(setSelectedItemType, selectedItemType, "tehsil");
-        safeSet(setSelectedItemId, selectedItemId, found.id);
-        safeSet(setParentDistrictId, parentDistrictId, found.district);
-        safeSet(setParentDistrictName, parentDistrictName, found.district_name);
-        safeSet(setParentDivisionId, parentDivisionId, found.division);
-        safeSet(setParentDivisionName, parentDivisionName, found.division_name);
+        skipNextUrlSyncRef.current = true;
+        setSelectedItemName(found.tehsil_name);
+        setSelectedItemType("tehsil");
+        setSelectedItemId(found.id);
+        setParentDistrictId(found.district);
+        setParentDistrictName(found.district_name);
+        setParentDivisionId(found.division);
+        setParentDivisionName(found.division_name);
       }
     }
-  }, [window.location.search, apiZones, apiDivisions, apiDistricts, apiTehsils]);
+  }, [location, apiDivisions, apiDistricts, apiTehsils]);
 
   // Keep URL in sync with drilldown selection.
   useEffect(() => {
@@ -1155,15 +1232,9 @@ export default function Dashboard() {
     const params = new URLSearchParams();
     if (viewType) params.set("view", viewType);
 
-    if (selectedItemType === "zone" && selectedItemId && selectedItemName) {
-      params.set("level", "zone");
-      params.set("zone", toSlug(selectedItemName));
-    } else if (selectedItemType === "division" && selectedItemId && selectedItemName) {
+    if (selectedItemType === "division" && selectedItemId && selectedItemName) {
       params.set("level", "division");
       params.set("division", toSlug(selectedItemName));
-      if (parentDivisionId && parentDivisionName) {
-        params.set("zone", toSlug(parentDivisionName));
-      }
     } else if (selectedItemType === "district" && selectedItemId && selectedItemName) {
       params.set("level", "district");
       params.set("district", toSlug(selectedItemName));
@@ -1181,18 +1252,12 @@ export default function Dashboard() {
       }
     }
 
-    const nextUrl = params.toString() ? `/?${params.toString()}` : "/";
-    const currentParams = new URLSearchParams(window.location.search);
-    
-    // Sort both to ensure consistent comparison regardless of order
-    params.sort();
-    currentParams.sort();
-    
-    const isDifferent = 
-      window.location.pathname !== "/" || 
-      params.toString() !== currentParams.toString();
-
-    if (isDifferent) {
+    // Preserve the dashboard's deployed pathname. Using a hard-coded "/" can
+    // create a redirect/remount loop when the live app is hosted at /dashboard or a sub-path.
+    const dashboardPath = window.location.pathname || "/";
+    const nextUrl = params.toString() ? `${dashboardPath}?${params.toString()}` : dashboardPath;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (currentUrl !== nextUrl) {
       setLocation(nextUrl);
     }
   }, [
@@ -1218,10 +1283,11 @@ export default function Dashboard() {
 
   // Reset pagination when switching to projects view or when the list changes.
   useEffect(() => {
-    if (viewType === "projects") {
-      setProjectsPage((prev) => (prev !== 1 ? 1 : prev));
-      setProjectsTablePage((prev) => (prev !== 1 ? 1 : prev));
-    }
+    if (viewType === "projects") setProjectsPage(1);
+  }, [viewType, apiProjects.length]);
+
+  useEffect(() => {
+    if (viewType === "projects") setProjectsTablePage(1);
   }, [viewType]);
 
   // clear project selection when leaving tehsil view or projects view
@@ -1270,7 +1336,7 @@ export default function Dashboard() {
     const pid = _optionalChain([selectedProjectForDetails, 'optionalAccess', _17 => _17.id]);
     if (!pid) return;
     try {
-      const data = await getProjectGanttData(pid);
+      const data = await getProjectGanttData(pid, { force: true });
       setSelectedProjectGanttTasks(Array.isArray(data) ? data : []);
     } catch (e3) {
       setSelectedProjectGanttTasks([]);
@@ -1283,17 +1349,12 @@ export default function Dashboard() {
     // Only auto-collapse once on open. Do NOT keep forcing it closed,
     // so the user can expand/collapse via the sidebar icon while Gantt is open.
     if (detailsOpen) {
-      if (skipSidebarCollapseRef.current) {
-        skipSidebarCollapseRef.current = false;
-        return;
-      }
       if (sidebarPrevCollapsedRef.current == null) {
         sidebarPrevCollapsedRef.current = isCollapsed;
         setCollapsed(true);
       }
       return;
     }
-    skipSidebarCollapseRef.current = false;
     if (sidebarPrevCollapsedRef.current != null) {
       setCollapsed(sidebarPrevCollapsedRef.current);
       sidebarPrevCollapsedRef.current = null;
@@ -1329,43 +1390,37 @@ export default function Dashboard() {
       },
     ];
 
-    if (selectedItemType === "zone" && selectedItemName) {
-      flow.push({
-        key: "zone",
-        label: `${selectedItemName} Zone`,
-        clickable: false,
-      });
-    } else if (selectedItemType === "division" && selectedItemName) {
+    if (selectedItemType === "division" && selectedItemName) {
       flow.push({
         key: "division",
-        label: `${selectedItemName} Circle`,
+        label: `${selectedItemName} Zone`,
         clickable: false,
       });
     } else if (selectedItemType === "district" && selectedItemName) {
       if (parentDivisionName) {
         flow.push({
           key: "division",
-          label: `${parentDivisionName} Circle`,
+          label: `${parentDivisionName} Zone`,
           clickable: true,
         });
       }
       flow.push({
         key: "district",
-        label: `${selectedItemName} District`,
+        label: `${selectedItemName} Circle`,
         clickable: false,
       });
     } else if (selectedItemType === "tehsil" && selectedItemName) {
       if (parentDivisionName) {
         flow.push({
           key: "division",
-          label: `${parentDivisionName} Circle`,
+          label: `${parentDivisionName} Zone`,
           clickable: true,
         });
       }
       if (parentDistrictName) {
         flow.push({
           key: "district",
-          label: `${parentDistrictName} District`,
+          label: `${parentDistrictName} Circle`,
           clickable: true,
         });
       }
@@ -1397,13 +1452,6 @@ export default function Dashboard() {
       return;
     }
 
-    if (level === "zone" && selectedItemType === "zone" && selectedItemId && selectedItemName) {
-      setSelectedItemId(selectedItemId);
-      setSelectedItemName(selectedItemName);
-      setSelectedItemType("zone");
-      return;
-    }
-
     if (level === "division" && parentDivisionId && parentDivisionName) {
       setSelectedItemId(parentDivisionId);
       setSelectedItemName(parentDivisionName);
@@ -1426,7 +1474,7 @@ export default function Dashboard() {
     let sum = 0;
     let count = 0;
     for (const p of projects) {
-      const v = ganttProgressByProjectId.get(p.id);
+      const v = ganttProgressByProjectId.get(Number(p.id));
       if (v === undefined) continue;
       sum += v;
       count++;
@@ -1446,27 +1494,24 @@ export default function Dashboard() {
     const roundPct = (n) => Math.max(0, Math.min(100, Number(n.toFixed(2))));
 
     const tehsilOverall = (tehsilId) => {
-      const tehsilProjects = apiProjects.filter((p) => p.tehsil === tehsilId);
+      const tehsilProjects = projectIndexes.byTehsil.get(Number(tehsilId)) ?? [];
       if (tehsilProjects.length === 0) return 0;
       return calcProjectsOverall(tehsilProjects);
     };
 
     const districtOverallFromTehsils = (districtId) => {
-      const distTehsils = apiTehsils.filter((t) => t.district === districtId);
+      const distTehsils = hierarchyIndexes.tehsilsByDistrict.get(Number(districtId)) ?? [];
       if (distTehsils.length === 0) return 0;
       const tehsilOveralls = distTehsils.map((t) => tehsilOverall(t.id));
       return avg(tehsilOveralls);
     };
 
-    if (selectedItemType === "zone") {
-      const zoneCircles = apiDivisions.filter((d) => Number(d.zone ?? d.province) === Number(selectedItemId));
-      const rows = zoneCircles.map((c) => {
-        const circleProjects = apiProjects.filter((p) => Number(p.division) === Number(c.id));
-        return {
-          phase: c.division_name,
-          percentage: roundPct(calcProjectsOverall(circleProjects)),
-        };
-      });
+    if (selectedItemType === "division") {
+      const divDistricts = hierarchyIndexes.districtsByDivision.get(Number(selectedItemId)) ?? [];
+      const rows = divDistricts.map((d) => ({
+        phase: d.district_name,
+        percentage: roundPct(districtOverallFromTehsils(d.id)),
+      }));
       return {
         title: "Circle Progress Distribution",
         description: "Progress % of all circles within the selected zone",
@@ -1474,21 +1519,8 @@ export default function Dashboard() {
       };
     }
 
-    if (selectedItemType === "division") {
-      const divDistricts = apiDistricts.filter((d) => d.division === selectedItemId);
-      const rows = divDistricts.map((d) => ({
-        phase: d.district_name,
-        percentage: roundPct(districtOverallFromTehsils(d.id)),
-      }));
-      return {
-        title: "District Progress Distribution",
-        description: "Progress % of all districts within the selected circle",
-        data: rows.sort((a, b) => b.percentage - a.percentage),
-      };
-    }
-
     if (selectedItemType === "district") {
-      const distTehsils = apiTehsils.filter((t) => t.district === selectedItemId);
+      const distTehsils = hierarchyIndexes.tehsilsByDistrict.get(Number(selectedItemId)) ?? [];
       const rows = distTehsils.map((t) => ({
         phase: t.tehsil_name,
         percentage: roundPct(tehsilOverall(t.id)),
@@ -1504,10 +1536,8 @@ export default function Dashboard() {
   }, [
     selectedItemType,
     selectedItemId,
-    apiDivisions,
-    apiDistricts,
-    apiTehsils,
-    apiProjects,
+    hierarchyIndexes,
+    projectIndexes,
     ganttProgressByProjectId,
   ]);
 
@@ -1525,20 +1555,7 @@ export default function Dashboard() {
     itemType,
   ) => {
     if (!itemId) return null;
-    let filtered;
-    if (itemType === "zone") {
-      const circleIds = apiDivisions
-        .filter((c) => Number(c.zone ?? c.province) === Number(itemId))
-        .map((c) => Number(c.id));
-      filtered = apiProjects.filter((p) => circleIds.includes(Number(p.division)));
-    } else if (itemType === "division") {
-      filtered = apiProjects.filter((p) => p.division === itemId);
-    } else if (itemType === "district") {
-      filtered = apiProjects.filter((p) => p.district === itemId);
-    } else {
-      filtered = apiProjects.filter((p) => p.tehsil === itemId);
-    }
-    return getAggregatedDataFromProjects(filtered);
+    return getAggregatedDataFromProjects(getProjectsForScope(itemType, itemId));
   };
 
   // Get single item data
@@ -1547,25 +1564,13 @@ export default function Dashboard() {
       return getSingleItemData(selectedItemId, selectedItemType);
     }
     return null;
-  }, [selectedItemId, selectedItemType, apiProjects]);
+  }, [selectedItemId, selectedItemType, getProjectsForScope, ganttProgressByProjectId]);
 
-  // Projects in the currently selected geography (zone / circle / district / tehsil) for "Best Performing Projects" cards
+  // Projects in the currently selected geography (division / district / tehsil) for "Best Performing Projects" cards
   const projectsInSelectedGeography = useMemo(() => {
     if (!selectedItemId || !selectedItemType) return [];
-    if (selectedItemType === "zone") {
-      const circleIds = apiDivisions
-        .filter((c) => Number(c.zone ?? c.province) === Number(selectedItemId))
-        .map((c) => Number(c.id));
-      return apiProjects.filter((p) => circleIds.includes(Number(p.division)));
-    }
-    if (selectedItemType === "division") {
-      return apiProjects.filter((p) => p.division === selectedItemId);
-    }
-    if (selectedItemType === "district") {
-      return apiProjects.filter((p) => p.district === selectedItemId);
-    }
-    return apiProjects.filter((p) => p.tehsil === selectedItemId);
-  }, [selectedItemId, selectedItemType, apiDivisions, apiProjects]);
+    return getProjectsForScope(selectedItemType, selectedItemId);
+  }, [selectedItemId, selectedItemType, getProjectsForScope]);
 
   // Projects to show on the embedded GIS map (matches current dashboard scope).
   const mapScopeProjects = useMemo(() => {
@@ -1574,8 +1579,13 @@ export default function Dashboard() {
   }, [selectedItemId, selectedItemType, projectsInSelectedGeography, apiProjects]);
 
   const dashboardMapGeoData = useMemo(() => {
-    return buildProjectsFeatureCollection(mapScopeProjects, projectStatusById) || undefined;
+    return buildProjectsFeatureCollection(mapScopeProjects, projectStatusById, false) || undefined;
   }, [mapScopeProjects, projectStatusById]);
+
+  const handleMapProjectSelect = useCallback((projectId) => {
+    const project = projectIndexes.byId.get(Number(projectId));
+    if (project) setSelectedProjectForDetails(project);
+  }, [projectIndexes]);
 
   // Get aggregated data based on view type (all projects)
   const aggregatedData = useMemo(() => {
@@ -1597,21 +1607,18 @@ export default function Dashboard() {
       .slice(0, 6);
   }, [apiProjects]);
 
-  // Overall for All Punjab Zones (average of zone overalls)
+  // Overall for All Punjab Divisions (average of division overalls)
   const allDivisionsOverall = useMemo(() => {
-    if (apiZones.length === 0) return 0;
+    if (apiDivisions.length === 0) return 0;
     let sum = 0;
     let count = 0;
-    for (const zone of apiZones) {
-      const zoneCircleIds = apiDivisions
-        .filter((c) => Number(c.zone ?? c.province) === Number(zone.id))
-        .map((c) => Number(c.id));
-      const projects = apiProjects.filter((p) => zoneCircleIds.includes(Number(p.division)));
+    for (const div of apiDivisions) {
+      const projects = projectIndexes.byDivision.get(Number(div.id)) ?? [];
       sum += calcProjectsOverall(projects);
       count++;
     }
     return count > 0 ? sum / count : 0;
-  }, [apiZones, apiDivisions, apiProjects]);
+  }, [apiDivisions, projectIndexes, ganttProgressByProjectId]);
 
   // Overall for All Punjab Districts (average of district overalls)
   const allDistrictsOverall = useMemo(() => {
@@ -1619,65 +1626,12 @@ export default function Dashboard() {
     let sum = 0;
     let count = 0;
     for (const dist of apiDistricts) {
-      const projects = apiProjects.filter((p) => p.district === dist.id);
+      const projects = projectIndexes.byDistrict.get(Number(dist.id)) ?? [];
       sum += calcProjectsOverall(projects);
       count++;
     }
     return count > 0 ? sum / count : 0;
-  }, [apiDistricts, apiProjects]);
-
-  // Overall for All Punjab Circles (average of circle overalls)
-  const allCirclesOverall = useMemo(() => {
-    if (apiDivisions.length === 0) return 0;
-    let sum = 0;
-    let count = 0;
-    for (const circle of apiDivisions) {
-      const projects = apiProjects.filter((p) => p.division === circle.id);
-      sum += calcProjectsOverall(projects);
-      count++;
-    }
-    return count > 0 ? sum / count : 0;
-  }, [apiDivisions, apiProjects]);
-
-  // Financial utilization (average of unit utilizations)
-  const allZonesFinancialOverall = useMemo(() => {
-    if (apiZones.length === 0) return 0;
-    let sum = 0;
-    let count = 0;
-    for (const zone of apiZones) {
-      const zoneCircleIds = apiDivisions
-        .filter((c) => Number(c.zone ?? c.province) === Number(zone.id))
-        .map((c) => Number(c.id));
-      const projects = apiProjects.filter((p) => zoneCircleIds.includes(Number(p.division)));
-      sum += calcOverallProgress(projects);
-      count++;
-    }
-    return count > 0 ? sum / count : 0;
-  }, [apiZones, apiDivisions, apiProjects]);
-
-  const allCirclesFinancialOverall = useMemo(() => {
-    if (apiDivisions.length === 0) return 0;
-    let sum = 0;
-    let count = 0;
-    for (const circle of apiDivisions) {
-      const projects = apiProjects.filter((p) => p.division === circle.id);
-      sum += calcOverallProgress(projects);
-      count++;
-    }
-    return count > 0 ? sum / count : 0;
-  }, [apiDivisions, apiProjects]);
-
-  const allDistrictsFinancialOverall = useMemo(() => {
-    if (apiDistricts.length === 0) return 0;
-    let sum = 0;
-    let count = 0;
-    for (const dist of apiDistricts) {
-      const projects = apiProjects.filter((p) => p.district === dist.id);
-      sum += calcOverallProgress(projects);
-      count++;
-    }
-    return count > 0 ? sum / count : 0;
-  }, [apiDistricts, apiProjects]);
+  }, [apiDistricts, projectIndexes, ganttProgressByProjectId]);
 
   // Context theme: follow the currently visible/selected area overall %
   const contextOverall = useMemo(() => {
@@ -1685,11 +1639,11 @@ export default function Dashboard() {
     if (viewType === "projects" && !selectedItemName && !selectedItemType)
       return allProjectsOverallFromGantt;
     if (viewType === "tehsils" && !selectedItemName && !selectedItemType)
-      return allDistrictsOverall;
+      return allProjectsOverallFromGantt;
     if (viewType === "divisions" && !selectedItemName && !selectedItemType)
       return allDivisionsOverall;
     if (viewType === "districts" && !selectedItemName && !selectedItemType)
-      return allCirclesOverall;
+      return allDistrictsOverall;
     return _nullishCoalesce(_optionalChain([aggregatedData, 'optionalAccess', _21 => _21.overall]), () => (0));
   }, [
     selectedItemName,
@@ -1700,7 +1654,6 @@ export default function Dashboard() {
     allProjectsOverallFromGantt,
     allDivisionsOverall,
     allDistrictsOverall,
-    allCirclesOverall,
   ]);
 
   const contextTheme = useMemo(() => {
@@ -1716,49 +1669,28 @@ export default function Dashboard() {
     };
   }, [contextOverall]);
 
-  // Zones data for cards view (API-driven)
-  const zonesData = useMemo(() => {
-    return apiZones
-      .map((zone, index) => {
-        const circleIds = apiDivisions
-          .filter((c) => Number(c.zone ?? c.province) === Number(zone.id))
-          .map((c) => Number(c.id));
-        const projects = apiProjects.filter((p) => circleIds.includes(Number(p.division)));
-        const overall = calcProjectsOverall(projects);
-        return {
-          id: zone.id,
-          name: zone.zone_name || zone.province_name,
-          overall,
-          data: generateCityDataFromOverall(overall),
-          color: CARD_COLORS[index % CARD_COLORS.length],
-        };
-      })
-      .sort((a, b) => b.overall - a.overall);
-  }, [apiZones, apiDivisions, apiProjects]);
-
-  // Circles data for cards view (API-driven)
+  // Divisions data for cards view (API-driven)
   const divisionsData = useMemo(() => {
     return apiDivisions
       .map((div, index) => {
-        const projects = apiProjects.filter((p) => p.division === div.id);
+        const projects = projectIndexes.byDivision.get(Number(div.id)) ?? [];
         const overall = calcProjectsOverall(projects);
         return {
           id: div.id,
           name: div.division_name,
-          zoneId: div.zone ?? div.province,
           overall,
           data: generateCityDataFromOverall(overall),
           color: CARD_COLORS[index % CARD_COLORS.length],
         };
       })
       .sort((a, b) => b.overall - a.overall);
-  }, [apiDivisions, apiProjects]);
+  }, [apiDivisions, projectIndexes, ganttProgressByProjectId]);
 
   // Districts data for cards view (API-driven)
   const districtsData = useMemo(() => {
     return apiDistricts
       .map((dist, index) => {
-        const projects = apiProjects.filter((p) => p.district === dist.id);
+        const projects = projectIndexes.byDistrict.get(Number(dist.id)) ?? [];
         const overall = calcProjectsOverall(projects);
         return {
           id: dist.id,
@@ -1770,7 +1702,7 @@ export default function Dashboard() {
         };
       })
       .sort((a, b) => b.overall - a.overall);
-  }, [apiDistricts, apiProjects]);
+  }, [apiDistricts, projectIndexes, ganttProgressByProjectId]);
 
 
   // Tehsils data grouped by district name (API-driven)
@@ -1789,7 +1721,7 @@ export default function Dashboard() {
     apiTehsils.forEach((teh, index) => {
       const districtName = teh.district_name;
       if (!result[districtName]) result[districtName] = [];
-      const projects = apiProjects.filter((p) => p.tehsil === teh.id);
+      const projects = projectIndexes.byTehsil.get(Number(teh.id)) ?? [];
       const overall = calcProjectsOverall(projects);
       result[districtName].push({
         id: teh.id,
@@ -1805,7 +1737,7 @@ export default function Dashboard() {
       result[district].sort((a, b) => b.overall - a.overall);
     });
     return result;
-  }, [apiTehsils, apiProjects]);
+  }, [apiTehsils, projectIndexes, ganttProgressByProjectId]);
 
   // Skeleton loader component
   const renderSkeletonLoader = () => (
@@ -1961,29 +1893,34 @@ export default function Dashboard() {
     const getActivityProgress = (a) =>
       clamp01(num(_nullishCoalesce(_nullishCoalesce(_optionalChain([a, 'optionalAccess', _22 => _22.progress]), () => (_optionalChain([a, 'optionalAccess', _23 => _23.percent_complete]))), () => (0))));
 
-    // Donut chart values must match the header cards:
-    // - For drilldown (zone/circle/district/tehsil selection) -> compute directly from filtered projects.
-    // - For aggregated tabs (All Zones/Circles/Districts) -> compute average-of-groups (same as header).
-    let utilizationPct = 0; // financial actual %
-    let physicalPct = 0; // physical actual %
+    // Financial utilization % (All divisions / scoped)
+    const sumBudgetAllocated = scopeProjects.reduce(
+      (acc, p) => acc + num(_optionalChain([(p), 'optionalAccess', _24 => _24.total_budget_allocated])),
+      0,
+    );
+    const sumBudgetUtilized = scopeProjects.reduce(
+      (acc, p) => acc + num(_optionalChain([(p), 'optionalAccess', _25 => _25.budget_utilized])),
+      0,
+    );
+    const utilizationPct =
+      sumBudgetAllocated > 0 ? clamp01((sumBudgetUtilized / sumBudgetAllocated) * 100) : 0;
 
-    if (isAggregatedView) {
-      if (viewType === "divisions") {
-        physicalPct = allDivisionsOverall;
-        utilizationPct = allZonesFinancialOverall;
-      } else if (viewType === "districts") {
-        physicalPct = allCirclesOverall;
-        utilizationPct = allCirclesFinancialOverall;
-      } else if (viewType === "tehsils") {
-        // Note: in this UI, `viewType==="tehsils"` corresponds to "All Punjab Districts" level.
-        physicalPct = allDistrictsOverall;
-        utilizationPct = allDistrictsFinancialOverall;
+    // Physical progress %: average of activity progresses (project-level avg, then avg across projects)
+    const physicalPct = (() => {
+      if (!scopeProjects.length) return 0;
+      let sum = 0;
+      for (const p of scopeProjects) {
+        const acts = Array.isArray(_optionalChain([(p), 'optionalAccess', _26 => _26.activities])) ? (p).activities : [];
+        if (acts.length === 0) {
+          sum += 0;
+          continue;
+        }
+        const projAvg =
+          acts.reduce((acc, a) => acc + getActivityProgress(a), 0) / Math.max(1, acts.length);
+        sum += projAvg;
       }
-    } else {
-      // For zone/circle/district/tehsil drilldown views, `projectsInGeography` should already be filtered.
-      physicalPct = calcProjectsOverall(scopeProjects);
-      utilizationPct = calcOverallProgress(scopeProjects);
-    }
+      return clamp01(sum / Math.max(1, scopeProjects.length));
+    })();
 
     // Calculate overall planned and actual from all phases
     let totalPlanned = 0;
@@ -2093,7 +2030,8 @@ export default function Dashboard() {
                 )
 
               )
-
+              , React.createElement('button', { className: "text-[13px] font-bold text-[#054332] dark:text-emerald-400 hover:opacity-80 transition-opacity flex items-center shrink-0 pr-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1668 } }, "View All Projects →"
+              )
               , (selectedMilestoneKey || isSelectedProjectInThisScope) && (
                 React.createElement('button', {
                   type: "button",
@@ -2110,11 +2048,11 @@ export default function Dashboard() {
                 )
               )
             )
-            , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3" }
+            , React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 1685 } }
               , useProjectCards
                 ? projectsInGeography.map((project, index) => {
                   const percentage = Math.round(
-                    _nullishCoalesce(ganttProgressByProjectId.get(project.id), () => (0)),
+                    _nullishCoalesce(ganttProgressByProjectId.get(Number(project.id)), () => (0)),
                   );
                   const displayName =
                     project.project_name || `Project ${project.id}`;
@@ -2511,33 +2449,39 @@ export default function Dashboard() {
 
             return (
               React.createElement('div', { className: "grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                , React.createElement(Card, { className: "rounded-xl border border-[#e2e8f0] shadow-[0_4px_24px_-8px_rgba(5,67,50,0.10)] overflow-hidden min-h-[420px] h-[55vh] max-h-[720px] flex flex-col bg-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                  , React.createElement(CardHeader, { className: "py-3 px-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-[#f0fdf4] to-white border-b border-[#dcfce7]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                , React.createElement(Card, { className: "rounded-lg border border-border/60 shadow-sm overflow-hidden min-h-[420px] h-[55vh] max-h-[720px] flex flex-col", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                  , React.createElement(CardHeader, { className: "py-3 px-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                     , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                      , React.createElement(CardTitle, { className: "text-base font-heading text-[#054332]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Latest Projects")
-                      , React.createElement('p', { className: "text-xs text-[#6b7280]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Sorted by highest overall progress")
+                      , React.createElement(CardTitle, { className: "text-base font-heading", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Latest Projects")
+                      , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "Sorted by highest overall progress")
                     )
                     , React.createElement('div', { className: "flex items-center gap-1 justify-end", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                      , React.createElement('span', { className: "text-[10px] font-semibold text-[#166534] bg-[#dcfce7] px-2 py-0.5 rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, safePage, "/", totalPages)
-                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "<")
-                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-6 w-6 p-0 text-[13px] text-[#054332] hover:bg-[#dcfce7] rounded-full disabled:opacity-30", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, ">")
+                      , React.createElement('span', { className: "text-[10px] text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, safePage, "/", totalPages)
+                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canPrev, onClick: () => setProjectsTablePage((p) => Math.max(1, p - 1)), className: "h-5 w-5 p-0 text-[13px] text-muted-foreground hover:text-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "<")
+                      , React.createElement(Button, { variant: "ghost", size: "sm", disabled: !canNext, onClick: () => setProjectsTablePage((p) => Math.min(totalPages, p + 1)), className: "h-5 w-5 p-0 text-[13px] text-muted-foreground hover:text-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, ">")
                     )
                   )
-                  , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0" }
-                    , React.createElement('div', { className: "w-full h-full overflow-x-auto overflow-y-auto" }
-                      , React.createElement('table', { className: "w-full text-sm" }
-                        , React.createElement('thead', { className: "bg-[#f8fafc] sticky top-0 z-10 border-b border-[#e2e8f0]" }
-                          , React.createElement('tr', {}
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5" }
-                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none" }
+                  , React.createElement(CardContent, { className: "pt-0 px-0 flex-1 min-h-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                    , React.createElement('div', { className: "w-full h-full overflow-auto", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                      , React.createElement('table', { className: "w-full text-sm", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                        , React.createElement('thead', { className: "bg-background/95 supports-[backdrop-filter]:bg-background/70 sticky top-0 z-10 backdrop-blur border-b border-border/60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                          , React.createElement('tr', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-muted-foreground px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                 , "Project"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
-                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-[#64748b] px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-muted-foreground px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                               , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                 , "Overall Progress"
-                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                              )
+                            )
+                            , React.createElement('th', { className: "text-left text-[10px] font-bold tracking-wider uppercase text-muted-foreground px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                              , React.createElement('div', { className: "flex items-center gap-1.5 select-none", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                , "Zone / Circle / Tehsil"
+                                , React.createElement(ChevronDown, { className: "h-3 w-3 opacity-60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                               )
                             )
                           )
@@ -2556,58 +2500,55 @@ export default function Dashboard() {
                               Home,
                             ];
                             const colorSet = [
-                              "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200",
-                              "bg-emerald-50 text-emerald-600 border-emerald-200",
-                              "bg-sky-50 text-sky-600 border-sky-200",
-                              "bg-amber-50 text-amber-600 border-amber-200",
-                              "bg-rose-50 text-rose-600 border-rose-200",
-                              "bg-violet-50 text-violet-600 border-violet-200",
-                              "bg-cyan-50 text-cyan-600 border-cyan-200",
-                              "bg-lime-50 text-lime-600 border-lime-200",
+                              "bg-fuchsia-500/10 text-fuchsia-700 border-fuchsia-500/25",
+                              "bg-emerald-500/10 text-emerald-700 border-emerald-500/25",
+                              "bg-sky-500/10 text-sky-700 border-sky-500/25",
+                              "bg-amber-500/10 text-amber-800 border-amber-500/25",
+                              "bg-rose-500/10 text-rose-700 border-rose-500/25",
+                              "bg-violet-500/10 text-violet-700 border-violet-500/25",
+                              "bg-cyan-500/10 text-cyan-700 border-cyan-500/25",
+                              "bg-lime-500/10 text-lime-800 border-lime-500/25",
                             ];
-                            const nameStr = row.name || "";
-                            let nameHash = 0;
-                            for (let i = 0; i < nameStr.length; i++) {
-                              nameHash = nameStr.charCodeAt(i) + ((nameHash << 5) - nameHash);
-                            }
-                            const iconIdx = Math.abs(nameHash) % iconSet.length;
-                            const colorIdx = Math.abs(nameHash) % colorSet.length;
+                            const rowKey = Number(row.id) || 0;
+                            const iconIdx = Math.abs(rowKey) % iconSet.length;
+                            const colorIdx = Math.abs(rowKey) % colorSet.length;
                             const RowIcon = iconSet[iconIdx];
                             const colorClass = colorSet[colorIdx];
-                            const progressColor = pct >= 75 ? "from-[#16a34a] to-[#054332]" : pct >= 40 ? "from-[#3b82f6] to-[#1d4ed8]" : "from-[#f59e0b] to-[#d97706]";
-                            const badgeColor = pct >= 75 ? "bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]" : pct >= 40 ? "bg-[#dbeafe] text-[#1d4ed8] border-[#bfdbfe]" : "bg-[#fef3c7] text-[#b45309] border-[#fde68a]";
-                            const dotColor = pct >= 75 ? "bg-[#16a34a]" : pct >= 40 ? "bg-[#3b82f6]" : "bg-[#f59e0b]";
                             return (
                               React.createElement('tr', {
                                 key: row.id,
-                                className: "border-b border-[#f1f5f9] even:bg-[#fafafa]",
-                                __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
+                                className: "border-t border-border/60 hover:bg-muted/30 cursor-pointer transition-colors odd:bg-muted/10",
+                                onClick: () => {
+                                  const p = projectIndexes.byId.get(Number(row.id));
+                                  if (p) setSelectedProjectForDetails(p);
+                                }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                               }
-                                , React.createElement('td', { className: "px-3 py-2.5 font-semibold text-[#1e293b]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                , React.createElement('td', { className: "px-2 py-2 font-semibold text-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                   , React.createElement('div', { className: "flex items-center gap-3 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                                     , React.createElement('div', {
-                                      className: `h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${colorClass}`,
+                                      className: `h-8 w-8 rounded-lg flex items-center justify-center border shadow-sm shrink-0 ${colorClass}`,
                                       __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                                     }
                                       , React.createElement(RowIcon, { className: "h-4 w-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                     )
                                     , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                      , React.createElement('div', { className: "truncate font-semibold text-[13px] text-[#1e293b]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.name)
-                                      , React.createElement('div', { className: "text-[10px] text-[#94a3b8] truncate font-medium", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "ID: ", row.id)
+                                      , React.createElement('div', { className: "truncate font-semibold", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.name)
+                                      , React.createElement('div', { className: "text-[10px] text-muted-foreground truncate", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "ID: ", row.id)
                                     )
                                   )
                                 )
-                                , React.createElement('td', { className: "px-3 py-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                  , React.createElement('div', { className: "flex items-center gap-2.5", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                    , React.createElement('span', { className: `inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums border ${badgeColor}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                      , React.createElement('span', { className: `h-1.5 w-1.5 rounded-full ${dotColor}`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                , React.createElement('td', { className: "px-2 py-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                  , React.createElement('div', { className: "flex items-center gap-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                    , React.createElement('span', { className: "inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary border border-border/60", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                      , React.createElement('span', { className: "h-1.5 w-1.5 rounded-full bg-emerald-500", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                       , pct.toFixed(2), "%"
                                     )
-                                    , React.createElement('div', { className: "flex-1 h-2 rounded-full bg-[#f1f5f9] overflow-hidden", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
-                                      , React.createElement('div', { className: `h-full bg-gradient-to-r ${progressColor} rounded-full transition-all duration-700`, style: { width: `${pct}%` }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
+                                    , React.createElement('div', { className: "flex-1 h-2.5 rounded-full bg-muted overflow-hidden border border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
+                                      , React.createElement('div', { className: "h-full bg-gradient-to-r from-secondary to-primary", style: { width: `${pct}%` }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } })
                                     )
                                   )
                                 )
+                                , React.createElement('td', { className: "px-2 py-2 text-[11px] text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, row.locationLabel)
                               )
                             );
                           })
@@ -2615,7 +2556,7 @@ export default function Dashboard() {
                       )
                     )
                     , total === 0 && (
-                      React.createElement('div', { className: "p-8 text-center text-sm text-[#94a3b8]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "No projects found.")
+                      React.createElement('div', { className: "p-6 text-center text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }, "No projects found.")
                     )
                   )
                 )
@@ -2623,7 +2564,7 @@ export default function Dashboard() {
                 , React.createElement('div', { className: "w-full min-h-[420px] h-[55vh] max-h-[720px] rounded-lg overflow-hidden border border-border/60 shadow-sm", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                   , React.createElement(CityMap, {
                     city: "lahore",
-                    activeLayers: new Set(),
+                    activeLayers: EMPTY_MAP_LAYERS,
                     searchQuery: "",
                     showStats: false,
                     showSurveillanceLayers: false,
@@ -2631,15 +2572,8 @@ export default function Dashboard() {
                     legendProjects: mapScopeProjects,
                     geoData: dashboardMapGeoData,
                     showGeoBoundary: false,
-                    projectMarkerVariant: "table",
-                    onProjectSelect: (projectId) => {
-                      const p = apiProjects.find((x) => Number(x.id) === Number(projectId));
-                      if (p) {
-                        skipSidebarCollapseRef.current = true;
-                        setSelectedProjectForDetails(p);
-                        queryClient.invalidateQueries();
-                      }
-                    }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
+                    projectMarkerVariant: "green",
+                    onProjectSelect: handleMapProjectSelect, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                   }
                   )
                 )
@@ -2701,8 +2635,8 @@ export default function Dashboard() {
 
                   , React.createElement('span', {
                     className: `inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${progressType === "financial"
-                      ? "translate-x-6"
-                      : "translate-x-1"
+                        ? "translate-x-6"
+                        : "translate-x-1"
                       }`, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2094 }
                   }
                   )
@@ -2896,20 +2830,6 @@ export default function Dashboard() {
           {isFilterBarExpanded ? (
             <div className="w-full bg-[#f6faf7] rounded-[18px] p-1.5 flex flex-col md:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-0.5 scrollbar-hide">
-                {/* Mobile hamburger — opens sidebar on small screens */}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setMobileSidebarOpen(true)}
-                  aria-label="Open sidebar menu"
-                  className="md:hidden h-[40px] w-[40px] shrink-0 rounded-lg bg-white hover:bg-[#054332] hover:text-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)] transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </Button>
-
                 {/* Expand/Collapse toggle (left) */}
                 <Button
                   type="button"
@@ -2949,14 +2869,14 @@ export default function Dashboard() {
                   {[
                     { val: "divisions", label: "All Zones" },
                     { val: "districts", label: "All Circles" },
-                    { val: "tehsils", label: "All Districts" },
+                    { val: "tehsils", label: "All Tehsils" },
                     { val: "projects", label: "All Projects" },
                   ].map((item) => (
                     <div key={item.val} className="relative shrink-0">
                       <RadioGroupItem value={item.val} id={item.val} className="peer sr-only" />
                       <Label
                         htmlFor={item.val}
-                        className="flex items-center justify-center px-2 sm:px-3 py-2 bg-white text-[#054332] font-semibold text-[11px] sm:text-[13px] rounded-lg cursor-pointer border border-[#e5efe9] hover:bg-[#054332] hover:text-white peer-data-[state=checked]:bg-[#054332] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#054332] transition-all whitespace-nowrap select-none min-w-[80px] sm:min-w-[120px]"
+                        className="flex items-center justify-center px-3 py-2 bg-white text-[#054332] font-semibold text-[12px] sm:text-[13px] rounded-lg cursor-pointer border border-[#e5efe9] hover:bg-[#054332] hover:text-white peer-data-[state=checked]:bg-[#054332] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#054332] transition-all whitespace-nowrap select-none min-w-[120px]"
                       >
                         <span>{item.label}</span>
                       </Label>
@@ -2965,23 +2885,55 @@ export default function Dashboard() {
                 </RadioGroup>
               </div>
 
+              {/* Export Button */}
+              {((selectedItemName && singleItemData) || aggregatedData) && viewType && (
+                <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0 p-0.5">
+                  <Button
+                    className="w-full md:w-auto bg-white hover:bg-[#f0fdf4] text-[#054332] rounded-lg px-3 py-2 h-[40px] font-bold shadow-sm border border-[#e5efe9] flex items-center justify-center gap-2 transition-all whitespace-nowrap"
+                    onClick={async () => {
+                      try {
+                        const dataToExport = selectedItemName && singleItemData ? singleItemData : aggregatedData;
+                        const exportName =
+                          selectedItemName && selectedItemType === "division" ? `${selectedItemName} Zone`
+                            : selectedItemName && selectedItemType === "district" ? `${selectedItemName} Circle`
+                              : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
+                                : viewType === "divisions" ? "All Punjab Zones"
+                                  : viewType === "districts" ? "All Punjab Circles"
+                                    : "All Punjab Tehsils";
+
+                        if (!dataToExport) {
+                          setShowErrorDialog(true);
+                          return;
+                        }
+
+                        await exportDashboardToPPTX({
+                          cityName: exportName,
+                          cityData: dataToExport,
+                          installationPhases: installationPhases.map(
+                            (phase) => ({
+                              key: phase.key,
+                              title: phase.title,
+                              percentage: getProgressValue(
+                                dataToExport[phase.key],
+                              ),
+                            }),
+                          ),
+                        });
+                        setShowSuccessDialog(true);
+                      } catch (error) {
+                        console.error("Error exporting to PPTX:", error);
+                        setShowErrorDialog(true);
+                      }
+                    }}
+                  >
+                    <FileDown className="h-4 w-4 opacity-90" />
+                    <span className="text-[12px] sm:text-[13px]">Export Operation</span>
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="w-full flex items-center gap-2">
-              {/* Mobile hamburger — always visible when filter bar is collapsed too */}
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileSidebarOpen(true)}
-                aria-label="Open sidebar menu"
-                className="md:hidden h-[40px] w-[40px] shrink-0 rounded-lg bg-white hover:bg-[#054332] hover:text-white text-[#344054] border border-white/60 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.10)] transition-all"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </Button>
-
+            <div className="w-full flex items-center">
               <Button
                 type="button"
                 variant="ghost"
@@ -3000,13 +2952,12 @@ export default function Dashboard() {
             <div className="flex flex-col">
               {(() => {
                 const titleText =
-                  selectedItemName && selectedItemType === "zone" ? `${selectedItemName} Zone`
-                    : selectedItemName && selectedItemType === "division" ? `${selectedItemName} Circle`
-                      : selectedItemName && selectedItemType === "district" ? `${selectedItemName} District`
+                  selectedItemName && selectedItemType === "division" ? `${selectedItemName} Zone`
+                    : selectedItemName && selectedItemType === "district" ? `${selectedItemName} Circle`
                       : selectedItemName && selectedItemType === "tehsil" ? `${selectedItemName} Tehsil`
                         : viewType === "divisions" ? "All Punjab Zones"
                           : viewType === "districts" ? "All Punjab Circles"
-                            : viewType === "tehsils" ? "All Punjab Districts"
+                            : viewType === "tehsils" ? "All Punjab Tehsils"
                               : viewType === "projects" ? "All Projects"
                                 : "PHPD Progress Dashboard";
 
@@ -3040,9 +2991,9 @@ export default function Dashboard() {
               const overall =
                 selectedItemName && singleItemData ? singleItemData.overall
                   : viewType === "projects" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
-                    : viewType === "tehsils" && !selectedItemName && !selectedItemType ? allDistrictsOverall
+                    : viewType === "tehsils" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
                       : viewType === "divisions" && !selectedItemName && !selectedItemType ? allDivisionsOverall
-                        : viewType === "districts" && !selectedItemName && !selectedItemType ? allCirclesOverall
+                        : viewType === "districts" && !selectedItemName && !selectedItemType ? allDistrictsOverall
                           : aggregatedData?.overall || 0;
 
               const overallLabel =
@@ -3050,42 +3001,43 @@ export default function Dashboard() {
                   ? overall.toFixed(2)
                   : Math.round(overall).toString();
 
-              const financialPct =
-                selectedItemName && selectedItemType
-                  ? calcOverallProgress(projectsInSelectedGeography)
-                  : viewType === "divisions"
-                    ? allZonesFinancialOverall
-                    : viewType === "districts"
-                      ? allCirclesFinancialOverall
-                      : viewType === "tehsils"
-                        ? allDistrictsFinancialOverall
-                        : calcOverallProgress(apiProjects);
+              const financialScopeProjects =
+                selectedItemName && selectedItemType ? projectsInSelectedGeography : apiProjects;
+              const financialPct = calcOverallProgress(financialScopeProjects);
               const financialLabel =
                 !selectedItemName && !selectedItemType ? financialPct.toFixed(2) : financialPct.toFixed(1);
 
               return (
                 <div className="flex flex-col sm:flex-row gap-3">
-                  {/* Overall Progress Card */}
-                  <div className="bg-gradient-to-br from-[#f0fdf4] to-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(5,67,50,0.18)] border border-[#bbf7d0] min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_32px_-10px_rgba(5,67,50,0.22)]">
+                  <div className="bg-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.10)] border border-gray-200/70 min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-lg">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[11px] text-[#166534] font-semibold tracking-wide uppercase">Overall Progress</span>
-                      <span className="text-[10px] bg-[#dcfce7] text-[#15803d] font-bold tracking-wide px-2 py-0.5 rounded-full">+0.00% Today</span>
+                      <span className="text-[11px] text-[#475467] font-semibold">Overall Progress</span>
+                      <span className="text-[10px] text-[#054332] font-bold tracking-wide">+0.00% Today</span>
                     </div>
                     <div className="text-[24px] sm:text-[28px] font-extrabold text-[#054332] tracking-tight mb-2.5">{overallLabel}%</div>
-                    <div className="h-2 w-full bg-[#dcfce7] rounded-full overflow-hidden shadow-inner">
-                      <div className="h-full bg-gradient-to-r from-[#16a34a] to-[#054332] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, overall))}%` }} />
+                    <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden mb-2 shadow-inner">
+                      <div className="h-full bg-[#e2e8f0] rounded-full w-full relative">
+                        <div className="absolute top-0 left-0 h-full bg-[#cbd5e1] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, overall))}%` }} />
+                      </div>
+                    </div>
+                    <div className="text-[9px] text-[#94a3b8] uppercase font-bold tracking-widest mt-1">
+                      Target: 100.00% Completion Phase 1
                     </div>
                   </div>
 
-                  {/* Financial Progress Card */}
-                  <div className="bg-gradient-to-br from-[#eff6ff] to-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(29,78,216,0.18)] border border-[#bfdbfe] min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_32px_-10px_rgba(29,78,216,0.22)]">
+                  <div className="bg-white rounded-xl p-4 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.10)] border border-gray-200/70 min-w-[240px] shrink-0 transform transition-all hover:-translate-y-0.5 hover:shadow-lg">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[11px] text-[#1e40af] font-semibold tracking-wide uppercase">Financial Progress</span>
-                      <span className="text-[10px] bg-[#dbeafe] text-[#1d4ed8] font-bold tracking-wide px-2 py-0.5 rounded-full">Budget Utilization</span>
+                      <span className="text-[11px] text-[#475467] font-semibold">Financial Progress</span>
+                      <span className="text-[10px] text-[#0f766e] font-bold tracking-wide">Budget Utilization</span>
                     </div>
-                    <div className="text-[24px] sm:text-[28px] font-extrabold text-[#1e3a8a] tracking-tight mb-2.5">{financialLabel}%</div>
-                    <div className="h-2 w-full bg-[#dbeafe] rounded-full overflow-hidden shadow-inner">
-                      <div className="h-full bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, financialPct))}%` }} />
+                    <div className="text-[24px] sm:text-[28px] font-extrabold text-[#0f766e] tracking-tight mb-2.5">{financialLabel}%</div>
+                    <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden mb-2 shadow-inner">
+                      <div className="h-full bg-[#e2e8f0] rounded-full w-full relative">
+                        <div className="absolute top-0 left-0 h-full bg-[#14b8a6] rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, financialPct))}%` }} />
+                      </div>
+                    </div>
+                    <div className="text-[9px] text-[#94a3b8] uppercase font-bold tracking-widest mt-1">
+                      Utilized vs Allocated (PKR)
                     </div>
                   </div>
                 </div>
@@ -3095,9 +3047,9 @@ export default function Dashboard() {
         </div>
         /* Map moved beneath donut charts */
 
-        /* Zone Selected - Show Circles */
+        /* Division Selected - Show Districts */
         , selectedItemName &&
-        selectedItemType === "zone" &&
+        selectedItemType === "division" &&
         (isLoading ? (
           React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2833 } }
             , React.createElement('div', { className: "flex items-center gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2834 } }
@@ -3120,9 +3072,9 @@ export default function Dashboard() {
           )
         ) : singleItemData ? (
           (() => {
-            // API-driven: filter circles belonging to this zone
-            const zoneCirclesData = divisionsData.filter(
-              (d) => Number(d.zoneId) === Number(selectedItemId),
+            // API-driven: filter districts belonging to this division
+            const divisionDistrictsData = districtsData.filter(
+              (d) => d.divisionId === selectedItemId,
             );
 
             return (
@@ -3163,22 +3115,22 @@ export default function Dashboard() {
                   )
                 )
 
-                /* Circle Cards */
-                , zoneCirclesData.length > 0 ? (
+                /* District Cards */
+                , divisionDistrictsData.length > 0 ? (
                   React.createElement(React.Fragment, null
                     , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2877 } }
-                      , zoneCirclesData.map((circle) => (
+                      , divisionDistrictsData.map((dist) => (
                         React.createElement(HierarchyCard, {
-                          key: circle.id,
-                          title: circle.name,
-                          overallProgress: circle.overall,
-                          color: circle.color,
+                          key: dist.id,
+                          title: dist.name,
+                          overallProgress: dist.overall,
+                          color: dist.color,
                           onClick: () => {
                             setParentDivisionId(selectedItemId);
                             setParentDivisionName(selectedItemName);
-                            setSelectedItemId(circle.id);
-                            setSelectedItemName(circle.name);
-                            setSelectedItemType("division");
+                            setSelectedItemId(dist.id);
+                            setSelectedItemName(dist.name);
+                            setSelectedItemType("district");
                           }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2879 }
                         }
                         )
@@ -3196,154 +3148,8 @@ export default function Dashboard() {
                 ) : (
                   React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2904 } }
                     , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2905 } }
-                    , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2906 } }, "No circles found for "
+                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2906 } }, "No circles found for "
                         , selectedItemName, " Zone."
-                      )
-                    )
-                  )
-                )
-              )
-            );
-          })()
-        ) : null)
-
-        /* Circle Selected - Show Districts */
-        , selectedItemName &&
-        selectedItemType === "division" &&
-        (isLoading ? (
-          React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2921 } }
-            , React.createElement('div', { className: "flex items-center gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2922 } }
-              , React.createElement(Skeleton, { className: "h-10 w-32", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2923 } })
-              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 2924 } }
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2925 } })
-                , React.createElement(Skeleton, { className: "h-4 w-64", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2926 } })
-              )
-            )
-            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2929 } }
-              , Array.from({ length: 4 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2931 } }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2932 } })
-                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2933 } })
-                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2934 } })
-                )
-              ))
-            )
-            , renderSkeletonLoader()
-          )
-        ) : singleItemData ? (
-          (() => {
-            // API-driven: get districts for this circle by selectedItemId
-            const circleDistrictsData = apiDistricts
-              .filter((d) => Number(d.division) === Number(selectedItemId))
-              .map((dist, index) => {
-                const projects = apiProjects.filter((p) => p.district === dist.id);
-                const overall = calcProjectsOverall(projects);
-                return {
-                  id: dist.id,
-                  name: dist.district_name,
-                  overall,
-                  color: CARD_COLORS[index % CARD_COLORS.length],
-                };
-              })
-              .sort((a, b) => b.overall - a.overall);
-
-            return (
-              React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2960 } }
-                , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2961 } }
-                  , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2962 } }
-                    , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2963 } }, "Districts in "
-                      , selectedItemName, " Circle"
-
-                    )
-                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2967 } }
-                      , selectedItemName, " Circle"
-                    )
-                  )
-
-                  , React.createElement('div', { className: "flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap justify-start sm:justify-end", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2971 } }
-                    , React.createElement(Button, {
-                      type: "button",
-                      variant: "ghost",
-                      size: "sm",
-                      className: "h-8 px-2 text-[#054332] hover:text-[#032d21] hover:bg-[#eaf5ef] font-semibold",
-                      onClick: () => {
-                        setViewType("divisions");
-                        setSelectedItemType(null);
-                        setSelectedItemId(null);
-                        setSelectedItemName(null);
-                        setParentDivisionId(null);
-                        setParentDivisionName(null);
-                        setParentDistrictId(null);
-                        setParentDistrictName(null);
-                        setSelectedProjectForDetails(null);
-                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2972 }
-                    }
-                      , "All Zones")
-                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2987 } }, "›")
-                    , React.createElement(Button, {
-                      type: "button",
-                      variant: "ghost",
-                      size: "sm",
-                      disabled: !parentDivisionId || !parentDivisionName,
-                      className: "h-8 px-2 text-[#054332] hover:text-[#032d21] hover:bg-[#eaf5ef] font-semibold disabled:opacity-50 disabled:hover:bg-transparent",
-                      onClick: () => {
-                        if (!parentDivisionId || !parentDivisionName) return;
-                        setViewType("divisions");
-                        setSelectedItemType("zone");
-                        setSelectedItemId(parentDivisionId);
-                        setSelectedItemName(parentDivisionName);
-                        setParentDivisionId(null);
-                        setParentDivisionName(null);
-                        setParentDistrictId(null);
-                        setParentDistrictName(null);
-                        setSelectedProjectForDetails(null);
-                      }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2988 }
-                    }
-                      , _nullishCoalesce(parentDivisionName, () => ("Zone")))
-                    , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3010 } }, "›")
-                    , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3011 } }
-                      , selectedItemName, " Circle"
-                    )
-                  )
-                )
-
-                /* District Cards */
-                , circleDistrictsData.length > 0 ? (
-                  React.createElement(React.Fragment, null
-                    , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2978 } }
-                      , circleDistrictsData.map((dist) => (
-                        React.createElement(HierarchyCard, {
-                          key: dist.id,
-                          title: dist.name,
-                          overallProgress: dist.overall,
-                          color: dist.color,
-                          onClick: () => {
-                            setParentDivisionId(selectedItemId);
-                            setParentDivisionName(selectedItemName);
-                            setParentDistrictId(null);
-                            setParentDistrictName(null);
-                            setSelectedItemId(dist.id);
-                            setSelectedItemName(dist.name);
-                            setSelectedItemType("district");
-                          }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2980 }
-                        }
-                        )
-                      ))
-                    )
-
-                    /* Charts for District */
-                    , renderAggregatedCharts(
-                      selectedItemName + " Circle",
-                      singleItemData,
-                      projectsInSelectedGeography,
-                      false,
-                    )
-                  )
-                ) : (
-                  React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3005 } }
-                    , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3006 } }
-                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3007 } }, "No districts found for "
-                        , selectedItemName, " Circle."
                       )
                     )
                   )
@@ -3378,10 +3184,10 @@ export default function Dashboard() {
           )
         ) : singleItemData ? (
           (() => {
-            const districtTehsilsData = apiTehsils
-              .filter((t) => Number(t.district) === Number(selectedItemId))
+            // API-driven: get tehsils for this district by selectedItemId
+            const districtTehsilsData = (hierarchyIndexes.tehsilsByDistrict.get(Number(selectedItemId)) ?? [])
               .map((teh, index) => {
-                const projects = apiProjects.filter((p) => Number(p.tehsil) === Number(teh.id));
+                const projects = projectIndexes.byTehsil.get(Number(teh.id)) ?? [];
                 const overall = calcProjectsOverall(projects);
                 return {
                   id: teh.id,
@@ -3397,10 +3203,11 @@ export default function Dashboard() {
                 , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2961 } }
                   , React.createElement('div', { className: "min-w-0", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2962 } }
                     , React.createElement('h2', { className: "text-lg sm:text-2xl font-bold font-heading break-words", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2963 } }, "Tehsils in "
-                      , selectedItemName, " District"
+                      , selectedItemName, " Circle (", parentDivisionName, " ", "Zone)"
+
                     )
                     , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2967 } }
-                      , selectedItemName, " District"
+                      , selectedItemName, " Circle"
                     )
                   )
 
@@ -3436,18 +3243,22 @@ export default function Dashboard() {
                         setSelectedItemType("division");
                         setSelectedItemId(parentDivisionId);
                         setSelectedItemName(parentDivisionName);
+                        setParentDivisionId(null);
+                        setParentDivisionName(null);
                         setParentDistrictId(null);
                         setParentDistrictName(null);
                         setSelectedProjectForDetails(null);
                       }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2988 }
                     }
-                      , _nullishCoalesce(parentDivisionName, () => ("Circle")))
+                      , _nullishCoalesce(parentDivisionName, () => ("Zone")))
                     , React.createElement('span', { className: "text-[#98a2b3]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3010 } }, "›")
                     , React.createElement('span', { className: "font-semibold text-[#344054]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3011 } }
-                      , selectedItemName, " District"
+                      , selectedItemName, " Circle"
                     )
                   )
                 )
+
+                /* Tehsil Cards */
                 , districtTehsilsData.length > 0 ? (
                   React.createElement(React.Fragment, null
                     , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 2978 } }
@@ -3468,8 +3279,10 @@ export default function Dashboard() {
                         )
                       ))
                     )
+
+                    /* Charts for District */
                     , renderAggregatedCharts(
-                      selectedItemName + " District",
+                      selectedItemName + " Circle",
                       singleItemData,
                       projectsInSelectedGeography,
                       false,
@@ -3479,7 +3292,7 @@ export default function Dashboard() {
                   React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3005 } }
                     , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3006 } }
                       , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3007 } }, "No tehsils found for "
-                        , selectedItemName, " District."
+                        , selectedItemName, " Circle."
                       )
                     )
                   )
@@ -3506,9 +3319,7 @@ export default function Dashboard() {
         ) : singleItemData ? (
           (() => {
             // API-driven: use parent tracking state for back navigation
-            const tehsilProjects = apiProjects.filter(
-              (p) => p.tehsil === selectedItemId,
-            );
+            const tehsilProjects = projectIndexes.byTehsil.get(Number(selectedItemId)) ?? [];
             const tehsilSlug =
               _optionalChain([selectedItemName, 'optionalAccess', _41 => _41.toLowerCase, 'call', _42 => _42(), 'access', _43 => _43.replace, 'call', _44 => _44(/\s+/g, "")]) || "";
 
@@ -3621,7 +3432,7 @@ export default function Dashboard() {
                     React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3082 } }
                       , tehsilProjects.map((project, index) => {
                         const progress = Math.round(
-                          _nullishCoalesce(ganttProgressByProjectId.get(project.id), () => (0)),
+                          _nullishCoalesce(ganttProgressByProjectId.get(Number(project.id)), () => (0)),
                         );
                         return (
                           React.createElement(HierarchyCard, {
@@ -3703,7 +3514,7 @@ export default function Dashboard() {
               )
 
               /* Show More/Less Button */
-              , zonesData.length > 4 && (
+              , divisionsData.length > 4 && (
                 React.createElement(Button, {
                   variant: "default",
                   onClick: () => setExpandedDivisions(!expandedDivisions),
@@ -3713,12 +3524,12 @@ export default function Dashboard() {
                   , expandedDivisions ? (
                     React.createElement(React.Fragment, null
                       , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3173 } }), "Show Less ("
-                      , zonesData.length - 4, " hidden)"
+                      , divisionsData.length - 4, " hidden)"
                     )
                   ) : (
                     React.createElement(React.Fragment, null
                       , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3178 } }), "Show More ("
-                      , zonesData.length - 4, " more)"
+                      , divisionsData.length - 4, " more)"
                     )
                   )
                 )
@@ -3728,22 +3539,18 @@ export default function Dashboard() {
             /* Division Cards */
             , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3187 } }
               , (expandedDivisions
-                ? zonesData
-                : zonesData.slice(0, 4)
-              ).map((zone) => (
+                ? divisionsData
+                : divisionsData.slice(0, 4)
+              ).map((div) => (
                 React.createElement(HierarchyCard, {
-                  key: zone.id,
-                  title: zone.name,
-                  overallProgress: zone.overall,
-                  color: zone.color,
+                  key: div.id,
+                  title: div.name,
+                  overallProgress: div.overall,
+                  color: div.color,
                   onClick: () => {
-                    setSelectedItemId(zone.id);
-                    setSelectedItemName(zone.name);
-                    setSelectedItemType("zone");
-                    setParentDivisionId(null);
-                    setParentDivisionName(null);
-                    setParentDistrictId(null);
-                    setParentDistrictName(null);
+                    setSelectedItemId(div.id);
+                    setSelectedItemName(div.name);
+                    setSelectedItemType("division");
                   }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3192 }
                 }
                 )
@@ -3793,7 +3600,7 @@ export default function Dashboard() {
               )
 
               /* Show More/Less Button */
-              , divisionsData.length > 4 && (
+              , districtsData.length > 4 && (
                 React.createElement(Button, {
                   variant: "default",
                   onClick: () => setExpandedDistricts(!expandedDistricts),
@@ -3803,29 +3610,39 @@ export default function Dashboard() {
                   , expandedDistricts ? (
                     React.createElement(React.Fragment, null
                       , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3257 } }), "Show Less ("
-                      , divisionsData.length - 4, " hidden)"
+                      , districtsData.length - 4, " hidden)"
                     )
                   ) : (
                     React.createElement(React.Fragment, null
                       , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3262 } }), "Show More ("
-                      , divisionsData.length - 4, " more)"
+                      , districtsData.length - 4, " more)"
                     )
                   )
                 )
               )
             )
 
-            /* Circle Cards */
+            /* District Cards */
             , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3271 } }
               , (expandedDistricts
-                ? divisionsData
-                : divisionsData.slice(0, 4)
-              ).map((circle) => (
+                ? districtsData
+                : districtsData.slice(0, 4)
+              ).map((dist) => (
                 React.createElement(HierarchyCard, {
-                  key: circle.id,
-                  title: circle.name,
-                  overallProgress: circle.overall,
-                  color: circle.color, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3276 }
+                  key: dist.id,
+                  title: dist.name,
+                  overallProgress: dist.overall,
+                  color: dist.color,
+                  onClick: () => {
+                    const parentDiv = divisionsData.find(
+                      (d) => d.id === dist.divisionId,
+                    );
+                    setParentDivisionId(dist.divisionId);
+                    setParentDivisionName(_nullishCoalesce(_optionalChain([parentDiv, 'optionalAccess', _46 => _46.name]), () => (null)));
+                    setSelectedItemId(dist.id);
+                    setSelectedItemName(dist.name);
+                    setSelectedItemType("district");
+                  }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3276 }
                 }
                 )
               ))
@@ -3873,36 +3690,108 @@ export default function Dashboard() {
           )
         ) : aggregatedData ? (
           (() => {
-            const filteredDistrictCards = districtsData.filter((d) => {
-              if (!tehsilSearchQuery.trim()) return true;
-              return d.name.toLowerCase().includes(tehsilSearchQuery.toLowerCase());
-            });
+            // Default districts to show: Lahore and Sheikhupura
+            const DEFAULT_DISTRICTS = ["Lahore", "Sheikhupura"];
+
+            // Filter districts based on search query first
+            const allDistricts = Object.entries(tehsilsDataByDistrict).filter(
+              ([districtName]) => {
+                if (!tehsilSearchQuery.trim()) return true;
+                return districtName
+                  .toLowerCase()
+                  .includes(tehsilSearchQuery.toLowerCase());
+              },
+            );
+
+            // Filter districts to show: by default only Lahore and Sheikhupura, unless all are expanded
+            const filteredDistricts = allDistricts.filter(
+              ([districtName]) => {
+                // If search query exists, show all matching districts
+                if (tehsilSearchQuery.trim()) return true;
+                // If all expanded, show all districts
+                if (allTehsilGroupsExpanded) return true;
+                // Otherwise, show only default districts
+                return DEFAULT_DISTRICTS.includes(districtName);
+              },
+            );
+
+            // Toggle all groups expand/collapse
+            const handleToggleAllGroups = () => {
+              const newState = !allTehsilGroupsExpanded;
+              setAllTehsilGroupsExpanded(newState);
+
+              if (newState) {
+                // Expand All: show all districts and expand them
+                const allExpandedGroups = {};
+                allDistricts.forEach(([districtName]) => {
+                  allExpandedGroups[districtName] = true;
+                });
+                setExpandedTehsilGroups(allExpandedGroups);
+              } else {
+                // Collapse All: collapse to only show default districts
+                const defaultState = {};
+                DEFAULT_DISTRICTS.forEach((districtName) => {
+                  if (tehsilsDataByDistrict[districtName]) {
+                    defaultState[districtName] = true;
+                  }
+                });
+                setExpandedTehsilGroups(defaultState);
+              }
+            };
 
             return (
               React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3387 } }
                 , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3388 } }
                   , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3389 } }
-                    , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3390 } }, "All Punjab Districts"
+                    , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3390 } }, "All Punjab Tehsils"
 
                     )
-                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3393 } }, "District cards from district API, sorted by progress"
+                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3393 } }, "Tehsils grouped by district, sorted by progress"
 
                     )
                   )
 
-                  , React.createElement('div', { className: "relative flex-1 sm:max-w-[320px]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3401 } }
-                    , React.createElement(Search, { className: "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3402 } })
-                    , React.createElement(Input, {
-                      type: "text",
-                      placeholder: "Search by district name...",
-                      value: tehsilSearchQuery,
-                      onChange: (e) => setTehsilSearchQuery(e.target.value),
-                      className: "pl-9 h-9 rounded-xl border-border/50 bg-background", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3403 }
-                    }
+                  /* Search and Expand/Collapse Controls */
+                  , React.createElement('div', { className: "flex flex-col sm:flex-row gap-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3399 } }
+                    /* Search Input */
+                    , React.createElement('div', { className: "relative flex-1 sm:min-w-[250px]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3401 } }
+                      , React.createElement(Search, { className: "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3402 } })
+                      , React.createElement(Input, {
+                        type: "text",
+                        placeholder: "Search by district name...",
+                        value: tehsilSearchQuery,
+                        onChange: (e) => setTehsilSearchQuery(e.target.value),
+                        className: "pl-9 h-9 rounded-xl border-border/50 bg-background", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3403 }
+                      }
+                      )
+                    )
+
+                    /* Expand/Collapse All Button */
+                    , filteredDistricts.length > 0 && (
+                      React.createElement(Button, {
+                        variant: "default",
+                        onClick: handleToggleAllGroups,
+                        className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3414 }
+                      }
+
+                        , allTehsilGroupsExpanded ? (
+                          React.createElement(React.Fragment, null
+                            , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3421 } }), "Collapse All"
+
+                          )
+                        ) : (
+                          React.createElement(React.Fragment, null
+                            , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3426 } }), "Expand All"
+
+                          )
+                        )
+                      )
                     )
                   )
                 )
-                , filteredDistrictCards.length === 0 ? (
+
+                /* Tehsil Cards Grouped by District */
+                , filteredDistricts.length === 0 ? (
                   React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3437 } }
                     , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3438 } }
                       , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3439 } }, "No districts found matching \""
@@ -3912,22 +3801,124 @@ export default function Dashboard() {
                     )
                   )
                 ) : (
-                  React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3446 } }
-                    , filteredDistrictCards.map((dist) => (
-                      React.createElement(HierarchyCard, {
-                        key: dist.id,
-                        title: dist.name,
-                        overallProgress: dist.overall,
-                        color: dist.color, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3487 }
-                      }
-                      )
-                    ))
+                  React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3446 } }
+                    , filteredDistricts.map(
+                      ([districtName, tehsils]
+
+
+
+
+
+
+
+
+
+                      ) => {
+                        const isExpanded =
+                          _nullishCoalesce(expandedTehsilGroups[districtName], () => (false));
+                        const visibleTehsils = isExpanded
+                          ? tehsils
+                          : tehsils.slice(0, 4);
+                        const hasMore = tehsils.length > 4;
+
+                        return (
+                          React.createElement('div', { key: districtName, className: "space-y-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3467 } }
+                            /* District Header */
+                            , React.createElement('div', { className: "flex items-center justify-between pb-2 border-b border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3469 } }
+                              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3470 } }
+                                , React.createElement('h3', { className: "text-lg font-bold font-heading", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3471 } }
+                                  , districtName, " Circle"
+                                )
+                                , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3474 } }
+                                  , tehsils.length, " tehsil"
+                                  , tehsils.length !== 1 ? "s" : "", " • Max Progress:"
+                                  , " "
+                                  , Math.max(...tehsils.map((t) => t.overall)), "%"
+
+                                )
+                              )
+                            )
+
+                            /* Tehsil Cards for this District */
+                            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3485 } }
+                              , visibleTehsils.map((teh) => (
+                                React.createElement(HierarchyCard, {
+                                  key: teh.id,
+                                  title: teh.name,
+                                  overallProgress: teh.overall,
+                                  color: teh.color,
+                                  onClick: () => {
+                                    const parentDist = districtsData.find(
+                                      (d) => d.id === teh.districtId,
+                                    );
+                                    const parentDiv = divisionsData.find(
+                                      (d) => d.id === _optionalChain([parentDist, 'optionalAccess', _47 => _47.divisionId]),
+                                    );
+                                    setParentDistrictId(teh.districtId);
+                                    setParentDistrictName(districtName);
+                                    setParentDivisionId(
+                                      _nullishCoalesce(_optionalChain([parentDist, 'optionalAccess', _48 => _48.divisionId]), () => (null)),
+                                    );
+                                    setParentDivisionName(
+                                      _nullishCoalesce(_optionalChain([parentDiv, 'optionalAccess', _49 => _49.name]), () => (null)),
+                                    );
+                                    setSelectedItemId(teh.id);
+                                    setSelectedItemName(teh.name);
+                                    setSelectedItemType("tehsil");
+                                  }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3487 }
+                                }
+                                )
+                              ))
+                            )
+
+                            /* Expand/Collapse Button for this District */
+                            , hasMore && (
+                              React.createElement('div', { className: "flex justify-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3517 } }
+                                , React.createElement(Button, {
+                                  variant: "default",
+                                  onClick: () => {
+                                    setExpandedTehsilGroups((prev) => {
+                                      const newState = !isExpanded;
+                                      // Update allTehsilGroupsExpanded based on whether all groups are expanded
+                                      const updated = {
+                                        ...prev,
+                                        [districtName]: newState,
+                                      };
+                                      const allExpanded =
+                                        filteredDistricts.every(
+                                          ([name]) => _nullishCoalesce(updated[name], () => (false)),
+                                        );
+                                      setAllTehsilGroupsExpanded(allExpanded);
+                                      return updated;
+                                    });
+                                  },
+                                  className: "rounded-xl bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3518 }
+                                }
+
+                                  , isExpanded ? (
+                                    React.createElement(React.Fragment, null
+                                      , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3540 } }), "Show Less ("
+                                      , tehsils.length - 4, " hidden)"
+                                    )
+                                  ) : (
+                                    React.createElement(React.Fragment, null
+                                      , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3545 } }), "Show More ("
+                                      , tehsils.length - 4, " more)"
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        );
+                      },
+                    )
                   )
                 )
 
                 /* Aggregated Charts Section */
                 , renderAggregatedCharts(
-                  "All Punjab Districts",
+                  "All Punjab Tehsils",
                   aggregatedData,
                   topProjectsForAggregateViews.length > 0
                     ? topProjectsForAggregateViews
@@ -4033,7 +4024,7 @@ export default function Dashboard() {
 
                 return pageProjects.map((project, index) => {
                   const progress = Math.round(
-                    _nullishCoalesce(ganttProgressByProjectId.get(project.id), () => (0)),
+                    _nullishCoalesce(ganttProgressByProjectId.get(Number(project.id)), () => (0)),
                   );
                   return (
                     React.createElement(HierarchyCard, {
@@ -4069,6 +4060,76 @@ export default function Dashboard() {
         ))
       )
 
+      /* Success Dialog */
+      , React.createElement(Dialog, { open: showSuccessDialog, onOpenChange: setShowSuccessDialog, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3700 } }
+        , React.createElement(DialogContent, { className: "sm:max-w-md", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3701 } }
+          , React.createElement(DialogHeader, { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3702 } }
+            , React.createElement('div', { className: "flex flex-col items-center gap-4 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3703 } }
+              , React.createElement('img', {
+                src: "/Assets/PHPD.png",
+                alt: "PHPD Logo",
+                className: "h-16 w-16 object-contain", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3704 }
+              }
+              )
+              , React.createElement('div', { className: "flex items-center gap-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3709 } }
+                , React.createElement(CheckCircle2, { className: "h-6 w-6 text-emerald-500", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3710 } })
+                , React.createElement(DialogTitle, { className: "text-xl font-bold", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3711 } }, "Export Successful!"
+
+                )
+              )
+            )
+            , React.createElement(DialogDescription, { className: "text-center pt-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3716 } }, "PowerPoint presentation exported successfully!"
+
+              , React.createElement('br', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3718 } })
+              , React.createElement('br', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3719 } }), "The PPTX file includes all KPIs with proper icons and all charts based on your current filter selection."
+
+
+            )
+          )
+          , React.createElement(DialogFooter, { className: "sm:justify-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3724 } }
+            , React.createElement(Button, {
+              onClick: () => setShowSuccessDialog(false),
+              className: "w-full sm:w-auto", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3725 }
+            }
+              , "OK"
+
+            )
+          )
+        )
+      )
+
+      /* Error Dialog */
+      , React.createElement(Dialog, { open: showErrorDialog, onOpenChange: setShowErrorDialog, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3736 } }
+        , React.createElement(DialogContent, { className: "sm:max-w-md", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3737 } }
+          , React.createElement(DialogHeader, { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3738 } }
+            , React.createElement('div', { className: "flex flex-col items-center gap-4 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3739 } }
+              , React.createElement('img', {
+                src: "/Assets/PHPD.png",
+                alt: "PHPD Logo",
+                className: "h-16 w-16 object-contain", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3740 }
+              }
+              )
+              , React.createElement(DialogTitle, { className: "text-xl font-bold", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3745 } }, "Export Error"
+
+              )
+            )
+            , React.createElement(DialogDescription, { className: "text-center pt-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3749 } }
+              , !viewType
+                ? "Please select a view type (All Zones, All Circles, or All Tehsils) to export the presentation."
+                : "Error exporting presentation. Please try again."
+            )
+          )
+          , React.createElement(DialogFooter, { className: "sm:justify-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3755 } }
+            , React.createElement(Button, {
+              onClick: () => setShowErrorDialog(false),
+              className: "w-full sm:w-auto", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3756 }
+            }
+              , "OK"
+
+            )
+          )
+        )
+      )
     )
   );
 }

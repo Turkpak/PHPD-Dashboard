@@ -31,6 +31,16 @@ import { mediaUrl } from "@/api/config";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
+const DETAIL_QUERY_OPTIONS = Object.freeze({
+  staleTime: 60 * 1000,
+  gcTime: 15 * 60 * 1000,
+  cacheTime: 15 * 60 * 1000,
+  retry: 1,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  refetchOnMount: false,
+});
+
 
 
 
@@ -2147,7 +2157,7 @@ export function MilestoneDetailsPanel({
       return await listDelayLogs({ project: ganttProjectId });
     },
     enabled: ganttProjectId != null,
-    staleTime: 30 * 1000,
+    ...DETAIL_QUERY_OPTIONS,
   });
   const apiDelayLogs = (_nullishCoalesce(_optionalChain([apiDelayLogsData, 'optionalAccess', _41 => _41.data]), () => ( []))) ;
 
@@ -2158,7 +2168,7 @@ export function MilestoneDetailsPanel({
       return await listProgressImages({ project: ganttProjectId });
     },
     enabled: ganttProjectId != null,
-    staleTime: 30 * 1000,
+    ...DETAIL_QUERY_OPTIONS,
   });
   const apiProgressImages = (_nullishCoalesce(apiProgressImagesData, () => ( []))) ;
 
@@ -2169,7 +2179,7 @@ export function MilestoneDetailsPanel({
       return await listProjectDocuments({ project: ganttProjectId });
     },
     enabled: ganttProjectId != null,
-    staleTime: 30 * 1000,
+    ...DETAIL_QUERY_OPTIONS,
   });
   const apiProjectDocuments = (_nullishCoalesce(apiProjectDocumentsData, () => ( []))) ;
 

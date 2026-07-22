@@ -22,18 +22,35 @@ import ProjectActivityManagement from "@/pages/ProjectActivityManagement";
 import UserManagement from "@/pages/UserManagement";
 
 // AuthGate: redirect to /auth when not authenticated (must be inside AuthProvider)
+// function AuthGate({ children }) {
+//   const { isAuthenticated } = useAuth();
+//   const [location, setLocation] = useLocation();
+
+//   // Redirect to /auth if not authenticated (but allow /auth itself through)
+//   if (!isAuthenticated && location !== "/auth") {
+//     // Use a layout effect style: schedule the redirect and render nothing
+//     setTimeout(() => setLocation("/auth"), 0);
+//     return null;
+//   }
+
+//   return <>{children}</>;
+// }
+
 function AuthGate({ children }) {
   const { isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
 
-  // Redirect to /auth if not authenticated (but allow /auth itself through)
+  useEffect(() => {
+    if (!isAuthenticated && location !== "/auth") {
+      setLocation("/auth");
+    }
+  }, [isAuthenticated, location]);
+
   if (!isAuthenticated && location !== "/auth") {
-    // Use a layout effect style: schedule the redirect and render nothing
-    setTimeout(() => setLocation("/auth"), 0);
     return null;
   }
 
-  return <>{children}</>;
+  return children;
 }
 
 function Router() {

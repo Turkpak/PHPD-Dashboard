@@ -1,13 +1,12 @@
 import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { MapContainer, TileLayer, Marker, Popup, Circle, LayersControl, LayerGroup, Polyline, useMap, GeoJSON } from "react-leaflet";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
-import { Camera, AlertTriangle, Activity, Construction, Upload, Info, ChevronDown, ChevronUp, FolderKanban, Building2, Zap, Radio, ClipboardCheck, TrendingUp, Home } from "lucide-react";
-import { renderToString } from "react-dom/server";
+import { Camera, AlertTriangle, Activity, Construction, Upload, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 
@@ -52,9 +51,9 @@ const getIncidentIcon = (severity) => L.divIcon({
 
 
 const PROJECT_STATUS_STYLE = {
-  in_progress: { color: "#047857", fillColor: "#047857" }, // Emerald-700 (Matches card)
-  in_delay: { color: "#e11d48", fillColor: "#e11d48" }, // Rose-600 (Matches card / Red-ish Warning)
-  pending: { color: "#d97706", fillColor: "#d97706" }, // Amber-600 (Matches card)
+  in_progress: { color: "#0F4B3A", fillColor: "#0F4B3A" }, // in-progress
+  in_delay: { color: "#e11d48", fillColor: "#e11d48" }, // rose-600
+  pending: { color: "#d97706", fillColor: "#d97706" }, // amber-600
 };
 
 function getStatusSvg(status) {
@@ -113,65 +112,15 @@ function getGreenDotProjectIcon() {
   return L.divIcon({
     className: "project-green-dot",
     html: `<span style="
-      width: 18px; height: 18px;
+      width: 12px; height: 12px;
       border-radius: 9999px;
-      background: #16a34a;
-      border: 2.5px solid rgba(255,255,255,0.98);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.28), 0 0 0 3px rgba(22,163,74,0.22);
+      background: #22c55e;
+      border: 2px solid rgba(255,255,255,0.95);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
       display: block;
     "></span>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
-  });
-}
-
-const tableIconSet = [
-  FolderKanban,
-  Building2,
-  Zap,
-  Camera,
-  Radio,
-  ClipboardCheck,
-  TrendingUp,
-  Home,
-];
-
-const tableColorSet = [
-  "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200",
-  "bg-emerald-50 text-emerald-600 border-emerald-200",
-  "bg-sky-50 text-sky-600 border-sky-200",
-  "bg-amber-50 text-amber-600 border-amber-200",
-  "bg-rose-50 text-rose-600 border-rose-200",
-  "bg-violet-50 text-violet-600 border-violet-200",
-  "bg-cyan-50 text-cyan-600 border-cyan-200",
-  "bg-lime-50 text-lime-600 border-lime-200",
-];
-
-function getProjectTableIcon(name) {
-  const nameStr = name || "";
-  let nameHash = 0;
-  for (let i = 0; i < nameStr.length; i++) {
-    nameHash = nameStr.charCodeAt(i) + ((nameHash << 5) - nameHash);
-  }
-  const iconIdx = Math.abs(nameHash) % tableIconSet.length;
-  const colorIdx = Math.abs(nameHash) % tableColorSet.length;
-  const RowIcon = tableIconSet[iconIdx];
-  const colorClass = tableColorSet[colorIdx];
-
-  const htmlString = renderToString(
-    React.createElement('div', { 
-      className: `h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm ${colorClass}`,
-      style: { backgroundColor: 'white' } 
-    }, 
-      React.createElement(RowIcon, { className: "h-5 w-5" })
-    )
-  );
-
-  return L.divIcon({
-    className: "custom-table-icon bg-transparent border-none",
-    html: htmlString,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
   });
 }
 
@@ -240,18 +189,35 @@ function MapResizeHandler() {
   const map = useMap();
   useEffect(() => {
     const container = map.getContainer();
+    if (!container) return undefined;
+
+    let frameId = null;
+    let lastWidth = -1;
+    let lastHeight = -1;
+
     const resize = () => {
-      map.invalidateSize();
-      map.setView(map.getCenter(), map.getZoom());
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      if (width === lastWidth && height === lastHeight) return;
+      lastWidth = width;
+      lastHeight = height;
+
+      if (frameId != null) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        map.invalidateSize({ pan: false, debounceMoveend: true });
+      });
     };
+
     const t1 = setTimeout(resize, 100);
     const t2 = setTimeout(resize, 400);
     const ro = new ResizeObserver(resize);
-    if (container) ro.observe(container);
+    ro.observe(container);
+
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      if (container) ro.unobserve(container);
+      if (frameId != null) cancelAnimationFrame(frameId);
+      ro.disconnect();
     };
   }, [map]);
   return null;
@@ -261,21 +227,35 @@ function MapResizeHandler() {
 function GeoJSONFitBounds({ data }) {
   const map = useMap();
   useEffect(() => {
-    if (data) {
-      try {
-        const layer = L.geoJSON(data);
-        const bounds = layer.getBounds();
-        if (bounds.isValid()) {
-          map.fitBounds(bounds, {
-            padding: [50, 50],
-            maxZoom: 15,
-            animate: true,
-            duration: 1.5
-          });
-        }
-      } catch (err) {
-        console.error("Error fitting map to GeoJSON:", err);
+    if (!data) return;
+
+    try {
+      const markerPoints = Array.isArray(data?.features)
+        ? data.features
+            .map((feature) => feature?.properties?.__center)
+            .filter((center) =>
+              Array.isArray(center) &&
+              center.length === 2 &&
+              Number.isFinite(Number(center[0])) &&
+              Number.isFinite(Number(center[1])),
+            )
+            .map((center) => [Number(center[0]), Number(center[1])])
+        : [];
+
+      const bounds = markerPoints.length > 0
+        ? L.latLngBounds(markerPoints)
+        : L.geoJSON(data).getBounds();
+
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: 15,
+          animate: true,
+          duration: 1.5
+        });
       }
+    } catch (err) {
+      console.error("Error fitting map to GeoJSON:", err);
     }
   }, [data, map]);
   return null;
@@ -331,6 +311,43 @@ export function CityMap({
   const mapRef = useRef(null);
   const greenDotIconRef = useRef(null);
   if (!greenDotIconRef.current) greenDotIconRef.current = getGreenDotProjectIcon();
+
+  const projectMarkerFeatures = useMemo(() => {
+    if (!Array.isArray(geoData?.features)) return [];
+    return geoData.features.filter((feature) =>
+      feature?.properties?.__marker === true &&
+      Array.isArray(feature?.properties?.__center),
+    );
+  }, [geoData]);
+
+  // Render large project sets in small batches so React/Leaflet never blocks the UI thread.
+  const MARKER_BATCH_SIZE = 200;
+  const [visibleMarkerCount, setVisibleMarkerCount] = useState(MARKER_BATCH_SIZE);
+  useEffect(() => {
+    const total = projectMarkerFeatures.length;
+    let cancelled = false;
+    let timerId = null;
+    let nextCount = Math.min(MARKER_BATCH_SIZE, total);
+    setVisibleMarkerCount(nextCount);
+
+    const revealNextBatch = () => {
+      if (cancelled || nextCount >= total) return;
+      nextCount = Math.min(nextCount + MARKER_BATCH_SIZE, total);
+      setVisibleMarkerCount(nextCount);
+      if (nextCount < total) timerId = setTimeout(revealNextBatch, 16);
+    };
+
+    if (nextCount < total) timerId = setTimeout(revealNextBatch, 16);
+    return () => {
+      cancelled = true;
+      if (timerId != null) clearTimeout(timerId);
+    };
+  }, [projectMarkerFeatures]);
+
+  const visibleProjectMarkerFeatures = useMemo(
+    () => projectMarkerFeatures.slice(0, visibleMarkerCount),
+    [projectMarkerFeatures, visibleMarkerCount],
+  );
 
   const handleFileUpload = (e, id) => {
     if (e.target.files && e.target.files[0]) {
@@ -601,14 +618,11 @@ export function CityMap({
                         onProjectSelect(idNum);
                       });
                     }
-                  }, 
-                  pointToLayer: () => null, __self: this, __source: {fileName: _jsxFileName, lineNumber: 504}}
+                  }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 504}}
                 )
 
                 /* One status marker per project (center of boundary) */
-                , Array.isArray(_optionalChain([(geoData ), 'optionalAccess', _11 => _11.features])) &&
-                  (geoData ).features
-                    .filter((f) => _optionalChain([f, 'optionalAccess', _12 => _12.properties, 'optionalAccess', _13 => _13.__marker]) && Array.isArray(_optionalChain([f, 'optionalAccess', _14 => _14.properties, 'optionalAccess', _15 => _15.__center])))
+                , visibleProjectMarkerFeatures
                     .map((f, idx) => {
                       const center = f.properties.__center ;
                       const status = _nullishCoalesce(_optionalChain([f, 'optionalAccess', _16 => _16.properties, 'optionalAccess', _17 => _17.status]), () => ( "pending"));
@@ -619,7 +633,7 @@ export function CityMap({
                         React.createElement(Marker, {
                           key: `proj-center-${_nullishCoalesce(_optionalChain([f, 'optionalAccess', _22 => _22.properties, 'optionalAccess', _23 => _23.id]), () => ( idx))}`,
                           position: center,
-                          icon: projectMarkerVariant === "table" ? getProjectTableIcon(name) : (projectMarkerVariant === "green" ? greenDotIconRef.current : getProjectStatusIcon(status)),
+                          icon: projectMarkerVariant === "green" ? greenDotIconRef.current : getProjectStatusIcon(status),
                           eventHandlers: 
                             onProjectSelect && Number.isFinite(idNum)
                               ? {
@@ -627,6 +641,20 @@ export function CityMap({
                                 }
                               : undefined
                           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 545}}
+
+                          , React.createElement(Popup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 557}}
+                            , React.createElement('div', { className: "p-2 text-xs font-sans"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 558}}
+                              , React.createElement('p', { className: "font-bold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 559}}, String(name))
+                              , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 560}}, "Status:"
+                                , " "
+                                , status === "in_progress"
+                                  ? "In Progress"
+                                  : status === "in_delay"
+                                    ? "Delayed"
+                                    : "Pending"
+                              )
+                            )
+                          )
                         )
                       );
                     })
