@@ -1,7 +1,7 @@
 import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { MapContainer, TileLayer, Marker, Popup, Circle, LayersControl, LayerGroup, Polyline, useMap, GeoJSON } from "react-leaflet";
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
@@ -189,35 +189,18 @@ function MapResizeHandler() {
   const map = useMap();
   useEffect(() => {
     const container = map.getContainer();
-    if (!container) return undefined;
-
-    let frameId = null;
-    let lastWidth = -1;
-    let lastHeight = -1;
-
     const resize = () => {
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      if (width === lastWidth && height === lastHeight) return;
-      lastWidth = width;
-      lastHeight = height;
-
-      if (frameId != null) cancelAnimationFrame(frameId);
-      frameId = requestAnimationFrame(() => {
-        map.invalidateSize({ pan: false, debounceMoveend: true });
-      });
+      map.invalidateSize();
+      map.setView(map.getCenter(), map.getZoom());
     };
-
     const t1 = setTimeout(resize, 100);
     const t2 = setTimeout(resize, 400);
     const ro = new ResizeObserver(resize);
-    ro.observe(container);
-
+    if (container) ro.observe(container);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      if (frameId != null) cancelAnimationFrame(frameId);
-      ro.disconnect();
+      if (container) ro.unobserve(container);
     };
   }, [map]);
   return null;
@@ -227,35 +210,21 @@ function MapResizeHandler() {
 function GeoJSONFitBounds({ data }) {
   const map = useMap();
   useEffect(() => {
-    if (!data) return;
-
-    try {
-      const markerPoints = Array.isArray(data?.features)
-        ? data.features
-            .map((feature) => feature?.properties?.__center)
-            .filter((center) =>
-              Array.isArray(center) &&
-              center.length === 2 &&
-              Number.isFinite(Number(center[0])) &&
-              Number.isFinite(Number(center[1])),
-            )
-            .map((center) => [Number(center[0]), Number(center[1])])
-        : [];
-
-      const bounds = markerPoints.length > 0
-        ? L.latLngBounds(markerPoints)
-        : L.geoJSON(data).getBounds();
-
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, {
-          padding: [50, 50],
-          maxZoom: 15,
-          animate: true,
-          duration: 1.5
-        });
+    if (data) {
+      try {
+        const layer = L.geoJSON(data);
+        const bounds = layer.getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            padding: [50, 50],
+            maxZoom: 15,
+            animate: true,
+            duration: 1.5
+          });
+        }
+      } catch (err) {
+        console.error("Error fitting map to GeoJSON:", err);
       }
-    } catch (err) {
-      console.error("Error fitting map to GeoJSON:", err);
     }
   }, [data, map]);
   return null;
@@ -311,43 +280,6 @@ export function CityMap({
   const mapRef = useRef(null);
   const greenDotIconRef = useRef(null);
   if (!greenDotIconRef.current) greenDotIconRef.current = getGreenDotProjectIcon();
-
-  const projectMarkerFeatures = useMemo(() => {
-    if (!Array.isArray(geoData?.features)) return [];
-    return geoData.features.filter((feature) =>
-      feature?.properties?.__marker === true &&
-      Array.isArray(feature?.properties?.__center),
-    );
-  }, [geoData]);
-
-  // Render large project sets in small batches so React/Leaflet never blocks the UI thread.
-  const MARKER_BATCH_SIZE = 200;
-  const [visibleMarkerCount, setVisibleMarkerCount] = useState(MARKER_BATCH_SIZE);
-  useEffect(() => {
-    const total = projectMarkerFeatures.length;
-    let cancelled = false;
-    let timerId = null;
-    let nextCount = Math.min(MARKER_BATCH_SIZE, total);
-    setVisibleMarkerCount(nextCount);
-
-    const revealNextBatch = () => {
-      if (cancelled || nextCount >= total) return;
-      nextCount = Math.min(nextCount + MARKER_BATCH_SIZE, total);
-      setVisibleMarkerCount(nextCount);
-      if (nextCount < total) timerId = setTimeout(revealNextBatch, 16);
-    };
-
-    if (nextCount < total) timerId = setTimeout(revealNextBatch, 16);
-    return () => {
-      cancelled = true;
-      if (timerId != null) clearTimeout(timerId);
-    };
-  }, [projectMarkerFeatures]);
-
-  const visibleProjectMarkerFeatures = useMemo(
-    () => projectMarkerFeatures.slice(0, visibleMarkerCount),
-    [projectMarkerFeatures, visibleMarkerCount],
-  );
 
   const handleFileUpload = (e, id) => {
     if (e.target.files && e.target.files[0]) {
@@ -622,7 +554,9 @@ export function CityMap({
                 )
 
                 /* One status marker per project (center of boundary) */
-                , visibleProjectMarkerFeatures
+                , Array.isArray(_optionalChain([(geoData ), 'optionalAccess', _11 => _11.features])) &&
+                  (geoData ).features
+                    .filter((f) => _optionalChain([f, 'optionalAccess', _12 => _12.properties, 'optionalAccess', _13 => _13.__marker]) && Array.isArray(_optionalChain([f, 'optionalAccess', _14 => _14.properties, 'optionalAccess', _15 => _15.__center])))
                     .map((f, idx) => {
                       const center = f.properties.__center ;
                       const status = _nullishCoalesce(_optionalChain([f, 'optionalAccess', _16 => _16.properties, 'optionalAccess', _17 => _17.status]), () => ( "pending"));
