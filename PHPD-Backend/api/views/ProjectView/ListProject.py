@@ -67,9 +67,10 @@
     #             data=str(e),
     #             http_status=status.HTTP_500_INTERNAL_SERVER_ERROR
     #         ).create_response()
-
 from ..common_imports import *
 from django.db.models import Prefetch
+import time
+import json
 
 
 class ListProjectView(viewsets.ViewSet):
@@ -84,7 +85,12 @@ class ListProjectView(viewsets.ViewSet):
         try:
             project_id = request.query_params.get("id")
 
+            # ==========================
+            # SINGLE PROJECT
+            # ==========================
             if project_id:
+
+                start = time.time()
 
                 project = (
                     Project.objects
@@ -105,6 +111,8 @@ class ListProjectView(viewsets.ViewSet):
                     .first()
                 )
 
+                print(f"[PROJECT] Query: {time.time() - start:.3f} sec")
+
                 if not project:
                     return ApiResponse(
                         status=status.HTTP_404_NOT_FOUND,
@@ -112,14 +120,31 @@ class ListProjectView(viewsets.ViewSet):
                         http_status=status.HTTP_404_NOT_FOUND,
                     ).create_response()
 
+                t = time.time()
                 serializer = ProjectSerializer(project)
+                print(f"[PROJECT] Serializer Init: {time.time() - t:.3f} sec")
+
+                t = time.time()
+                data = serializer.data
+                print(f"[PROJECT] serializer.data: {time.time() - t:.3f} sec")
+
+                t = time.time()
+                json.dumps(data, default=str)
+                print(f"[PROJECT] JSON Encode: {time.time() - t:.3f} sec")
+
+                print(f"[PROJECT] TOTAL: {time.time() - start:.3f} sec")
 
                 return ApiResponse(
                     status=status.HTTP_200_OK,
                     message="Project Found.",
-                    data=serializer.data,
+                    data=data,
                     http_status=status.HTTP_200_OK,
                 ).create_response()
+
+            # ==========================
+            # ALL PROJECTS
+            # ==========================
+            start = time.time()
 
             queryset = (
                 Project.objects
@@ -134,12 +159,26 @@ class ListProjectView(viewsets.ViewSet):
                 )
             )
 
+            print(f"[ALL] QuerySet Created: {time.time() - start:.3f} sec")
+
+            t = time.time()
             serializer = ProjectSerializer(queryset, many=True)
+            print(f"[ALL] Serializer Init: {time.time() - t:.3f} sec")
+
+            t = time.time()
+            data = serializer.data
+            print(f"[ALL] serializer.data: {time.time() - t:.3f} sec")
+
+            t = time.time()
+            json.dumps(data, default=str)
+            print(f"[ALL] JSON Encode: {time.time() - t:.3f} sec")
+
+            print(f"[ALL] TOTAL: {time.time() - start:.3f} sec")
 
             return ApiResponse(
                 status=status.HTTP_200_OK,
                 message="All Projects Found.",
-                data=serializer.data,
+                data=data,
                 http_status=status.HTTP_200_OK,
             ).create_response()
 
