@@ -15,11 +15,9 @@ import {
   // getProjectById,
   getProjectGanttData,
   getProjectGanttAll,
-   getGISProjectById,
-
 } from "@/api";
 import { FolderKanban, Loader2, AlertTriangle, CalendarCheck, Filter } from "lucide-react";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 
 import { cn } from "@/lib/utils";
@@ -205,6 +203,41 @@ function buildProjectsFeatureCollection(
   return { type: "FeatureCollection", features };
 }
 
+const EMPTY_ACTIVE_LAYERS = new Set();
+
+const LOOKUP_QUERY_OPTIONS = {
+  staleTime: 30 * 60 * 1000,
+  gcTime: 60 * 60 * 1000,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
+  refetchOnWindowFocus: false,
+};
+
+const PROJECT_QUERY_OPTIONS = {
+  staleTime: 10 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
+  refetchOnWindowFocus: false,
+};
+
+const HEAVY_QUERY_OPTIONS = {
+  staleTime: 15 * 60 * 1000,
+  gcTime: 60 * 60 * 1000,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
+  refetchOnWindowFocus: false,
+  retry: false,
+};
+
+const SELECTED_GANTT_QUERY_OPTIONS = {
+  staleTime: 5 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
+  refetchOnWindowFocus: false,
+};
+
 export default function GISLayers() {
   const [selectedCity, setSelectedCity] = useState("lahore");
   const [showLegend, setShowLegend] = useState(true);
@@ -257,30 +290,30 @@ export default function GISLayers() {
     selectedProjectId !== "all" ? Number(selectedProjectId) : null;
 
   const { data: zones = [], isLoading: zonesLoading } = useQuery({
-    queryKey: ["gis", "zones"],
+    queryKey: ["zones"],
     queryFn: () => listProvinces(),
-    staleTime: 5 * 60 * 1000,
+    ...LOOKUP_QUERY_OPTIONS,
   });
 
   const { data: circles = [], isFetching: circlesLoading } = useQuery({
-    queryKey: ["gis", "circles", zoneNumeric],
+    queryKey: ["circles", zoneNumeric],
     queryFn: () => listDivisions(zoneNumeric),
     enabled: zoneNumeric != null && Number.isFinite(zoneNumeric),
-    staleTime: 5 * 60 * 1000,
+    ...LOOKUP_QUERY_OPTIONS,
   });
 
   const { data: districts = [], isFetching: districtsLoading } = useQuery({
-    queryKey: ["gis", "districts", circleNumeric],
+    queryKey: ["districts", circleNumeric],
     queryFn: () => listDistricts(circleNumeric),
     enabled: circleNumeric != null && Number.isFinite(circleNumeric),
-    staleTime: 5 * 60 * 1000,
+    ...LOOKUP_QUERY_OPTIONS,
   });
 
   const { data: tehsils = [], isFetching: tehsilsLoading } = useQuery({
-    queryKey: ["gis", "tehsils", districtNumeric],
+    queryKey: ["tehsils", districtNumeric],
     queryFn: () => listTehsils(districtNumeric),
     enabled: districtNumeric != null && Number.isFinite(districtNumeric),
-    staleTime: 5 * 60 * 1000,
+    ...LOOKUP_QUERY_OPTIONS,
   });
 
   const tehsilNumeric =
@@ -288,7 +321,6 @@ export default function GISLayers() {
 
   const { data: projects = [], isFetching: projectsLoading } = useQuery({
     queryKey: [
-      "gis",
       "projects",
       zoneNumeric,
       circleNumeric,
@@ -305,38 +337,25 @@ export default function GISLayers() {
             ? tehsilNumeric
             : undefined,
       }),
-    staleTime: 5 * 60 * 1000,
+    ...PROJECT_QUERY_OPTIONS,
   });
 
   // Preserve map status functionality, but do not fire this heavy request in
   // parallel with the initial project request.
   const { data: allProjectSchedules = [], isFetching: allGanttLoading } = useQuery({
-    queryKey: ["gis", "project-gantt-all"],
+    queryKey: ["project-gantt-all"],
     queryFn: getProjectGanttAll,
     enabled: projects.length > 0 && !projectsLoading,
-    staleTime: 5 * 60 * 1000,
+    ...HEAVY_QUERY_OPTIONS,
   });
 
-  // When a project is selected, fetch that specific project via /api/list-project/?id=...
-  // (same behavior as Finance page).
-  const { data: selectedProjectDetails, isFetching: selectedProjectLoading } =
-    useQuery({
-      queryKey: ["gis", "project-by-id", selectedProjectNumericId],
-      queryFn: async () => {
-        if (selectedProjectNumericId == null) return null;
-        // return await getProjectById(selectedProjectNumericId);
-        return await getGISProjectById(selectedProjectNumericId);
-      },
-      enabled:
-        selectedProjectNumericId != null &&
-        Number.isFinite(selectedProjectNumericId),
-      staleTime: 30 * 1000,
-    });
+  // The selected project is reused from the already-fetched GIS project list.
+  // This removes the duplicate /api/list-project/?id=... request.
 
   // When a project is selected, fetch nested gantt tasks for that project id.
   const { data: selectedProjectGanttTasks = [], isFetching: ganttLoading } =
     useQuery({
-      queryKey: ["gis", "project-gantt", selectedProjectNumericId],
+      queryKey: ["project-gantt", selectedProjectNumericId],
       queryFn: async () => {
         if (selectedProjectNumericId == null) return [];
         const tasks = await getProjectGanttData(selectedProjectNumericId);
@@ -345,7 +364,7 @@ export default function GISLayers() {
       enabled:
         selectedProjectNumericId != null &&
         Number.isFinite(selectedProjectNumericId),
-      staleTime: 30 * 1000,
+      ...SELECTED_GANTT_QUERY_OPTIONS,
     });
 
   const filteredProjects = useMemo(() => {
@@ -447,8 +466,8 @@ export default function GISLayers() {
     [filteredProjects, selectedProjectId]
   );
 
-  // Use selected-project details (from /api/list-project/?id=...) when available.
-  const activeSelectedProject = _nullishCoalesce(selectedProjectDetails, () => ( selectedProject));
+  // Reuse the selected project from the cached GIS project list.
+  const activeSelectedProject = selectedProject;
 
   // When selecting a project, automatically set Zone/Circle/District/Tehsil filters
   // to match that project's saved location. This keeps the filter bar in sync.
@@ -487,6 +506,18 @@ export default function GISLayers() {
     if (!activeSelectedProject || !activeSelectedProject.geom) return null;
     return buildProjectsFeatureCollection([activeSelectedProject], projectStatusById);
   }, [activeSelectedProject, projectStatusById]);
+
+  const handleLegendClose = useCallback(() => {
+    setShowLegend(false);
+  }, []);
+
+  const handleProjectSelect = useCallback((projectId) => {
+    setSelectedProjectId(String(projectId));
+    // Scroll after React renders the selected project Gantt section.
+    setTimeout(() => {
+      _optionalChain([ganttSectionRef, 'access', _18 => _18.current, 'optionalAccess', _19 => _19.scrollIntoView, 'call', _20 => _20({ behavior: "smooth", block: "start" })]);
+    }, 50);
+  }, []);
 
   return (
     React.createElement(Layout, { title: "Advanced GIS Intelligence"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 391}}
@@ -685,21 +716,15 @@ export default function GISLayers() {
           , React.createElement('div', { className: "w-full min-h-[480px] h-[65vh] max-h-[720px] rounded-xl overflow-hidden"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 551}}
             , React.createElement(CityMap, {
               city: selectedCity,
-              activeLayers: new Set(),
+              activeLayers: EMPTY_ACTIVE_LAYERS,
               searchQuery: "",
               onMapReady: setMapRef,
               showLegend: showLegend,
-              onLegendClose: () => setShowLegend(false),
+              onLegendClose: handleLegendClose,
               showStats: false,
               showSurveillanceLayers: false,
               legendProjects: filteredProjects,
-              onProjectSelect: (projectId) => {
-                setSelectedProjectId(String(projectId));
-                // scroll to gantt section (next tick so state renders)
-                setTimeout(() => {
-                  _optionalChain([ganttSectionRef, 'access', _18 => _18.current, 'optionalAccess', _19 => _19.scrollIntoView, 'call', _20 => _20({ behavior: "smooth", block: "start" })]);
-                }, 50);
-              },
+              onProjectSelect: handleProjectSelect,
               filterCenter: 
                 !selectedProjectGeo &&
                 !allFilteredProjectsGeo &&
@@ -729,7 +754,7 @@ export default function GISLayers() {
                 )
               )
               , React.createElement(CardContent, { className: "pt-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 597}}
-                , selectedProjectLoading || ganttLoading ? (
+                , ganttLoading ? (
                   React.createElement('div', { className: "space-y-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 599}}
                     , React.createElement(Skeleton, { className: "h-5 w-72 max-w-full"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 600}} )
                     , React.createElement(Skeleton, { className: "h-64 w-full" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 601}} )
