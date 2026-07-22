@@ -555,7 +555,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
         return obj.district.district_name if obj.district else None
 
     def get_tehsil_name(self, obj):
-        return obj.tehsil.tehsil_name if obj.tehsil else Noneclass ProjectListSerializer(serializers.ModelSerializer):
+        return obj.tehsil.tehsil_name if obj.tehsil else None
+
+class ProjectListSerializer(serializers.ModelSerializer):
     zone_name = serializers.SerializerMethodField()
     circle = serializers.SerializerMethodField()
     circle_name = serializers.SerializerMethodField()
