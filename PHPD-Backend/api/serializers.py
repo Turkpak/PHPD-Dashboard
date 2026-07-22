@@ -510,3 +510,32 @@ class ActivityDelayLogSerializer(serializers.ModelSerializer):
 
 #     def get_project_name(self, obj):
 #         return obj.project.project_name
+
+
+class GISProjectSerializer(serializers.ModelSerializer):
+    zone_name = serializers.CharField(source="zone.zone_name", read_only=True)
+    district_name = serializers.CharField(source="district.district_name", read_only=True)
+    tehsil_name = serializers.CharField(source="tehsil.tehsil_name", read_only=True)
+    circle = serializers.SerializerMethodField()
+    circle_name = serializers.SerializerMethodField()
+    geom = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "project_name",
+            "project_reference_no",
+            "project_category",
+            "zone",
+            "zone_name",
+            "circle",
+            "circle_name",
+            "district",
+            "district_name",
+            "tehsil",
+            "tehsil_name",
+            "latitude",
+            "longitude",
+            "geom",
+        ]

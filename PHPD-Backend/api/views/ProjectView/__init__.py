@@ -5,3 +5,4 @@ from .DeleteProject import *
 from .ProjectSummaryView import *
 from .TopProject import *
 from .ProjectUpdateLog import *
+from .GISProject import *

@@ -17,6 +17,7 @@ const LIST = "list-project/";
 const UPDATE = "update-project/";
 const DELETE_PATH = "delete-project/";
 const TOP_PROJECTS = "top-projects/";
+const GIS_LIST = "gis-project/";
 
 function normalizeProjectFeature(f
 
@@ -69,8 +70,10 @@ export async function listTopProjects() {
 }
 
 export async function getProjectById(id) {
+  console.time("Project API");
   const data = await get(LIST, { id: String(id) });
-  console.log("Project By ID:", data);
+ console.timeEnd("Project API");
+  console.log(data);
   if (data == null) return null;
   let raw = data;
   // Some endpoints nest again: { data: GeoJSON Feature }
@@ -234,4 +237,32 @@ export async function updateProject(id, payload) {
 
 export async function deleteProject(id) {
   await del(`${DELETE_PATH}${id}/`);
+}
+export async function listGISProjects(params = {}) {
+  try {
+    const data = await get(GIS_LIST, params);
+
+    if (!data) return [];
+
+    if (typeof data === "object" && "features" in data && Array.isArray(data.features)) {
+      return data.features.map((f) => normalizeProjectFeature(f));
+    }
+
+    if (Array.isArray(data)) {
+      return data.map((f) => normalizeProjectFeature(f));
+    }
+
+    return [];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
+export async function getGISProjectById(id) {
+  const data = await get(GIS_LIST, { id });
+
+  if (!Array.isArray(data)) return null;
+
+  return data.length ? normalizeProjectFeature(data[0]) : null;
 }
