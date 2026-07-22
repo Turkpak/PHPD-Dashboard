@@ -91,6 +91,7 @@ class ListProjectView(viewsets.ViewSet):
                         "district",
                         "district__circle",
                         "tehsil",
+                        "tehsil__circle", 
                     )
                     .prefetch_related(
                         "stakeholder",
@@ -126,6 +127,7 @@ class ListProjectView(viewsets.ViewSet):
                     "district",
                     "district__circle",
                     "tehsil",
+                    "tehsil__circle",
                 )
                 .prefetch_related(
                     "stakeholder",
