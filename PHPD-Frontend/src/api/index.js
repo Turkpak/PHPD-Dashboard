@@ -21,3 +21,7 @@ export * from "./user";
 export * from "./projectActivity";
 export * from "./delayLog";
 export * from "./projectDocument";
+export {
+  listProjects as listGISProjects,
+  getProjectById as getGISProjectById,
+} from "./project";

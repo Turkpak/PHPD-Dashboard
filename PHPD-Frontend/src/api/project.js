@@ -17,7 +17,16 @@ const LIST = "list-project/";
 const UPDATE = "update-project/";
 const DELETE_PATH = "delete-project/";
 const TOP_PROJECTS = "top-projects/";
-const GIS_LIST = "gis-project/";
+
+const PROJECT_LIST_CACHE_TTL_MS = 5 * 60 * 1000;
+let projectListCache = null;
+let projectListCacheTime = 0;
+let projectListInFlight = null;
+
+export function invalidateProjectListCache() {
+  projectListCache = null;
+  projectListCacheTime = 0;
+}
 
 function normalizeProjectFeature(f
 
@@ -46,21 +55,37 @@ function normalizeProjectFeature(f
   return project;
 }
 
-export async function listProjects() {
-  try {
-    const data = await get(LIST);
-    if (!data) return [];
-    if (typeof data === "object" && "features" in data && Array.isArray((data ).features)) {
-      return (data ).features.map((f) => normalizeProjectFeature(f));
-    }
-    if (Array.isArray(data)) {
-      return data.map((f) => normalizeProjectFeature(f ));
-    }
-    return [];
-  } catch {
-    // No mock fallback: view page should reflect real backend data only.
-    return [];
+export async function listProjects(options = {}) {
+  const force = options?.force === true;
+  const now = Date.now();
+
+  if (!force && projectListCache && now - projectListCacheTime < PROJECT_LIST_CACHE_TTL_MS) {
+    return projectListCache;
   }
+  if (!force && projectListInFlight) return projectListInFlight;
+
+  projectListInFlight = (async () => {
+    try {
+      const data = await get(LIST);
+      let projects = [];
+      if (data && typeof data === "object" && "features" in data && Array.isArray(data.features)) {
+        projects = data.features.map((feature) => normalizeProjectFeature(feature));
+      } else if (Array.isArray(data)) {
+        projects = data.map((feature) => normalizeProjectFeature(feature));
+      }
+
+      projectListCache = projects;
+      projectListCacheTime = Date.now();
+      return projects;
+    } catch {
+      // Keep the last successful result during a temporary production outage.
+      return projectListCache ?? [];
+    } finally {
+      projectListInFlight = null;
+    }
+  })();
+
+  return projectListInFlight;
 }
 
 /** GET /api/top-projects/ — returns list of top projects with progress % */
@@ -70,10 +95,7 @@ export async function listTopProjects() {
 }
 
 export async function getProjectById(id) {
-  console.time("Project API");
   const data = await get(LIST, { id: String(id) });
- console.timeEnd("Project API");
-  console.log(data);
   if (data == null) return null;
   let raw = data;
   // Some endpoints nest again: { data: GeoJSON Feature }
@@ -168,10 +190,12 @@ export async function createProject(payload) {
       form.append("boundary_file", boundaryFile);
     }
 
-    return request(CREATE, { method: "POST", formData: form });
+    const result = await request(CREATE, { method: "POST", formData: form });
+    invalidateProjectListCache();
+    return result;
   }
 
-  return post(
+  const result = await post(
     CREATE,
     sanitizeProjectDates({
       stakeholder: payload.stakeholder,
@@ -191,6 +215,8 @@ export async function createProject(payload) {
       remaining_budget: _nullishCoalesce(payload.remaining_budget, () => ( null)),
     } ),
   );
+  invalidateProjectListCache();
+  return result;
 }
 
 export async function updateProject(id, payload) {
@@ -229,40 +255,17 @@ export async function updateProject(id, payload) {
       form.append("boundary_file", boundaryFile);
     }
 
-    return request(`${UPDATE}${id}/`, { method: "PUT", formData: form });
+    const result = await request(`${UPDATE}${id}/`, { method: "PUT", formData: form });
+    invalidateProjectListCache();
+    return result;
   }
 
-  return put(`${UPDATE}${id}/`, sanitizeProjectDates({ ...payload } ) );
+  const result = await put(`${UPDATE}${id}/`, sanitizeProjectDates({ ...payload } ) );
+  invalidateProjectListCache();
+  return result;
 }
 
 export async function deleteProject(id) {
   await del(`${DELETE_PATH}${id}/`);
-}
-export async function listGISProjects(params = {}) {
-  try {
-    const data = await get(GIS_LIST, params);
-
-    if (!data) return [];
-
-    if (typeof data === "object" && "features" in data && Array.isArray(data.features)) {
-      return data.features.map((f) => normalizeProjectFeature(f));
-    }
-
-    if (Array.isArray(data)) {
-      return data.map((f) => normalizeProjectFeature(f));
-    }
-
-    return [];
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-}
-
-export async function getGISProjectById(id) {
-  const data = await get(GIS_LIST, { id });
-
-  if (!Array.isArray(data)) return null;
-
-  return data.length ? normalizeProjectFeature(data[0]) : null;
+  invalidateProjectListCache();
 }
