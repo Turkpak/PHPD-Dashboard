@@ -16,38 +16,47 @@ export default function Comparison() {
     data: divisions = [],
     isLoading: divisionsLoading,
   } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ["comparison", "divisions"],
     queryFn: () => listDivisions(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const {
     data: districts = [],
     isLoading: districtsLoading,
   } = useQuery({
-    queryKey: ["districts"],
+    queryKey: ["comparison", "districts"],
     queryFn: () => listDistricts(),
+    enabled: divisions.length > 0,
+    staleTime: 5 * 60 * 1000,
   });
 
   const {
     data: tehsils = [],
     isLoading: tehsilsLoading,
   } = useQuery({
-    queryKey: ["tehsils"],
+    queryKey: ["comparison", "tehsils"],
     queryFn: () => listTehsils(),
+    enabled: districts.length > 0,
+    staleTime: 5 * 60 * 1000,
   });
 
   const {
     data: projects = [],
     isLoading: projectsLoading,
   } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ["comparison", "projects"],
     queryFn: () => listProjects(),
+    enabled: tehsils.length > 0,
+    staleTime: 5 * 60 * 1000,
   });
 
   // Project progress source of truth: root gantt task `_id:"1"` progress per project.
   const { data: projectGanttAll = [], isLoading: ganttLoading } = useQuery({
-    queryKey: ["project-gantt-all"],
+    queryKey: ["comparison", "project-gantt-all"],
     queryFn: () => getProjectGanttAll(),
+    enabled: projects.length > 0 && !projectsLoading,
+    staleTime: 5 * 60 * 1000,
   });
 
   const ganttProgressByProjectId = useMemo(() => {

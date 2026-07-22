@@ -25,3 +25,5 @@ export {
   listProjects as listGISProjects,
   getProjectById as getGISProjectById,
 } from "./project";
+
+export * from "./dashboard";

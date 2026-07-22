@@ -133,19 +133,18 @@ export function AppRoutes() {
 
   return (
     <>
-      {/* Router is always mounted to detect route changes */}
-      <div style={{ visibility: showSplash ? "hidden" : "visible" }}>
-        <AuthProvider>
-          <AuthGate>
-            <SidebarProvider>
-              <PermissionGate>
-                <Router />
-              </PermissionGate>
-            </SidebarProvider>
-          </AuthGate>
-        </AuthProvider>
-      </div>
-      {/* Splash screen overlays on top */}
+      <AuthProvider>
+        <AuthGate>
+          <SidebarProvider>
+            <PermissionGate>
+              {/* Do not mount page components behind the splash screen. This
+                  prevents their useQuery hooks from firing before navigation
+                  is visible, while keeping auth/providers mounted. */}
+              {!showSplash && <Router />}
+            </PermissionGate>
+          </SidebarProvider>
+        </AuthGate>
+      </AuthProvider>
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
     </>
   );

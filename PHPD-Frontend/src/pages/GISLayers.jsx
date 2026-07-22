@@ -283,27 +283,38 @@ export default function GISLayers() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: projects = [] } = useQuery({
-    queryKey: ["projects"],
-    // queryFn: listProjects,
-queryFn: () =>
-  listGISProjects({
-    zone: zoneNumeric,
-    circle: circleNumeric,
-    district: districtNumeric,
-    tehsil:
-      selectedTehsilId !== "all"
-        ? Number(selectedTehsilId)
-        : undefined,
-  }),
+  const tehsilNumeric =
+    selectedTehsilId !== "all" ? Number(selectedTehsilId) : null;
+
+  const { data: projects = [], isFetching: projectsLoading } = useQuery({
+    queryKey: [
+      "gis",
+      "projects",
+      zoneNumeric,
+      circleNumeric,
+      districtNumeric,
+      tehsilNumeric,
+    ],
+    queryFn: () =>
+      listGISProjects({
+        zone: zoneNumeric,
+        circle: circleNumeric,
+        district: districtNumeric,
+        tehsil:
+          tehsilNumeric != null && Number.isFinite(tehsilNumeric)
+            ? tehsilNumeric
+            : undefined,
+      }),
+    staleTime: 5 * 60 * 1000,
   });
 
-  // NEW: fetch nested gantt for ALL projects in one request; used to derive
-  // delay/pending/in-progress status for map boundaries + cards.
+  // Preserve map status functionality, but do not fire this heavy request in
+  // parallel with the initial project request.
   const { data: allProjectSchedules = [], isFetching: allGanttLoading } = useQuery({
     queryKey: ["gis", "project-gantt-all"],
     queryFn: getProjectGanttAll,
-    staleTime: 30 * 1000,
+    enabled: projects.length > 0 && !projectsLoading,
+    staleTime: 5 * 60 * 1000,
   });
 
   // When a project is selected, fetch that specific project via /api/list-project/?id=...
@@ -348,13 +359,11 @@ queryFn: () =>
     if (districtNumeric != null && Number.isFinite(districtNumeric)) {
       list = list.filter((p) => p.district === districtNumeric);
     }
-    const tehsilNumeric =
-      selectedTehsilId !== "all" ? Number(selectedTehsilId) : null;
     if (tehsilNumeric != null && Number.isFinite(tehsilNumeric)) {
       list = list.filter((p) => p.tehsil === tehsilNumeric);
     }
     return list;
-  }, [projects, zoneNumeric, circleNumeric, districtNumeric, selectedTehsilId]);
+  }, [projects, zoneNumeric, circleNumeric, districtNumeric, tehsilNumeric]);
 
   const projectStatusById = useMemo(() => {
     const statusByProjectId = new Map();

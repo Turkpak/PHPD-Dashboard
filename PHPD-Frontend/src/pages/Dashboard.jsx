@@ -30,6 +30,7 @@ import {
   listDivisions,
   listDistricts,
   listTehsils,
+  getDashboardPageData,
 } from "@/api";
 
 import {
@@ -832,43 +833,22 @@ export default function Dashboard() {
     null,
   );
   const skipNextUrlSyncRef = useRef(false);
+  const lastHydratedUrlRef = useRef(null);
 
-  // API queries are deliberately staged so the dashboard does not fire every
-  // large request in parallel during the initial render. This preserves the
-  // existing dashboard calculations while reducing the production request burst.
-  const { data: apiDivisions = [] } = useQuery({
-    queryKey: ["dashboard", "divisions"],
-    queryFn: () => listDivisions(),
-    staleTime: 5 * 60 * 1000,
-  });
-  const { data: apiDistricts = [] } = useQuery({
-    queryKey: ["dashboard", "districts"],
-    queryFn: () => listDistricts(),
-    enabled: apiDivisions.length > 0,
-    staleTime: 5 * 60 * 1000,
-  });
-  const { data: apiTehsils = [] } = useQuery({
-    queryKey: ["dashboard", "tehsils"],
-    queryFn: () => listTehsils(),
-    enabled: apiDistricts.length > 0,
-    staleTime: 5 * 60 * 1000,
-  });
-  const { data: apiProjects = [] } = useQuery({
-    queryKey: ["dashboard", "projects"],
-    queryFn: () => listProjects(),
-    enabled: apiTehsils.length > 0,
+  // One additive page-wise API request supplies all datasets required by the
+  // currently selected dashboard page. Existing backend APIs remain available
+  // and unchanged for the rest of the application.
+  const { data: dashboardPageData, isFetching: isDashboardPageFetching } = useQuery({
+    queryKey: ["dashboard", "page-data", viewType],
+    queryFn: () => getDashboardPageData(viewType),
     staleTime: 5 * 60 * 1000,
   });
 
-  // The expensive all-project Gantt request is no longer unconditional. It is
-  // started only after the project list required by the existing calculations
-  // has loaded, preventing it from competing with the hierarchy requests.
-  const { data: apiProjectGanttAll = [] } = useQuery({
-    queryKey: ["dashboard", "project-gantt-all"],
-    queryFn: () => getProjectGanttAll(),
-    enabled: apiProjects.length > 0,
-    staleTime: 5 * 60 * 1000,
-  });
+  const apiDivisions = dashboardPageData?.divisions ?? [];
+  const apiDistricts = dashboardPageData?.districts ?? [];
+  const apiTehsils = dashboardPageData?.tehsils ?? [];
+  const apiProjects = dashboardPageData?.projects ?? [];
+  const apiProjectGanttAll = dashboardPageData?.projectGanttAll ?? [];
 
   const ganttProgressByProjectId = useMemo(() => {
     const findNodeById = (
@@ -1029,6 +1009,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (apiDivisions.length === 0 || apiDistricts.length === 0 || apiTehsils.length === 0) return;
 
+    const currentUrlKey = `${window.location.pathname}${window.location.search}`;
+    if (lastHydratedUrlRef.current === currentUrlKey) return;
+    lastHydratedUrlRef.current = currentUrlKey;
+
     const urlParams = new URLSearchParams(window.location.search);
     const level = urlParams.get("level");
     const viewParam = urlParams.get("view");
@@ -1111,7 +1095,7 @@ export default function Dashboard() {
         setParentDivisionName(found.division_name);
       }
     }
-  }, [location, apiDivisions, apiDistricts, apiTehsils]);
+  }, [apiDivisions, apiDistricts, apiTehsils]);
 
   // Keep URL in sync with drilldown selection.
   useEffect(() => {
@@ -1143,9 +1127,11 @@ export default function Dashboard() {
       }
     }
 
-    const nextUrl = params.toString() ? `/?${params.toString()}` : "/";
+    const pathname = window.location.pathname || "/";
+    const nextUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     if (currentUrl !== nextUrl) {
+      lastHydratedUrlRef.current = nextUrl;
       setLocation(nextUrl);
     }
   }, [
