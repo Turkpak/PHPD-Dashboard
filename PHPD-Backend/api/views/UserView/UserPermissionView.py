@@ -19,14 +19,14 @@ class UserPermissionViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """
-        Custom list to show all users and their permissions.
+        Custom list to show all users and their permissions with prefetch_related.
         """
-        # Get all users except superadmin itself
-        users = MyUser.objects.exclude(id=request.user.id)
+        # Get all users except superadmin itself with prefetched permissions
+        users = MyUser.objects.exclude(id=request.user.id).prefetch_related('userpermission_set')
         data = []
 
         for user in users:
-            permissions = UserPermission.objects.filter(user=user)
+            permissions = user.userpermission_set.all()
             perm_serializer = UserPermissionSerializer(permissions, many=True)
             data.append({
                 "user_id": user.id,
@@ -42,4 +42,4 @@ class UserPermissionViewSet(viewsets.ModelViewSet):
         serializer.save(created_by=self.request.user)
 
     def perform_update(self, serializer):
-        serializer.save(updated_by=self.request.user)
+        serializer.save(updated_by=self.request.user)

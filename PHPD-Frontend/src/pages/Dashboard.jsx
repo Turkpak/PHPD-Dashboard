@@ -833,28 +833,41 @@ export default function Dashboard() {
   );
   const skipNextUrlSyncRef = useRef(false);
 
-  // API queries
+  // API queries are deliberately staged so the dashboard does not fire every
+  // large request in parallel during the initial render. This preserves the
+  // existing dashboard calculations while reducing the production request burst.
   const { data: apiDivisions = [] } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ["dashboard", "divisions"],
     queryFn: () => listDivisions(),
+    staleTime: 5 * 60 * 1000,
   });
   const { data: apiDistricts = [] } = useQuery({
-    queryKey: ["districts"],
+    queryKey: ["dashboard", "districts"],
     queryFn: () => listDistricts(),
+    enabled: apiDivisions.length > 0,
+    staleTime: 5 * 60 * 1000,
   });
   const { data: apiTehsils = [] } = useQuery({
-    queryKey: ["tehsils"],
+    queryKey: ["dashboard", "tehsils"],
     queryFn: () => listTehsils(),
+    enabled: apiDistricts.length > 0,
+    staleTime: 5 * 60 * 1000,
   });
   const { data: apiProjects = [] } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ["dashboard", "projects"],
     queryFn: () => listProjects(),
+    enabled: apiTehsils.length > 0,
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch all gantt schedules once and use root task progress for each project card.
+  // The expensive all-project Gantt request is no longer unconditional. It is
+  // started only after the project list required by the existing calculations
+  // has loaded, preventing it from competing with the hierarchy requests.
   const { data: apiProjectGanttAll = [] } = useQuery({
-    queryKey: ["project-gantt-all"],
+    queryKey: ["dashboard", "project-gantt-all"],
     queryFn: () => getProjectGanttAll(),
+    enabled: apiProjects.length > 0,
+    staleTime: 5 * 60 * 1000,
   });
 
   const ganttProgressByProjectId = useMemo(() => {
