@@ -73,31 +73,6 @@ import { listProjects, } from "@/api/project";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
 
-// Keep large dashboard queries stable across route remounts, tab switches and window focus.
-// React Query still fetches immediately when the cache is empty.
-const HIERARCHY_QUERY_OPTIONS = Object.freeze({
-  staleTime: 30 * 60 * 1000,
-  gcTime: 60 * 60 * 1000,
-  cacheTime: 60 * 60 * 1000,
-  retry: 1,
-  refetchOnWindowFocus: false,
-  refetchOnReconnect: false,
-  refetchOnMount: false,
-});
-
-const LARGE_DATA_QUERY_OPTIONS = Object.freeze({
-  staleTime: 5 * 60 * 1000,
-  gcTime: 30 * 60 * 1000,
-  cacheTime: 30 * 60 * 1000,
-  retry: 1,
-  refetchOnWindowFocus: false,
-  refetchOnReconnect: false,
-  refetchOnMount: false,
-  structuralSharing: false,
-});
-
-const EMPTY_MAP_LAYERS = new Set();
-
 // Enhanced installation progress data with sub-projects and planned vs actual
 
 
@@ -752,74 +727,36 @@ function geometryBboxCenter(geometry) {
   return [(minLat + maxLat) / 2, (minLng + maxLng) / 2];
 }
 
-function buildProjectsFeatureCollection(projects, statusByProjectId, includeGeometry = true) {
+function buildProjectsFeatureCollection(projects, statusByProjectId) {
   const features = [];
-
-  const getProjectCenter = (project, normalized) => {
-    const lat = Number(project?.latitude);
-    const lng = Number(project?.longitude);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) return [lat, lng];
-
-    if (normalized?.type === "FeatureCollection" && Array.isArray(normalized.features)) {
-      for (const feature of normalized.features) {
-        if (!feature?.geometry) continue;
-        const center = geometryBboxCenter(feature.geometry);
-        if (center) return center;
-      }
-      return null;
-    }
-
-    if (normalized?.type === "Feature" && normalized.geometry) {
-      return geometryBboxCenter(normalized.geometry);
-    }
-    return null;
-  };
-
   for (const p of projects) {
     const normalized = normalizeProjectGeom(p.geom);
-    const center = getProjectCenter(p, normalized);
+    if (!normalized) continue;
+    const n = normalized;
     const baseProps = {
       id: p.id,
       project_name: p.project_name ?? `Project #${p.id}`,
-      status: statusByProjectId.get(Number(p.id)) ?? "pending",
+      status: statusByProjectId.get(p.id) ?? "pending",
     };
-
-    // The dashboard map displays project locations only. A marker-only collection avoids
-    // copying and rendering every polygon vertex for 1,000+ projects.
-    if (!includeGeometry) {
-      if (!center) continue;
-      features.push({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [center[1], center[0]] },
-        properties: {
-          ...baseProps,
-          __center: center,
-          __marker: true,
-        },
-      });
-      continue;
-    }
-
-    if (!normalized) continue;
-    const n = normalized;
     let markerAdded = false;
     if (n.type === "FeatureCollection" && Array.isArray(n.features)) {
       for (const f of n.features) {
         if (!f.geometry) continue;
-        const featureCenter = geometryBboxCenter(f.geometry);
+        const center = geometryBboxCenter(f.geometry);
         features.push({
           type: "Feature",
           geometry: f.geometry,
           properties: {
             ...(f.properties || {}),
             ...baseProps,
-            __center: featureCenter ?? undefined,
+            __center: center ?? undefined,
             __marker: !markerAdded,
           },
         });
         markerAdded = true;
       }
     } else if (n.type === "Feature" && n.geometry) {
+      const center = geometryBboxCenter(n.geometry);
       features.push({
         type: "Feature",
         geometry: n.geometry,
@@ -900,30 +837,24 @@ export default function Dashboard() {
   const { data: apiDivisions = [] } = useQuery({
     queryKey: ["divisions"],
     queryFn: () => listDivisions(),
-    ...HIERARCHY_QUERY_OPTIONS,
   });
   const { data: apiDistricts = [] } = useQuery({
     queryKey: ["districts"],
     queryFn: () => listDistricts(),
-    ...HIERARCHY_QUERY_OPTIONS,
   });
   const { data: apiTehsils = [] } = useQuery({
     queryKey: ["tehsils"],
     queryFn: () => listTehsils(),
-    ...HIERARCHY_QUERY_OPTIONS,
   });
   const { data: apiProjects = [] } = useQuery({
     queryKey: ["projects"],
     queryFn: () => listProjects(),
-    ...LARGE_DATA_QUERY_OPTIONS,
   });
 
   // Fetch all gantt schedules once and use root task progress for each project card.
   const { data: apiProjectGanttAll = [] } = useQuery({
     queryKey: ["project-gantt-all"],
     queryFn: () => getProjectGanttAll(),
-    enabled: apiProjects.length > 0,
-    ...LARGE_DATA_QUERY_OPTIONS,
   });
 
   const ganttProgressByProjectId = useMemo(() => {
@@ -975,7 +906,7 @@ export default function Dashboard() {
     let sum = 0;
     let count = 0;
     for (const p of apiProjects) {
-      const v = ganttProgressByProjectId.get(Number(p.id));
+      const v = ganttProgressByProjectId.get(p.id);
       if (v === undefined) continue;
       sum += v;
       count++;
@@ -1000,59 +931,6 @@ export default function Dashboard() {
     for (const t of apiTehsils) map.set(Number(t.id), t.tehsil_name);
     return map;
   }, [apiTehsils]);
-
-  // Build lookup indexes once. This replaces repeated full-array scans during every render.
-  const projectIndexes = useMemo(() => {
-    const byId = new Map();
-    const byDivision = new Map();
-    const byDistrict = new Map();
-    const byTehsil = new Map();
-
-    const push = (map, key, value) => {
-      const numericKey = Number(key);
-      if (!Number.isFinite(numericKey)) return;
-      const list = map.get(numericKey);
-      if (list) list.push(value);
-      else map.set(numericKey, [value]);
-    };
-
-    for (const project of apiProjects) {
-      const projectId = Number(project.id);
-      if (Number.isFinite(projectId)) byId.set(projectId, project);
-      push(byDivision, project.division ?? project.circle, project);
-      push(byDistrict, project.district, project);
-      push(byTehsil, project.tehsil, project);
-    }
-
-    return { byId, byDivision, byDistrict, byTehsil };
-  }, [apiProjects]);
-
-  const hierarchyIndexes = useMemo(() => {
-    const districtsByDivision = new Map();
-    const tehsilsByDistrict = new Map();
-    const push = (map, key, value) => {
-      const numericKey = Number(key);
-      if (!Number.isFinite(numericKey)) return;
-      const list = map.get(numericKey);
-      if (list) list.push(value);
-      else map.set(numericKey, [value]);
-    };
-    for (const district of apiDistricts) {
-      push(districtsByDivision, district.division ?? district.circle, district);
-    }
-    for (const tehsil of apiTehsils) {
-      push(tehsilsByDistrict, tehsil.district, tehsil);
-    }
-    return { districtsByDivision, tehsilsByDistrict };
-  }, [apiDistricts, apiTehsils]);
-
-  const getProjectsForScope = useCallback((scopeType, scopeId) => {
-    const id = Number(scopeId);
-    if (!Number.isFinite(id)) return [];
-    if (scopeType === "division") return projectIndexes.byDivision.get(id) ?? [];
-    if (scopeType === "district") return projectIndexes.byDistrict.get(id) ?? [];
-    return projectIndexes.byTehsil.get(id) ?? [];
-  }, [projectIndexes]);
 
   const projectsForTable = useMemo(() => {
     const rows = apiProjects.map((p) => {
@@ -1092,7 +970,7 @@ export default function Dashboard() {
       let sum = 0;
       let count = 0;
       for (const p of ps) {
-        const v = ganttProgressByProjectId.get(Number(p.id));
+        const v = ganttProgressByProjectId.get(p.id);
         if (v === undefined) continue;
         sum += v;
         count++;
@@ -1102,15 +980,15 @@ export default function Dashboard() {
 
     return apiDivisions
       .map((div) => {
-        const divDistricts = hierarchyIndexes.districtsByDivision.get(Number(div.id)) ?? [];
+        const divDistricts = apiDistricts.filter((d) => d.division === div.id);
         const districtOveralls = [];
 
         for (const dist of divDistricts) {
-          const distTehsils = hierarchyIndexes.tehsilsByDistrict.get(Number(dist.id)) ?? [];
+          const distTehsils = apiTehsils.filter((t) => t.district === dist.id);
           const tehsilOveralls = [];
 
           for (const tehsil of distTehsils) {
-            const tehsilProjects = projectIndexes.byTehsil.get(Number(tehsil.id)) ?? [];
+            const tehsilProjects = apiProjects.filter((p) => p.tehsil === tehsil.id);
             const overall = calcProjectsOverall(tehsilProjects);
             if (tehsilProjects.length > 0) tehsilOveralls.push(overall);
           }
@@ -1125,7 +1003,7 @@ export default function Dashboard() {
         };
       })
       .sort((a, b) => b.completion - a.completion);
-  }, [apiDivisions, hierarchyIndexes, projectIndexes, ganttProgressByProjectId]);
+  }, [apiDivisions, apiDistricts, apiTehsils, apiProjects, ganttProgressByProjectId]);
 
   const toSlug = (value) =>
     value
@@ -1252,10 +1130,7 @@ export default function Dashboard() {
       }
     }
 
-    // Preserve the dashboard's deployed pathname. Using a hard-coded "/" can
-    // create a redirect/remount loop when the live app is hosted at /dashboard or a sub-path.
-    const dashboardPath = window.location.pathname || "/";
-    const nextUrl = params.toString() ? `${dashboardPath}?${params.toString()}` : dashboardPath;
+    const nextUrl = params.toString() ? `/?${params.toString()}` : "/";
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     if (currentUrl !== nextUrl) {
       setLocation(nextUrl);
@@ -1336,7 +1211,7 @@ export default function Dashboard() {
     const pid = _optionalChain([selectedProjectForDetails, 'optionalAccess', _17 => _17.id]);
     if (!pid) return;
     try {
-      const data = await getProjectGanttData(pid, { force: true });
+      const data = await getProjectGanttData(pid);
       setSelectedProjectGanttTasks(Array.isArray(data) ? data : []);
     } catch (e3) {
       setSelectedProjectGanttTasks([]);
@@ -1474,7 +1349,7 @@ export default function Dashboard() {
     let sum = 0;
     let count = 0;
     for (const p of projects) {
-      const v = ganttProgressByProjectId.get(Number(p.id));
+      const v = ganttProgressByProjectId.get(p.id);
       if (v === undefined) continue;
       sum += v;
       count++;
@@ -1494,20 +1369,20 @@ export default function Dashboard() {
     const roundPct = (n) => Math.max(0, Math.min(100, Number(n.toFixed(2))));
 
     const tehsilOverall = (tehsilId) => {
-      const tehsilProjects = projectIndexes.byTehsil.get(Number(tehsilId)) ?? [];
+      const tehsilProjects = apiProjects.filter((p) => p.tehsil === tehsilId);
       if (tehsilProjects.length === 0) return 0;
       return calcProjectsOverall(tehsilProjects);
     };
 
     const districtOverallFromTehsils = (districtId) => {
-      const distTehsils = hierarchyIndexes.tehsilsByDistrict.get(Number(districtId)) ?? [];
+      const distTehsils = apiTehsils.filter((t) => t.district === districtId);
       if (distTehsils.length === 0) return 0;
       const tehsilOveralls = distTehsils.map((t) => tehsilOverall(t.id));
       return avg(tehsilOveralls);
     };
 
     if (selectedItemType === "division") {
-      const divDistricts = hierarchyIndexes.districtsByDivision.get(Number(selectedItemId)) ?? [];
+      const divDistricts = apiDistricts.filter((d) => d.division === selectedItemId);
       const rows = divDistricts.map((d) => ({
         phase: d.district_name,
         percentage: roundPct(districtOverallFromTehsils(d.id)),
@@ -1520,7 +1395,7 @@ export default function Dashboard() {
     }
 
     if (selectedItemType === "district") {
-      const distTehsils = hierarchyIndexes.tehsilsByDistrict.get(Number(selectedItemId)) ?? [];
+      const distTehsils = apiTehsils.filter((t) => t.district === selectedItemId);
       const rows = distTehsils.map((t) => ({
         phase: t.tehsil_name,
         percentage: roundPct(tehsilOverall(t.id)),
@@ -1536,8 +1411,9 @@ export default function Dashboard() {
   }, [
     selectedItemType,
     selectedItemId,
-    hierarchyIndexes,
-    projectIndexes,
+    apiDistricts,
+    apiTehsils,
+    apiProjects,
     ganttProgressByProjectId,
   ]);
 
@@ -1555,7 +1431,15 @@ export default function Dashboard() {
     itemType,
   ) => {
     if (!itemId) return null;
-    return getAggregatedDataFromProjects(getProjectsForScope(itemType, itemId));
+    let filtered;
+    if (itemType === "division") {
+      filtered = apiProjects.filter((p) => p.division === itemId);
+    } else if (itemType === "district") {
+      filtered = apiProjects.filter((p) => p.district === itemId);
+    } else {
+      filtered = apiProjects.filter((p) => p.tehsil === itemId);
+    }
+    return getAggregatedDataFromProjects(filtered);
   };
 
   // Get single item data
@@ -1564,13 +1448,19 @@ export default function Dashboard() {
       return getSingleItemData(selectedItemId, selectedItemType);
     }
     return null;
-  }, [selectedItemId, selectedItemType, getProjectsForScope, ganttProgressByProjectId]);
+  }, [selectedItemId, selectedItemType, apiProjects]);
 
   // Projects in the currently selected geography (division / district / tehsil) for "Best Performing Projects" cards
   const projectsInSelectedGeography = useMemo(() => {
     if (!selectedItemId || !selectedItemType) return [];
-    return getProjectsForScope(selectedItemType, selectedItemId);
-  }, [selectedItemId, selectedItemType, getProjectsForScope]);
+    if (selectedItemType === "division") {
+      return apiProjects.filter((p) => p.division === selectedItemId);
+    }
+    if (selectedItemType === "district") {
+      return apiProjects.filter((p) => p.district === selectedItemId);
+    }
+    return apiProjects.filter((p) => p.tehsil === selectedItemId);
+  }, [selectedItemId, selectedItemType, apiProjects]);
 
   // Projects to show on the embedded GIS map (matches current dashboard scope).
   const mapScopeProjects = useMemo(() => {
@@ -1579,13 +1469,8 @@ export default function Dashboard() {
   }, [selectedItemId, selectedItemType, projectsInSelectedGeography, apiProjects]);
 
   const dashboardMapGeoData = useMemo(() => {
-    return buildProjectsFeatureCollection(mapScopeProjects, projectStatusById, false) || undefined;
+    return buildProjectsFeatureCollection(mapScopeProjects, projectStatusById) || undefined;
   }, [mapScopeProjects, projectStatusById]);
-
-  const handleMapProjectSelect = useCallback((projectId) => {
-    const project = projectIndexes.byId.get(Number(projectId));
-    if (project) setSelectedProjectForDetails(project);
-  }, [projectIndexes]);
 
   // Get aggregated data based on view type (all projects)
   const aggregatedData = useMemo(() => {
@@ -1613,12 +1498,12 @@ export default function Dashboard() {
     let sum = 0;
     let count = 0;
     for (const div of apiDivisions) {
-      const projects = projectIndexes.byDivision.get(Number(div.id)) ?? [];
+      const projects = apiProjects.filter((p) => p.division === div.id);
       sum += calcProjectsOverall(projects);
       count++;
     }
     return count > 0 ? sum / count : 0;
-  }, [apiDivisions, projectIndexes, ganttProgressByProjectId]);
+  }, [apiDivisions, apiProjects]);
 
   // Overall for All Punjab Districts (average of district overalls)
   const allDistrictsOverall = useMemo(() => {
@@ -1626,12 +1511,12 @@ export default function Dashboard() {
     let sum = 0;
     let count = 0;
     for (const dist of apiDistricts) {
-      const projects = projectIndexes.byDistrict.get(Number(dist.id)) ?? [];
+      const projects = apiProjects.filter((p) => p.district === dist.id);
       sum += calcProjectsOverall(projects);
       count++;
     }
     return count > 0 ? sum / count : 0;
-  }, [apiDistricts, projectIndexes, ganttProgressByProjectId]);
+  }, [apiDistricts, apiProjects]);
 
   // Context theme: follow the currently visible/selected area overall %
   const contextOverall = useMemo(() => {
@@ -1673,7 +1558,7 @@ export default function Dashboard() {
   const divisionsData = useMemo(() => {
     return apiDivisions
       .map((div, index) => {
-        const projects = projectIndexes.byDivision.get(Number(div.id)) ?? [];
+        const projects = apiProjects.filter((p) => p.division === div.id);
         const overall = calcProjectsOverall(projects);
         return {
           id: div.id,
@@ -1684,13 +1569,13 @@ export default function Dashboard() {
         };
       })
       .sort((a, b) => b.overall - a.overall);
-  }, [apiDivisions, projectIndexes, ganttProgressByProjectId]);
+  }, [apiDivisions, apiProjects]);
 
   // Districts data for cards view (API-driven)
   const districtsData = useMemo(() => {
     return apiDistricts
       .map((dist, index) => {
-        const projects = projectIndexes.byDistrict.get(Number(dist.id)) ?? [];
+        const projects = apiProjects.filter((p) => p.district === dist.id);
         const overall = calcProjectsOverall(projects);
         return {
           id: dist.id,
@@ -1702,7 +1587,7 @@ export default function Dashboard() {
         };
       })
       .sort((a, b) => b.overall - a.overall);
-  }, [apiDistricts, projectIndexes, ganttProgressByProjectId]);
+  }, [apiDistricts, apiProjects]);
 
 
   // Tehsils data grouped by district name (API-driven)
@@ -1721,7 +1606,7 @@ export default function Dashboard() {
     apiTehsils.forEach((teh, index) => {
       const districtName = teh.district_name;
       if (!result[districtName]) result[districtName] = [];
-      const projects = projectIndexes.byTehsil.get(Number(teh.id)) ?? [];
+      const projects = apiProjects.filter((p) => p.tehsil === teh.id);
       const overall = calcProjectsOverall(projects);
       result[districtName].push({
         id: teh.id,
@@ -1737,7 +1622,7 @@ export default function Dashboard() {
       result[district].sort((a, b) => b.overall - a.overall);
     });
     return result;
-  }, [apiTehsils, projectIndexes, ganttProgressByProjectId]);
+  }, [apiTehsils, apiProjects]);
 
   // Skeleton loader component
   const renderSkeletonLoader = () => (
@@ -2052,7 +1937,7 @@ export default function Dashboard() {
               , useProjectCards
                 ? projectsInGeography.map((project, index) => {
                   const percentage = Math.round(
-                    _nullishCoalesce(ganttProgressByProjectId.get(Number(project.id)), () => (0)),
+                    _nullishCoalesce(ganttProgressByProjectId.get(project.id), () => (0)),
                   );
                   const displayName =
                     project.project_name || `Project ${project.id}`;
@@ -2519,7 +2404,7 @@ export default function Dashboard() {
                                 key: row.id,
                                 className: "border-t border-border/60 hover:bg-muted/30 cursor-pointer transition-colors odd:bg-muted/10",
                                 onClick: () => {
-                                  const p = projectIndexes.byId.get(Number(row.id));
+                                  const p = apiProjects.find((x) => Number(x.id) === Number(row.id));
                                   if (p) setSelectedProjectForDetails(p);
                                 }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                               }
@@ -2564,7 +2449,7 @@ export default function Dashboard() {
                 , React.createElement('div', { className: "w-full min-h-[420px] h-[55vh] max-h-[720px] rounded-lg overflow-hidden border border-border/60 shadow-sm", __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 } }
                   , React.createElement(CityMap, {
                     city: "lahore",
-                    activeLayers: EMPTY_MAP_LAYERS,
+                    activeLayers: new Set(),
                     searchQuery: "",
                     showStats: false,
                     showSurveillanceLayers: false,
@@ -2573,7 +2458,10 @@ export default function Dashboard() {
                     geoData: dashboardMapGeoData,
                     showGeoBoundary: false,
                     projectMarkerVariant: "green",
-                    onProjectSelect: handleMapProjectSelect, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
+                    onProjectSelect: (projectId) => {
+                      const p = apiProjects.find((x) => Number(x.id) === Number(projectId));
+                      if (p) setSelectedProjectForDetails(p);
+                    }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 0 }
                   }
                   )
                 )
@@ -3185,9 +3073,12 @@ export default function Dashboard() {
         ) : singleItemData ? (
           (() => {
             // API-driven: get tehsils for this district by selectedItemId
-            const districtTehsilsData = (hierarchyIndexes.tehsilsByDistrict.get(Number(selectedItemId)) ?? [])
+            const districtTehsilsData = apiTehsils
+              .filter((t) => t.district === selectedItemId)
               .map((teh, index) => {
-                const projects = projectIndexes.byTehsil.get(Number(teh.id)) ?? [];
+                const projects = apiProjects.filter(
+                  (p) => p.tehsil === teh.id,
+                );
                 const overall = calcProjectsOverall(projects);
                 return {
                   id: teh.id,
@@ -3319,7 +3210,9 @@ export default function Dashboard() {
         ) : singleItemData ? (
           (() => {
             // API-driven: use parent tracking state for back navigation
-            const tehsilProjects = projectIndexes.byTehsil.get(Number(selectedItemId)) ?? [];
+            const tehsilProjects = apiProjects.filter(
+              (p) => p.tehsil === selectedItemId,
+            );
             const tehsilSlug =
               _optionalChain([selectedItemName, 'optionalAccess', _41 => _41.toLowerCase, 'call', _42 => _42(), 'access', _43 => _43.replace, 'call', _44 => _44(/\s+/g, "")]) || "";
 
@@ -3432,7 +3325,7 @@ export default function Dashboard() {
                     React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3082 } }
                       , tehsilProjects.map((project, index) => {
                         const progress = Math.round(
-                          _nullishCoalesce(ganttProgressByProjectId.get(Number(project.id)), () => (0)),
+                          _nullishCoalesce(ganttProgressByProjectId.get(project.id), () => (0)),
                         );
                         return (
                           React.createElement(HierarchyCard, {
@@ -4024,7 +3917,7 @@ export default function Dashboard() {
 
                 return pageProjects.map((project, index) => {
                   const progress = Math.round(
-                    _nullishCoalesce(ganttProgressByProjectId.get(Number(project.id)), () => (0)),
+                    _nullishCoalesce(ganttProgressByProjectId.get(project.id), () => (0)),
                   );
                   return (
                     React.createElement(HierarchyCard, {

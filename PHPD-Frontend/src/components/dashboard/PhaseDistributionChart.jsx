@@ -24,15 +24,15 @@ export function PhaseDistributionChart({
   const isMobile = width < 640;
   const isTablet = width >= 640 && width < 1024;
   
-  const chartData = React.useMemo(() =>
-    data.map((item, index) => ({
-      name: item.phase,
-      value: item.percentage,
-      fullName: item.phase,
-      color: COLORS[index % COLORS.length],
-    })),
-    [data],
-  );
+  const chartData = data.map((item, index) => ({
+    name: item.phase,
+    value: item.percentage,
+    fullName: item.phase,
+    color: COLORS[index % COLORS.length],
+  }));
+
+  // Create a unique key based on data to force re-render
+  const dataKey = JSON.stringify(data);
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -97,6 +97,7 @@ export function PhaseDistributionChart({
             , React.createElement('div', { className: "w-full", style: { height: isMobile ? '220px' : isTablet ? '260px' : '280px' }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 95}}
               , React.createElement(ResponsiveContainer, { width: "100%", height: "100%", __self: this, __source: {fileName: _jsxFileName, lineNumber: 96}}
               , React.createElement(PieChart, {
+                key: dataKey,
                 margin: { top: 12, right: 12, bottom: 12, left: 12 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 97}}
 
                 , React.createElement(Pie, {

@@ -13,27 +13,6 @@ const LIST_ACTIVITIES_PATH = "list-project-activity/";
 const UPDATE_PATH = "update-project-activity/";
 const DELETE_PATH = "delete-project-activity/";
 
-const GANTT_CACHE_TTL_MS = 5 * 60 * 1000;
-let ganttAllCache = null;
-let ganttAllCacheTime = 0;
-let ganttAllInFlight = null;
-const ganttByProjectCache = new Map();
-const ganttByProjectInFlight = new Map();
-
-export function invalidateProjectGanttCache(projectId) {
-  ganttAllCache = null;
-  ganttAllCacheTime = 0;
-
-  const numericProjectId = Number(projectId);
-  if (Number.isFinite(numericProjectId)) {
-    ganttByProjectCache.delete(numericProjectId);
-    ganttByProjectInFlight.delete(numericProjectId);
-  } else {
-    ganttByProjectCache.clear();
-    ganttByProjectInFlight.clear();
-  }
-}
-
 export async function listProjectActivities(
   projectId,
 ) {
@@ -49,23 +28,18 @@ export async function createProjectActivity(
   payload,
 ) {
   // backend accepts all fields as plain body
-  const result = await post(CREATE_PATH, payload );
-  invalidateProjectGanttCache(payload?.project);
-  return result;
+  return post(CREATE_PATH, payload );
 }
 
 export async function updateProjectActivity(
   id,
   payload,
 ) {
-  const result = await put(`${UPDATE_PATH}${id}/`, payload );
-  invalidateProjectGanttCache(payload?.project);
-  return result;
+  return put(`${UPDATE_PATH}${id}/`, payload );
 }
 
 export async function deleteProjectActivity(id) {
   await del(`${DELETE_PATH}${id}/`);
-  invalidateProjectGanttCache();
 }
 
 
@@ -137,7 +111,7 @@ export async function deleteProjectActivity(id) {
 
 
 /** GET /api/project-gantt-all/ — schedules for all projects (nested tasks) */
-async function fetchProjectGanttAllUncached() {
+export async function getProjectGanttAll() {
   try {
     const data = await get("project-gantt-all/");
     const schedules = Array.isArray(_optionalChain([(data ), 'optionalAccess', _ => _.schedules])) ? (data ).schedules : [];
@@ -148,29 +122,7 @@ async function fetchProjectGanttAllUncached() {
   }
 }
 
-export async function getProjectGanttAll(options = {}) {
-  const force = options?.force === true;
-  const now = Date.now();
-  if (!force && ganttAllCache && now - ganttAllCacheTime < GANTT_CACHE_TTL_MS) {
-    return ganttAllCache;
-  }
-  if (!force && ganttAllInFlight) return ganttAllInFlight;
-
-  ganttAllInFlight = (async () => {
-    try {
-      const schedules = await fetchProjectGanttAllUncached();
-      ganttAllCache = schedules;
-      ganttAllCacheTime = Date.now();
-      return schedules;
-    } finally {
-      ganttAllInFlight = null;
-    }
-  })();
-
-  return ganttAllInFlight;
-}
-
-async function fetchProjectGanttDataUncached(projectId) {
+export async function getProjectGanttData(projectId) {
   if (!projectId) return [];
 
   // New API (nested): /api/project-gantt-nested/:id/
@@ -265,44 +217,22 @@ async function fetchProjectGanttDataUncached(projectId) {
   }));
 }
 
-export async function getProjectGanttData(projectId, options = {}) {
-  const numericProjectId = Number(projectId);
-  if (!Number.isFinite(numericProjectId)) return [];
+ 
 
-  const force = options?.force === true;
-  const cached = ganttByProjectCache.get(numericProjectId);
-  if (!force && cached && Date.now() - cached.time < GANTT_CACHE_TTL_MS) {
-    return cached.data;
-  }
-  if (!force && ganttByProjectInFlight.has(numericProjectId)) {
-    return ganttByProjectInFlight.get(numericProjectId);
-  }
 
-  const requestPromise = (async () => {
-    try {
-      const data = await fetchProjectGanttDataUncached(numericProjectId);
-      ganttByProjectCache.set(numericProjectId, { data, time: Date.now() });
-      return data;
-    } catch (error) {
-      if (cached) return cached.data;
-      throw error;
-    } finally {
-      ganttByProjectInFlight.delete(numericProjectId);
-    }
-  })();
 
-  ganttByProjectInFlight.set(numericProjectId, requestPromise);
-  return requestPromise;
-}
+
+
+
+
+
 
 export async function updateTaskActual(
   taskId,
   payload
 ) {
-  const result = await put(
+  return put(
     `update-project-activity/${taskId}/`,
     payload 
   );
-  invalidateProjectGanttCache(payload?.project);
-  return result;
 }
