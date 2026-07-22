@@ -122,8 +122,12 @@ export async function deleteProjectActivity(id) {
 //   }
 // }
 export async function getProjectGanttAll() {
-  const data = await get("project-gantt-all/?gis=1");
-  return Array.isArray(data?.schedules) ? data.schedules : [];
+  const res = await fetch(`/api/project-gantt-all/?gis=1`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to fetch project gantt data");
+  return res.json();
 }
 
 export async function getProjectGanttData(projectId) {

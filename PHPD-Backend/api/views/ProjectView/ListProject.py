@@ -69,12 +69,11 @@
     #         ).create_response()
 from ..common_imports import *
 from django.db.models import Prefetch
-import json
-import time
 
 
 class ListProjectView(viewsets.ViewSet):
     queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, HasSidebarPermission]
 
     sidebar_label = "Project Management"
@@ -84,13 +83,7 @@ class ListProjectView(viewsets.ViewSet):
         try:
             project_id = request.query_params.get("id")
 
-            # ====================================================
-            # SINGLE PROJECT
-            # ====================================================
             if project_id:
-
-                start = time.time()
-
                 project = (
                     Project.objects
                     .select_related(
@@ -110,8 +103,6 @@ class ListProjectView(viewsets.ViewSet):
                     .first()
                 )
 
-                print(f"[PROJECT] Query: {time.time()-start:.3f}s")
-
                 if not project:
                     return ApiResponse(
                         status=status.HTTP_404_NOT_FOUND,
@@ -121,22 +112,12 @@ class ListProjectView(viewsets.ViewSet):
 
                 serializer = ProjectSerializer(project)
 
-                data = serializer.data
-
-                print(f"[PROJECT] TOTAL: {time.time()-start:.3f}s")
-
                 return ApiResponse(
                     status=status.HTTP_200_OK,
                     message="Project Found.",
-                    data=data,
+                    data=serializer.data,
                     http_status=status.HTTP_200_OK,
                 ).create_response()
-
-            # ====================================================
-            # PROJECT LIST
-            # ====================================================
-
-            start = time.time()
 
             queryset = (
                 Project.objects
@@ -145,65 +126,18 @@ class ListProjectView(viewsets.ViewSet):
                     "district",
                     "district__circle",
                     "tehsil",
-                    "tehsil__circle",
                 )
                 .prefetch_related(
-                    "stakeholder"
-                )
-                .only(
-                    "id",
-                    "project_name",
-                    "project_description",
-                    "project_starting_date",
-                    "project_reference_no",
-                    "project_category",
-                    "project_category_other",
-                    "latitude",
-                    "longitude",
-                    "total_budget",
-                    "total_consume",
-                    "remaining_budget",
-                    "created_at",
-                    "updated_at",
-                    "zone__zone_name",
-                    "district__district_name",
-                    "district__circle__circle_name",
-                    "tehsil__tehsil_name",
-                    "tehsil__circle__circle_name",
+                    "stakeholder",
                 )
             )
 
-
-            print(
-                f"[LIST] DB Query Prepared: {time.time()-start:.3f}s"
-            )
-
-
-            serializer = ProjectListSerializer(
-                queryset,
-                many=True
-            )
-
-
-            data = serializer.data
-
-
-            print(
-                f"[LIST] Serializer Time: {time.time()-start:.3f}s"
-            )
-
-
-            print(
-                "Response Size:",
-                round(len(json.dumps(data, default=str))/1024/1024, 2),
-                "MB"
-            )
-
+            serializer = ProjectListSerializer(queryset, many=True)
 
             return ApiResponse(
                 status=status.HTTP_200_OK,
                 message="All Projects Found.",
-                data=data,
+                data=serializer.data,
                 http_status=status.HTTP_200_OK,
             ).create_response()
 
