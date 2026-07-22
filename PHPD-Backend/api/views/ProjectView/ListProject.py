@@ -145,23 +145,60 @@ class ListProjectView(viewsets.ViewSet):
                     "district",
                     "district__circle",
                     "tehsil",
+                    "tehsil__circle",
                 )
-                .prefetch_related("stakeholder")
+                .prefetch_related(
+                    "stakeholder"
+                )
+                .only(
+                    "id",
+                    "project_name",
+                    "project_description",
+                    "project_starting_date",
+                    "project_reference_no",
+                    "project_category",
+                    "project_category_other",
+                    "latitude",
+                    "longitude",
+                    "total_budget",
+                    "total_consume",
+                    "remaining_budget",
+                    "created_at",
+                    "updated_at",
+                    "zone__zone_name",
+                    "district__district_name",
+                    "district__circle__circle_name",
+                    "tehsil__tehsil_name",
+                    "tehsil__circle__circle_name",
+                )
             )
 
-            print(f"[LIST] Query: {time.time()-start:.3f}s")
 
-            serializer = ProjectListSerializer(queryset, many=True)
+            print(
+                f"[LIST] DB Query Prepared: {time.time()-start:.3f}s"
+            )
+
+
+            serializer = ProjectListSerializer(
+                queryset,
+                many=True
+            )
+
 
             data = serializer.data
 
-            print(f"[LIST] Serializer: {time.time()-start:.3f}s")
+
+            print(
+                f"[LIST] Serializer Time: {time.time()-start:.3f}s"
+            )
+
 
             print(
                 "Response Size:",
                 round(len(json.dumps(data, default=str))/1024/1024, 2),
                 "MB"
             )
+
 
             return ApiResponse(
                 status=status.HTTP_200_OK,

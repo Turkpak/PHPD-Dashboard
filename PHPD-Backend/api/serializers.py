@@ -513,70 +513,103 @@ class ActivityDelayLogSerializer(serializers.ModelSerializer):
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
-    zone_name = serializers.SerializerMethodField()
+
+    zone_name = serializers.CharField(
+        source="zone.zone_name",
+        read_only=True
+    )
+
     circle = serializers.SerializerMethodField()
+
     circle_name = serializers.SerializerMethodField()
-    district_name = serializers.SerializerMethodField()
-    tehsil_name = serializers.SerializerMethodField()
+
+    district_name = serializers.CharField(
+        source="district.district_name",
+        read_only=True
+    )
+
+    tehsil_name = serializers.CharField(
+        source="tehsil.tehsil_name",
+        read_only=True
+    )
+
+
     stakeholder_details = serializers.SerializerMethodField()
 
+
     class Meta:
+
         model = Project
+
         fields = [
             "id",
+
             "stakeholder",
             "stakeholder_details",
+
             "project_name",
             "project_description",
             "project_starting_date",
             "project_reference_no",
+
             "project_category",
             "project_category_other",
+
             "zone",
             "zone_name",
+
             "circle",
             "circle_name",
+
             "district",
             "district_name",
+
             "tehsil",
             "tehsil_name",
+
             "latitude",
             "longitude",
+
             "total_budget",
             "total_consume",
             "remaining_budget",
+
             "created_at",
             "updated_at",
         ]
 
-    def get_zone_name(self, obj):
-        return obj.zone.zone_name if obj.zone else None
 
     def get_circle(self, obj):
+
         if obj.tehsil and obj.tehsil.circle:
             return obj.tehsil.circle.id
+
         if obj.district and obj.district.circle:
             return obj.district.circle.id
+
         return None
+
+
 
     def get_circle_name(self, obj):
+
         if obj.tehsil and obj.tehsil.circle:
             return obj.tehsil.circle.circle_name
+
         if obj.district and obj.district.circle:
             return obj.district.circle.circle_name
+
         return None
 
-    def get_district_name(self, obj):
-        return obj.district.district_name if obj.district else None
 
-    def get_tehsil_name(self, obj):
-        return obj.tehsil.tehsil_name if obj.tehsil else None
 
     def get_stakeholder_details(self, obj):
+
         return [
             {
-                "stakeholder_type": s.stakeholder_type,
-                "stakeholder_title": s.stakeholder_title,
+                "stakeholder_type": stakeholder.stakeholder_type,
+                "stakeholder_title": stakeholder.stakeholder_title,
             }
-            for s in obj.stakeholder.all()
+
+            for stakeholder in obj.stakeholder.all()
         ]
