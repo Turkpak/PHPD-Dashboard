@@ -6,16 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import {
-  // listProjects,
-  listGISProjects,
+  listProjects,
   listProvinces,
   listDivisions,
   listDistricts,
   listTehsils,
-  // getProjectById,
+  getProjectById,
   getProjectGanttData,
   getProjectGanttAll,
-   getGISProjectById,
 
 } from "@/api";
 import { FolderKanban, Loader2, AlertTriangle, CalendarCheck, Filter } from "lucide-react";
