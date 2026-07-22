@@ -69,13 +69,12 @@
     #         ).create_response()
 from ..common_imports import *
 from django.db.models import Prefetch
-import time
 import json
+import time
 
 
 class ListProjectView(viewsets.ViewSet):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, HasSidebarPermission]
 
     sidebar_label = "Project Management"
@@ -85,9 +84,9 @@ class ListProjectView(viewsets.ViewSet):
         try:
             project_id = request.query_params.get("id")
 
-            # ==========================
+            # ====================================================
             # SINGLE PROJECT
-            # ==========================
+            # ====================================================
             if project_id:
 
                 start = time.time()
@@ -111,7 +110,7 @@ class ListProjectView(viewsets.ViewSet):
                     .first()
                 )
 
-                print(f"[PROJECT] Query: {time.time() - start:.3f} sec")
+                print(f"[PROJECT] Query: {time.time()-start:.3f}s")
 
                 if not project:
                     return ApiResponse(
@@ -120,19 +119,11 @@ class ListProjectView(viewsets.ViewSet):
                         http_status=status.HTTP_404_NOT_FOUND,
                     ).create_response()
 
-                t = time.time()
                 serializer = ProjectSerializer(project)
-                print(f"[PROJECT] Serializer Init: {time.time() - t:.3f} sec")
 
-                t = time.time()
                 data = serializer.data
-                print(f"[PROJECT] serializer.data: {time.time() - t:.3f} sec")
 
-                t = time.time()
-                json.dumps(data, default=str)
-                print(f"[PROJECT] JSON Encode: {time.time() - t:.3f} sec")
-
-                print(f"[PROJECT] TOTAL: {time.time() - start:.3f} sec")
+                print(f"[PROJECT] TOTAL: {time.time()-start:.3f}s")
 
                 return ApiResponse(
                     status=status.HTTP_200_OK,
@@ -141,9 +132,10 @@ class ListProjectView(viewsets.ViewSet):
                     http_status=status.HTTP_200_OK,
                 ).create_response()
 
-            # ==========================
-            # ALL PROJECTS
-            # ==========================
+            # ====================================================
+            # PROJECT LIST
+            # ====================================================
+
             start = time.time()
 
             queryset = (
@@ -154,26 +146,22 @@ class ListProjectView(viewsets.ViewSet):
                     "district__circle",
                     "tehsil",
                 )
-                .prefetch_related(
-                    "stakeholder",
-                )
+                .prefetch_related("stakeholder")
             )
 
-            print(f"[ALL] QuerySet Created: {time.time() - start:.3f} sec")
+            print(f"[LIST] Query: {time.time()-start:.3f}s")
 
-            t = time.time()
-            serializer = ProjectSerializer(queryset, many=True)
-            print(f"[ALL] Serializer Init: {time.time() - t:.3f} sec")
+            serializer = ProjectListSerializer(queryset, many=True)
 
-            t = time.time()
             data = serializer.data
-            print(f"[ALL] serializer.data: {time.time() - t:.3f} sec")
 
-            t = time.time()
-            json.dumps(data, default=str)
-            print(f"[ALL] JSON Encode: {time.time() - t:.3f} sec")
+            print(f"[LIST] Serializer: {time.time()-start:.3f}s")
 
-            print(f"[ALL] TOTAL: {time.time() - start:.3f} sec")
+            print(
+                "Response Size:",
+                round(len(json.dumps(data, default=str))/1024/1024, 2),
+                "MB"
+            )
 
             return ApiResponse(
                 status=status.HTTP_200_OK,
