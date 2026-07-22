@@ -285,17 +285,7 @@ export default function GISLayers() {
 
   const { data: projects = [] } = useQuery({
     queryKey: ["projects"],
-    // queryFn: listProjects,
-queryFn: () =>
-  listGISProjects({
-    zone: zoneNumeric,
-    circle: circleNumeric,
-    district: districtNumeric,
-    tehsil:
-      selectedTehsilId !== "all"
-        ? Number(selectedTehsilId)
-        : undefined,
-  }),
+    queryFn: listProjects,
   });
 
   // NEW: fetch nested gantt for ALL projects in one request; used to derive
@@ -313,8 +303,8 @@ queryFn: () =>
       queryKey: ["gis", "project-by-id", selectedProjectNumericId],
       queryFn: async () => {
         if (selectedProjectNumericId == null) return null;
-        // return await getProjectById(selectedProjectNumericId);
-        return await getGISProjectById(selectedProjectNumericId);
+        return await getProjectById(selectedProjectNumericId);
+        
       },
       enabled:
         selectedProjectNumericId != null &&

@@ -17,7 +17,7 @@ const LIST = "list-project/";
 const UPDATE = "update-project/";
 const DELETE_PATH = "delete-project/";
 const TOP_PROJECTS = "top-projects/";
-const GIS_LIST = "gis-project/";
+
 
 function normalizeProjectFeature(f
 
@@ -257,12 +257,4 @@ export async function listGISProjects(params = {}) {
     console.error(err);
     return [];
   }
-}
-
-export async function getGISProjectById(id) {
-  const data = await get(GIS_LIST, { id });
-
-  if (!Array.isArray(data)) return null;
-
-  return data.length ? normalizeProjectFeature(data[0]) : null;
 }
