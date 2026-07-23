@@ -567,38 +567,46 @@ class ProjectListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
-            'id',
-            'project_name',
-            'project_reference_no',
-            'project_category',
-            'zone', 'zone_name',
-            'circle', 'circle_name',
-            'district', 'district_name',
-            'tehsil', 'tehsil_name',
-            'latitude', 'longitude',
-            'total_budget', 'total_consume', 'remaining_budget',
-            'created_at', 'updated_at',
+            "id",
+            "project_name",
+            "project_reference_no",
+            "project_category",
+            "zone",
+            "zone_name",
+            "circle",
+            "circle_name",
+            "district",
+            "district_name",
+            "tehsil",
+            "tehsil_name",
+            "latitude",
+            "longitude",
+            "geom",
         ]
 
-    def get_zone_name(self, obj):
-        return obj.zone.zone_name if obj.zone else None
+class GISProjectStatusSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
 
-    def get_circle(self, obj):
-        if obj.tehsil and obj.tehsil.circle:
-            return obj.tehsil.circle.id
-        if obj.district and obj.district.circle:
-            return obj.district.circle.id
-        return None
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "project_name",
+            "status",
+        ]
 
-    def get_circle_name(self, obj):
-        if obj.tehsil and obj.tehsil.circle:
-            return obj.tehsil.circle.circle_name
-        if obj.district and obj.district.circle:
-            return obj.district.circle.circle_name
-        return None
+    def get_status(self, obj):
+        activities = obj.activities.all()
 
-    def get_district_name(self, obj):
-        return obj.district.district_name if obj.district else None
+        if not activities.exists():
+            return "pending"
 
-    def get_tehsil_name(self, obj):
-        return obj.tehsil.tehsil_name if obj.tehsil else None
+        # Any delayed activity?
+        if activities.filter(activitydelaylog__isnull=False).exists():
+            return "in_delay"
+
+        # Any started activity?
+        if activities.filter(progress__gt=0).exists():
+            return "in_progress"
+
+        return "pending"

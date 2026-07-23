@@ -139,9 +139,14 @@ export default function UserManagement() {
     queryFn: listUsers,
   });
 
+  const shouldLoadUserPermissions =
+    selectedUserIdForPermissions != null || nameComboboxOpen;
+
   const { data: usersWithPermissions = [], isLoading: usersWithPermissionsLoading } = useQuery({
     queryKey: ["users-with-permissions"],
     queryFn: getUsersWithPermissions,
+    enabled: shouldLoadUserPermissions,
+    staleTime: 5 * 60 * 1000,
   });
 
   const pagePermissionsCardRef = useRef(null);
@@ -731,7 +736,7 @@ export default function UserManagement() {
 
               )
 
-              , usersWithPermissionsLoading ? (
+              , shouldLoadUserPermissions && usersWithPermissionsLoading ? (
                 React.createElement('p', { className: "text-muted-foreground text-sm" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 735}}, "Loading users and permissions…"   )
               ) : (
                 React.createElement('div', { className: "grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap sm:items-end sm:gap-4"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 737}}

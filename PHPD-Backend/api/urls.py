@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from api.views import *
-
+from api.views.DashboardView import DashboardPageDataView
 router = DefaultRouter()
 
 #--------------------------------- User View ---------------------------------
@@ -89,6 +89,15 @@ urlpatterns = [
     path("add-delay-log/", ActivityDelayLogCreateView.as_view()),
     path("list-delay-log/", ActivityDelayLogListView.as_view()),
     path("update-delay-log/<int:pk>/", ActivityDelayLogUpdateView.as_view()),
+    path(
+        "gis-project-status/",
+        GISProjectStatusView.as_view(),
+        name="gis-project-status",
+    ),
+    path(
+        "dashboard/<str:page>/", DashboardPageDataView.as_view(),
+        name="dashboard-page-data",
+    ),
 ]
 
 # if settings.DEBUG:

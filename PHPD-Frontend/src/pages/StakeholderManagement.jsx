@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Edit2, Trash2, Users, Save, Search, ShieldCheck, UserX } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Search, ShieldCheck, UserX, Loader2, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -23,11 +24,113 @@ import {
   deleteStakeholder,
 } from "@/api";
 
+const ITEMS_PER_PAGE = 7;
+
+// Extracted & Memoized Row Component to prevent full list re-renders on search input changes
+const StakeholderRow = React.memo(({ stakeholder, onEdit, onDelete, isDeleting }) => {
+  const isActive = stakeholder.status === "active";
+  const avatarColors = [
+    "bg-blue-100 text-blue-700",
+    "bg-emerald-100 text-emerald-700",
+    "bg-amber-100 text-amber-700",
+    "bg-purple-100 text-purple-700",
+    "bg-rose-100 text-rose-700",
+  ];
+  
+  const title = stakeholder.stakeholder_title || "";
+  const colorClass = avatarColors[title.length % avatarColors.length];
+  const initials = title.substring(0, 2).toUpperCase() || "SH";
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-3.5 sm:px-6 sm:py-4 flex flex-col md:grid md:grid-cols-[2fr_1.5fr_1fr_100px] gap-2 md:gap-4 md:items-center transition-all hover:-translate-y-0.5 duration-300 hover:shadow-[0_10px_34px_-14px_rgba(0,0,0,0.14)] hover:border-gray-200">
+      {/* Mobile Top Row: Entity + Status */}
+      <div className="flex w-full md:contents items-start justify-between">
+        {/* Entity */}
+        <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+          <div
+            className={`w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center font-bold text-[13px] md:text-[15px] shrink-0 ring-1 ring-black/5 ${colorClass}`}
+          >
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="font-bold text-[#101828] text-[13px] sm:text-[14px] leading-tight mb-0.5 truncate">
+              {stakeholder.stakeholder_title}
+            </div>
+            <div className="text-[11px] sm:text-[12px] font-medium text-[#64748b] truncate">Organization Partner</div>
+          </div>
+        </div>
+
+        {/* Status (Mobile only) */}
+        <div className="flex md:hidden items-center shrink-0 ml-2">
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
+              isActive
+                ? "bg-[#eaf5ef] text-[#054332] border-[#b9ddc8]"
+                : "bg-gray-100 text-gray-600 border-gray-200"
+            }`}
+          >
+            {isActive ? "Active" : "Disabled"}
+          </span>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Row: Role + Actions */}
+      <div className="flex w-full md:contents items-center justify-between mt-1 md:mt-0">
+        {/* Role */}
+        <div className="font-medium text-gray-600 text-[12px] sm:text-[13px] ml-[48px] md:ml-0 md:text-center truncate">
+          {stakeholder.stakeholder_type}
+        </div>
+
+        {/* Status (Desktop only) */}
+        <div className="hidden md:flex items-center justify-center">
+          <span
+            className={`inline-flex items-center px-3.5 py-1 rounded-[12px] text-[10px] font-bold uppercase tracking-wider border ${
+              isActive
+                ? "bg-[#eaf5ef] text-[#054332] border-[#b9ddc8]"
+                : "bg-gray-100 text-gray-600 border-gray-200"
+            }`}
+          >
+            {isActive ? "Active" : "Disabled"}
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-1 shrink-0">
+          <button
+            onClick={() => onEdit(stakeholder)}
+            className="w-8 h-8 md:w-[36px] md:h-[36px] rounded-full flex items-center justify-center text-gray-500 border border-transparent hover:border-[#b9ddc8] hover:text-[#054332] hover:bg-[#eaf5ef] transition-colors"
+            title="Edit Stakeholder"
+          >
+            <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+          <button
+            onClick={() => onDelete(stakeholder)}
+            disabled={isDeleting}
+            className="w-8 h-8 md:w-[36px] md:h-[36px] rounded-full flex items-center justify-center text-gray-500 border border-transparent hover:border-red-200 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+            title="Delete Stakeholder"
+          >
+            {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin text-red-600" /> : <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+StakeholderRow.displayName = "StakeholderRow";
+
 export default function StakeholderManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingStakeholder, setEditingStakeholder] = useState(null);
   const [formData, setFormData] = useState({ type: "", title: "", status: "active" });
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Custom Delete Dialog State
+  const [deletingTarget, setDeletingTarget] = useState(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -35,6 +138,17 @@ export default function StakeholderManagement() {
     queryKey: ["stakeholders"],
     queryFn: listStakeholders,
   });
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
+  const closeDialog = useCallback(() => {
+    setIsAddDialogOpen(false);
+    setEditingStakeholder(null);
+    setFormData({ type: "", title: "", status: "active" });
+  }, []);
 
   const createMutation = useMutation({
     mutationFn: createStakeholder,
@@ -64,6 +178,8 @@ export default function StakeholderManagement() {
     mutationFn: deleteStakeholder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stakeholders"] });
+      setIsDeleteDialogOpen(false);
+      setDeletingTarget(null);
       toast({ title: "Deleted", description: "Stakeholder removed successfully" });
     },
     onError: (e) => {
@@ -102,98 +218,145 @@ export default function StakeholderManagement() {
     }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this stakeholder?")) {
-      deleteMutation.mutate(id);
-    }
-  };
+  const openDeleteDialog = useCallback((stakeholder) => {
+    setDeletingTarget(stakeholder);
+    setIsDeleteDialogOpen(true);
+  }, []);
 
-  const openEditDialog = (stakeholder) => {
+  const confirmDelete = useCallback(() => {
+    if (deletingTarget?.id) {
+      deleteMutation.mutate(deletingTarget.id);
+    }
+  }, [deletingTarget, deleteMutation]);
+
+  const openEditDialog = useCallback((stakeholder) => {
     setEditingStakeholder(stakeholder);
     setFormData({
-      type: stakeholder.stakeholder_type,
-      title: stakeholder.stakeholder_title,
-      status: stakeholder.status,
+      type: stakeholder.stakeholder_type || "",
+      title: stakeholder.stakeholder_title || "",
+      status: stakeholder.status || "active",
     });
     setIsAddDialogOpen(true);
-  };
+  }, []);
 
-  const closeDialog = () => {
-    setIsAddDialogOpen(false);
-    setEditingStakeholder(null);
-    setFormData({ type: "", title: "", status: "active" });
-  };
+  // Memoized derived stakeholder filtering and counts
+  const filteredStakeholders = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return stakeholders.filter((s) => {
+      const matchesSearch =
+        !q ||
+        (s.stakeholder_type && s.stakeholder_type.toLowerCase().includes(q)) ||
+        (s.stakeholder_title && s.stakeholder_title.toLowerCase().includes(q));
 
-  const filteredStakeholders = stakeholders.filter(
-    (s) =>
-      s.stakeholder_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.stakeholder_title.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesStatus =
+        statusFilter === "all" || s.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [stakeholders, searchQuery, statusFilter]);
+
+  const totalItems = filteredStakeholders.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+  const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
+  const paginatedStakeholders = useMemo(() => {
+    const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+    return filteredStakeholders.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredStakeholders, safeCurrentPage]);
+
+  const activeCount = useMemo(
+    () => stakeholders.filter((s) => s.status === "active").length,
+    [stakeholders]
+  );
+  
+  const disabledCount = useMemo(
+    () => stakeholders.filter((s) => s.status === "disable").length,
+    [stakeholders]
   );
 
-  const activeCount = stakeholders.filter((s) => s.status === "active").length;
-  const disabledCount = stakeholders.filter((s) => s.status === "disable").length;
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
+  const startRecord = totalItems === 0 ? 0 : (safeCurrentPage - 1) * ITEMS_PER_PAGE + 1;
+  const endRecord = Math.min(safeCurrentPage * ITEMS_PER_PAGE, totalItems);
 
   return (
     <Layout title="Stakeholder Management">
-      <div className="flex flex-col gap-5 w-full max-w-[1400px] mx-auto min-w-0 pb-16 px-4 sm:px-8 text-[13px] sm:text-[13px]">
+      <div className="flex flex-col gap-5 w-full max-w-[1400px] mx-auto min-w-0 pb-16 px-3 sm:px-8 text-[13px]">
 
         {/* Top Metric Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-lg p-6 shadow-[0_4px_24px_-8px_rgba(5,67,50,0.12)] border border-emerald-200/60 flex flex-col justify-between h-[150px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-lg p-5 sm:p-6 shadow-[0_4px_24px_-8px_rgba(5,67,50,0.12)] border border-emerald-200/60 flex flex-col justify-between h-[135px] sm:h-[150px]">
             <div className="flex justify-between items-start w-full">
-              <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
                 <Users className="w-5 h-5" />
               </div>
               <span className="text-[10px] font-bold text-emerald-700 tracking-widest uppercase">Overview</span>
             </div>
-            <div className="mt-4">
-              <div className="text-[26px] leading-none font-bold text-emerald-900 mb-1">{stakeholders.length.toLocaleString()}</div>
-              <div className="text-[12px] font-semibold text-emerald-700">Total Stakeholders</div>
+            <div className="mt-3 sm:mt-4">
+              <div className="text-[24px] sm:text-[26px] leading-none font-bold text-emerald-900 mb-1">{stakeholders.length.toLocaleString()}</div>
+              <div className="text-[11px] sm:text-[12px] font-semibold text-emerald-700">Total Stakeholders</div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-sky-100 rounded-lg p-6 shadow-[0_4px_24px_-8px_rgba(2,132,199,0.12)] border border-blue-200/60 flex flex-col justify-between h-[150px]">
+          <div className="bg-gradient-to-br from-blue-50 to-sky-100 rounded-lg p-5 sm:p-6 shadow-[0_4px_24px_-8px_rgba(2,132,199,0.12)] border border-blue-200/60 flex flex-col justify-between h-[135px] sm:h-[150px]">
              <div className="flex justify-between items-start w-full">
-              <div className="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <span className="text-[10px] font-bold text-blue-700 tracking-widest uppercase">Engagement</span>
             </div>
-            <div className="mt-4">
-              <div className="text-[26px] leading-none font-bold text-blue-900 mb-1">{activeCount.toLocaleString()}</div>
-              <div className="text-[12px] font-semibold text-blue-700">Active Members</div>
+            <div className="mt-3 sm:mt-4">
+              <div className="text-[24px] sm:text-[26px] leading-none font-bold text-blue-900 mb-1">{activeCount.toLocaleString()}</div>
+              <div className="text-[11px] sm:text-[12px] font-semibold text-blue-700">Active Members</div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] border border-gray-200/60 flex flex-col justify-between h-[150px]">
+          <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg p-5 sm:p-6 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] border border-gray-200/60 flex flex-col justify-between h-[135px] sm:h-[150px] sm:col-span-2 md:col-span-1">
              <div className="flex justify-between items-start w-full">
-              <div className="w-11 h-11 rounded-xl bg-slate-500 text-white flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-500 text-white flex items-center justify-center shadow-sm">
                 <UserX className="w-5 h-5" />
               </div>
               <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Archived</span>
             </div>
-            <div className="mt-4">
-              <div className="text-[26px] leading-none font-bold text-slate-800 mb-1">{disabledCount.toLocaleString()}</div>
-              <div className="text-[12px] font-semibold text-slate-500">Inactive/Disabled</div>
+            <div className="mt-3 sm:mt-4">
+              <div className="text-[24px] sm:text-[26px] leading-none font-bold text-slate-800 mb-1">{disabledCount.toLocaleString()}</div>
+              <div className="text-[11px] sm:text-[12px] font-semibold text-slate-500">Inactive/Disabled</div>
             </div>
           </div>
         </div>
 
-        {/* Main Panel (Toolbar + List) */}
-        <div className="w-full mt-1 bg-white rounded-lg border border-gray-200/70 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.08)]">
-          {/* Toolbar */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 p-4 sm:p-5 border-b border-gray-100/80">
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                className="w-full bg-white border border-gray-200/70 shadow-sm rounded-lg h-10 pl-10 pr-4 text-[13px] placeholder:text-gray-400 focus-visible:ring-[#054332]"
-                placeholder="Search by name, role, or organization..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+        {/* Main Panel (Toolbar + List + Pagination) */}
+        <div className="w-full mt-1 bg-white rounded-lg border border-gray-200/70 shadow-[0_6px_28px_-12px_rgba(0,0,0,0.08)] flex flex-col">
+          {/* Responsive Toolbar */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 p-4 sm:p-5 border-b border-gray-100/80">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  className="w-full bg-white border border-gray-200/70 shadow-sm rounded-lg h-10 pl-9 pr-4 text-[13px] placeholder:text-gray-400 focus-visible:ring-[#054332]"
+                  placeholder="Search by name, role..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] shrink-0">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="h-10 text-[12px] bg-white border-gray-200/70">
+                    <div className="flex items-center gap-1.5">
+                      <Filter className="w-3.5 h-3.5 text-gray-400" />
+                      <SelectValue placeholder="All Status" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active Only</SelectItem>
+                    <SelectItem value="disable">Disabled Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="flex w-full sm:w-auto items-center shrink-0">
+            <div className="flex w-full md:w-auto items-center shrink-0">
               <Dialog
                 open={isAddDialogOpen}
                 onOpenChange={(open) => {
@@ -202,12 +365,12 @@ export default function StakeholderManagement() {
                 }}
               >
                 <DialogTrigger asChild>
-                  <Button className="w-full sm:w-auto h-10 px-4 rounded-lg bg-[#054332] hover:bg-[#032d21] text-white font-semibold shadow-sm whitespace-nowrap transition-all text-[12px]">
+                  <Button className="w-full md:w-auto h-10 px-4 rounded-lg bg-[#054332] hover:bg-[#032d21] text-white font-semibold shadow-sm whitespace-nowrap transition-all text-[12px]">
                     <Plus className="w-3.5 h-3.5 mr-2" />
                     Add Stakeholder
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] w-[95vw]">
                   <DialogHeader>
                     <DialogTitle className="text-xl">
                       {editingStakeholder ? "Edit Stakeholder" : "Add New Stakeholder"}
@@ -263,10 +426,19 @@ export default function StakeholderManagement() {
                       </Button>
                       <Button
                         type="submit"
-                        disabled={createMutation.isPending || updateMutation.isPending}
-                        className="bg-[#054332] text-white h-11 rounded-xl font-bold"
+                        disabled={isSubmitting}
+                        className="bg-[#054332] hover:bg-[#032d21] text-white h-11 rounded-xl font-bold min-w-[130px]"
                       >
-                        {editingStakeholder ? "Update Stakeholder" : "Add Stakeholder"}
+                        {isSubmitting ? (
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Saving...</span>
+                          </div>
+                        ) : editingStakeholder ? (
+                          "Update Stakeholder"
+                        ) : (
+                          "Add Stakeholder"
+                        )}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -276,8 +448,8 @@ export default function StakeholderManagement() {
           </div>
 
           {/* Data List */}
-          <div className="w-full p-3 sm:p-4">
-            {/* Table Header Row */}
+          <div className="w-full p-3 sm:p-4 flex-1">
+            {/* Table Header Row (Desktop) */}
             <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_100px] gap-4 px-5 sm:px-6 py-3 rounded-[18px] bg-gray-50 border border-gray-100">
               <div className="text-[10px] font-bold tracking-widest text-[#64748b] uppercase">Stakeholder Entity</div>
               <div className="text-[10px] font-bold tracking-widest text-[#64748b] uppercase text-center pr-6">Assigned Role</div>
@@ -288,108 +460,111 @@ export default function StakeholderManagement() {
             {/* List of Rows */}
             {isLoading ? (
               <div className="space-y-3 mt-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="w-full h-[88px] rounded-[20px] bg-white border border-gray-200/60 opacity-60" />
+                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <Skeleton key={i} className="w-full h-[72px] rounded-[16px] bg-white border border-gray-200/60 opacity-60" />
                 ))}
               </div>
-            ) : filteredStakeholders.length === 0 ? (
-              <div className="bg-white rounded-[20px] p-14 text-center border border-gray-200/70 text-gray-500 text-[15px] font-medium shadow-sm mt-3">
+            ) : paginatedStakeholders.length === 0 ? (
+              <div className="bg-white rounded-[20px] p-12 text-center border border-gray-200/70 text-gray-500 text-[14px] font-medium shadow-sm mt-3">
                 No stakeholders found matching your criteria.
               </div>
             ) : (
-              <div className="flex flex-col gap-3 mt-3">
-                {filteredStakeholders.map((stakeholder) => {
-                  const isActive = stakeholder.status === "active";
-                  const avatarColors = [
-                    "bg-blue-100 text-blue-700",
-                    "bg-emerald-100 text-emerald-700",
-                    "bg-amber-100 text-amber-700",
-                    "bg-purple-100 text-purple-700",
-                    "bg-rose-100 text-rose-700",
-                  ];
-                  const colorClass = avatarColors[stakeholder.stakeholder_title.length % avatarColors.length];
-                  const initials = stakeholder.stakeholder_title.substring(0, 2).toUpperCase();
-
-                  return (
-                    <div
-                      key={stakeholder.id}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-4 sm:px-6 sm:py-4 flex flex-col md:grid md:grid-cols-[2fr_1.5fr_1fr_100px] gap-2 md:gap-4 md:items-center transition-all hover:-translate-y-0.5 duration-300 hover:shadow-[0_10px_34px_-14px_rgba(0,0,0,0.14)] hover:border-gray-200"
-                    >
-                      {/* Mobile Top Row: Entity + Status */}
-                      <div className="flex w-full md:contents items-start justify-between">
-                        {/* Entity */}
-                        <div className="flex items-center gap-3 md:gap-4">
-                          <div
-                            className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-[14px] md:text-[16px] shrink-0 ring-1 ring-black/5 ${colorClass}`}
-                          >
-                            {initials}
-                          </div>
-                          <div>
-                            <div className="font-bold text-[#101828] text-[14px] leading-tight mb-0.5">
-                              {stakeholder.stakeholder_title}
-                            </div>
-                            <div className="text-[12px] font-medium text-[#64748b]">Organization Partner</div>
-                          </div>
-                        </div>
-
-                        {/* Status (Mobile only) */}
-                        <div className="flex md:hidden items-center shrink-0">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
-                              isActive
-                                ? "bg-[#eaf5ef] text-[#054332] border-[#b9ddc8]"
-                                : "bg-gray-100 text-gray-600 border-gray-200"
-                            }`}
-                          >
-                            {isActive ? "Active" : "Disabled"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Mobile Bottom Row: Role + Actions */}
-                      <div className="flex w-full md:contents items-center justify-between mt-1 md:mt-0">
-                        {/* Role */}
-                        <div className="font-medium text-gray-600 text-[13px] ml-[52px] md:ml-0 md:text-center">
-                          {stakeholder.stakeholder_type}
-                        </div>
-
-                        {/* Status (Desktop only) */}
-                        <div className="hidden md:flex items-center justify-center">
-                          <span
-                            className={`inline-flex items-center px-4 py-1.5 rounded-[12px] text-[10px] font-bold uppercase tracking-wider border ${
-                              isActive
-                                ? "bg-[#eaf5ef] text-[#054332] border-[#b9ddc8]"
-                                : "bg-gray-100 text-gray-600 border-gray-200"
-                            }`}
-                          >
-                            {isActive ? "Active" : "Disabled"}
-                          </span>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => openEditDialog(stakeholder)}
-                            className="w-8 h-8 md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-gray-500 border border-transparent hover:border-[#b9ddc8] hover:text-[#054332] hover:bg-[#eaf5ef] transition-colors"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(stakeholder.id)}
-                            className="w-8 h-8 md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-gray-500 border border-transparent hover:border-red-200 hover:text-red-600 hover:bg-red-50 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col gap-2.5 mt-2 sm:mt-3">
+                {paginatedStakeholders.map((stakeholder) => (
+                  <StakeholderRow
+                    key={stakeholder.id}
+                    stakeholder={stakeholder}
+                    onEdit={openEditDialog}
+                    onDelete={openDeleteDialog}
+                    isDeleting={deleteMutation.isPending && deletingTarget?.id === stakeholder.id}
+                  />
+                ))}
               </div>
             )}
           </div>
+
+          {/* Pagination Controls */}
+          {!isLoading && totalItems > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100/80 bg-gray-50/50 rounded-b-lg">
+              <div className="text-[12px] font-medium text-gray-500 text-center sm:text-left">
+                Showing <span className="font-semibold text-gray-800">{startRecord}</span> to{" "}
+                <span className="font-semibold text-gray-800">{endRecord}</span> of{" "}
+                <span className="font-semibold text-gray-800">{totalItems}</span> stakeholders
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={safeCurrentPage <= 1}
+                  className="h-8 px-3 text-[12px] border-gray-200 bg-white hover:bg-gray-100 text-gray-700 disabled:opacity-40"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5 mr-1" />
+                  Previous
+                </Button>
+
+                <span className="text-[12px] font-semibold text-gray-700 px-2 min-w-[70px] text-center">
+                  {safeCurrentPage} / {totalPages}
+                </span>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                  disabled={safeCurrentPage >= totalPages}
+                  className="h-8 px-3 text-[12px] border-gray-200 bg-white hover:bg-gray-100 text-gray-700 disabled:opacity-40"
+                >
+                  Next
+                  <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[400px] w-[95vw]">
+          <DialogHeader>
+            <DialogTitle className="text-lg text-gray-900 font-bold">Confirm Deletion</DialogTitle>
+            <DialogDescription className="text-[13px] text-gray-600 mt-1">
+              Are you sure you want to delete stakeholder{" "}
+              <span className="font-semibold text-gray-900">"{deletingTarget?.stakeholder_title}"</span>? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2 flex-col-reverse sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 rounded-xl w-full sm:w-auto"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="h-10 rounded-xl font-bold min-w-[100px] w-full sm:w-auto"
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Deleting...</span>
+                </div>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
+
+

@@ -10,14 +10,25 @@ import { Camera, AlertTriangle, Activity, Construction, Upload, Info, ChevronDow
 import { Button } from "@/components/ui/button";
 
 
-let DefaultIcon = L.icon({
+// Keep default icon defined but do NOT set it as the global prototype default.
+// Setting L.Marker.prototype.options.icon globally causes all GeoJSON Point
+// features to render as the blue location pin. We use status-based divIcons instead.
+const DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
 
-L.Marker.prototype.options.icon = DefaultIcon;
+// Invisible placeholder icon used for GeoJSON Point geometries so the boundary
+// GeoJSON layer renders the polygon/line shape only — the dedicated status Marker
+// component (rendered separately) handles the visible icon.
+const INVISIBLE_ICON = L.divIcon({
+  className: "",
+  html: "",
+  iconSize: [0, 0],
+  iconAnchor: [0, 0],
+});
 
 // Custom Icons
 const getPoliceIcon = () => L.divIcon({
@@ -535,6 +546,9 @@ export function CityMap({
                       weight: 3,
                     };
                   },
+                  // Use an invisible icon for Point features — the status Marker below handles display.
+                  // Without this, Leaflet renders the default blue location-pin for Point geometries.
+                  pointToLayer: (_feature, latlng) => L.marker(latlng, { icon: INVISIBLE_ICON }),
                   onEachFeature: (feature, layer) => {
                     const name = _optionalChain([feature, 'access', _5 => _5.properties, 'optionalAccess', _6 => _6.project_name]);
                     const status = _nullishCoalesce(_optionalChain([feature, 'optionalAccess', _7 => _7.properties, 'optionalAccess', _8 => _8.status]), () => ( "pending"));
