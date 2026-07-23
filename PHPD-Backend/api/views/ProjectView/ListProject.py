@@ -146,8 +146,9 @@ class ListProjectView(viewsets.ViewSet):
                 .order_by("id")
             )
 
-            serializer = ProjectListSerializer(queryset, many=True)
+            serializer = ProjectSerializer(queryset, many=True)
 
+    
             return ApiResponse(
                 status=status.HTTP_200_OK,
                 message="All Projects Found.",
