@@ -69,6 +69,7 @@
     #         ).create_response()
 from ..common_imports import *
 from django.db.models import Prefetch
+import traceback
 
 
 class ListProjectView(viewsets.ViewSet):
@@ -83,6 +84,12 @@ class ListProjectView(viewsets.ViewSet):
         try:
             project_id = request.query_params.get("id")
 
+            activity_queryset = (
+                ProjectActivity.objects
+                .select_related("parent")
+                .prefetch_related("delay_logs")
+            )
+
             if project_id:
                 project = (
                     Project.objects
@@ -91,13 +98,13 @@ class ListProjectView(viewsets.ViewSet):
                         "district",
                         "district__circle",
                         "tehsil",
-                        "tehsil__circle", 
+                        "tehsil__circle",
                     )
                     .prefetch_related(
                         "stakeholder",
                         Prefetch(
                             "activities",
-                            queryset=ProjectActivity.objects.select_related("parent")
+                            queryset=activity_queryset,
                         ),
                     )
                     .filter(id=project_id)
@@ -131,7 +138,12 @@ class ListProjectView(viewsets.ViewSet):
                 )
                 .prefetch_related(
                     "stakeholder",
+                    Prefetch(
+                        "activities",
+                        queryset=activity_queryset,
+                    ),
                 )
+                .order_by("id")
             )
 
             serializer = ProjectListSerializer(queryset, many=True)
@@ -151,10 +163,9 @@ class ListProjectView(viewsets.ViewSet):
                 http_status=status.HTTP_400_BAD_REQUEST,
             ).create_response()
 
-        except Exception as e:
-            return ApiResponse(
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                message="Server error.",
-                data=str(e),
-                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            ).create_response()
+        except Exception:
+            print("=" * 80)
+            print("LIST PROJECT ERROR")
+            traceback.print_exc()
+            print("=" * 80)
+            raise
