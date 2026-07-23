@@ -731,43 +731,65 @@ function geometryBboxCenter(geometry) {
 function buildProjectsFeatureCollection(projects, statusByProjectId) {
   const features = [];
   for (const p of projects) {
-    const normalized = normalizeProjectGeom(p.geom);
-    if (!normalized) continue;
-    const n = normalized;
     const baseProps = {
       id: p.id,
       project_name: p.project_name ?? `Project #${p.id}`,
       status: statusByProjectId.get(p.id) ?? "pending",
     };
+
+    // 1. Try GeoJSON boundary geometry first
+    const normalized = normalizeProjectGeom(p.geom);
     let markerAdded = false;
-    if (n.type === "FeatureCollection" && Array.isArray(n.features)) {
-      for (const f of n.features) {
-        if (!f.geometry) continue;
-        const center = geometryBboxCenter(f.geometry);
+
+    if (normalized) {
+      const n = normalized;
+      if (n.type === "FeatureCollection" && Array.isArray(n.features)) {
+        for (const f of n.features) {
+          if (!f.geometry) continue;
+          const center = geometryBboxCenter(f.geometry);
+          features.push({
+            type: "Feature",
+            geometry: f.geometry,
+            properties: {
+              ...(f.properties || {}),
+              ...baseProps,
+              __center: center ?? undefined,
+              __marker: !markerAdded,
+            },
+          });
+          markerAdded = true;
+        }
+      } else if (n.type === "Feature" && n.geometry) {
+        const center = geometryBboxCenter(n.geometry);
         features.push({
           type: "Feature",
-          geometry: f.geometry,
+          geometry: n.geometry,
           properties: {
-            ...(f.properties || {}),
+            ...(n.properties || {}),
             ...baseProps,
             __center: center ?? undefined,
-            __marker: !markerAdded,
+            __marker: true,
           },
         });
         markerAdded = true;
       }
-    } else if (n.type === "Feature" && n.geometry) {
-      const center = geometryBboxCenter(n.geometry);
-      features.push({
-        type: "Feature",
-        geometry: n.geometry,
-        properties: {
-          ...(n.properties || {}),
-          ...baseProps,
-          __center: center ?? undefined,
-          __marker: true,
-        },
-      });
+    }
+
+    // 2. Fallback: use latitude/longitude when no GeoJSON boundary exists
+    if (!markerAdded) {
+      const lat = Number(p.latitude ?? p.latitude_coordinates);
+      const lng = Number(p.longitude ?? p.longitude_coordinates);
+      if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+        features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [lng, lat] },
+          properties: {
+            ...baseProps,
+            __center: [lat, lng],
+            __marker: true,
+          },
+        });
+      }
     }
   }
   if (features.length === 0) return null;
@@ -775,7 +797,7 @@ function buildProjectsFeatureCollection(projects, statusByProjectId) {
 }
 
 export default function Dashboard() {
-  const { isCollapsed, setCollapsed } = useSidebar();
+  const { isCollapsed, setCollapsed, setMobileSidebarOpen } = useSidebar();
   const sidebarPrevCollapsedRef = useRef(null);
   const [location, setLocation] = useLocation();
   const [viewType, setViewType] = useState
@@ -995,7 +1017,8 @@ export default function Dashboard() {
           completion: clamp01(completion),
         };
       })
-      .sort((a, b) => b.completion - a.completion);
+      .sort((a, b) => b.completion - a.completion)
+      .slice(0, 5);           // Top 5 zones only
   }, [apiDivisions, apiDistricts, apiTehsils, apiProjects, ganttProgressByProjectId]);
 
   const toSlug = (value) =>
@@ -2711,13 +2734,52 @@ export default function Dashboard() {
         }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 2268 }
       }
 
+        /* ── MOBILE-ONLY STICKY HEADER ────────────────────────────────
+           Matches the Finance/other page header pattern exactly:
+           [ ≡ hamburger ]  [ title centered ]  [ 🔔 bell ]
+           Hidden on md+ because the desktop sidebar handles navigation.
+        ─────────────────────────────────────────────────────────────── */
+        , <header className="md:hidden sticky top-0 z-30 flex h-14 items-center border-b bg-white/95 backdrop-blur-sm px-3 gap-2 shadow-sm -mx-3 sm:-mx-6 mb-2">
+            {/* Hamburger */}
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              aria-label="Open sidebar menu"
+              className="h-9 w-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition-colors shrink-0"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            {/* Centered title */}
+            <span className="flex-1 text-center text-sm font-bold text-slate-800 font-heading tracking-wide truncate px-1">
+              PHPD Dashboard
+            </span>
+
+            {/* Bell */}
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="h-9 w-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition-colors shrink-0 relative"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500" />
+            </button>
+
+            {/* Bottom accent line */}
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#054332]" />
+          </header>
+
         /* Top Header Section - Enhanced Design with Filter Bar */
         , <div className="flex flex-col gap-6 w-full mb-6 mt-2">
           {/* FILTER BAR ROW (placed above title/progress) */}
           {isFilterBarExpanded ? (
             <div className="w-full bg-[#f6faf7] rounded-[18px] p-1.5 flex flex-col md:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-0.5 scrollbar-hide">
-                {/* Expand/Collapse toggle (left) */}
+                {/* Expand/Collapse toggle */}
                 <Button
                   type="button"
                   variant="ghost"

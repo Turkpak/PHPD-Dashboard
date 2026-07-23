@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 const _jsxFileName = ""; function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -61,7 +61,7 @@ function formatProjectStakeholder(project) {
 function fallbackStakeholderLabel(project) {
   const ids = Array.isArray(project.stakeholder) ? project.stakeholder : [project.stakeholder];
   if (ids.length > 0) return `Stakeholder #${ids.join(", #")}`;
-  return "—";
+  return "â€”";
 }
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -117,7 +117,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 const XER_FILE_INPUT_ID = "xer-file-input-wizard";
 
-/** Step 2: Primavera XER — opens the device file picker (same backend multipart field `xer_file`). */
+/** Step 2: Primavera XER â€” opens the device file picker (same backend multipart field `xer_file`). */
 function WizardXerUploadSection({
   editingProject,
   xerFile,
@@ -195,7 +195,7 @@ function WizardXerUploadSection({
               , React.createElement('div', { className: "flex-1 min-w-0 text-left w-full"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 249}}
                 , React.createElement('p', { className: "font-medium text-sm sm:text-base break-all"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 250}}, xerFile.name)
                 , React.createElement('p', { className: "text-xs text-muted-foreground mt-0.5"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 251}}
-                  , (xerFile.size / 1024).toFixed(2), " KB · ready to upload"
+                  , (xerFile.size / 1024).toFixed(2), " KB Â· ready to upload"
                 )
               )
               , React.createElement(Button, {
@@ -216,7 +216,7 @@ function WizardXerUploadSection({
             React.createElement(React.Fragment, null
               , React.createElement(Upload, { className: "h-10 w-10 text-muted-foreground shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 271}} )
               , React.createElement('p', { className: "text-sm sm:text-base font-medium"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 272}}, "Tap to choose from this device"     )
-              , React.createElement('p', { className: "text-xs text-muted-foreground max-w-md"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 273}}, ".xer only — same file is sent to the server on Create for schedule import."
+              , React.createElement('p', { className: "text-xs text-muted-foreground max-w-md"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 273}}, ".xer only â€” same file is sent to the server on Create for schedule import."
 
               )
             )
@@ -224,7 +224,7 @@ function WizardXerUploadSection({
         )
 
         , React.createElement(Button, { type: "button", variant: "secondary", className: "w-full sm:w-auto min-h-11 px-6"   , onClick: openPicker, __self: this, __source: {fileName: _jsxFileName, lineNumber: 280}}
-          , React.createElement(FolderKanban, { className: "h-4 w-4 mr-2 shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 281}} ), "Choose file…"
+          , React.createElement(FolderKanban, { className: "h-4 w-4 mr-2 shrink-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 281}} ), "Choose fileâ€¦"
 
         )
 
@@ -483,7 +483,7 @@ export default function ProjectManagement() {
     setCurrentStep(1);
   };
 
-  // Open dialog for editing a project — prefetch division/district/tehsil so dropdowns show selected values
+  // Open dialog for editing a project â€” prefetch division/district/tehsil so dropdowns show selected values
   const openEditDialog = async (project) => {
     // Always refetch the full project payload for prefill (includes financials + geom).
     // If fetch fails (auth/network), still open the wizard using the card payload.
@@ -555,7 +555,7 @@ export default function ProjectManagement() {
     return true;
   };
 
-  // Validate step 2 (schedule + boundary — backend consumes both on create)
+  // Validate step 2 (schedule + boundary â€” backend consumes both on create)
   const validateStep2 = () => {
     if (editingProject) return true;
     if (!xerFile) {
@@ -1000,7 +1000,7 @@ export default function ProjectManagement() {
                                   return (value || "").toLowerCase().includes(q) ? 1 : 0;
                                 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1278}}
 
-                                , React.createElement(CommandInput, { placeholder: "Type to search zone…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1285}} )
+                                , React.createElement(CommandInput, { placeholder: "Type to search zoneâ€¦"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1285}} )
                                 , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1286}}
                                   , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1287}}, "No zone found."  )
                                   , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1288}}
@@ -1055,7 +1055,7 @@ export default function ProjectManagement() {
                                   return (value || "").toLowerCase().includes(q) ? 1 : 0;
                                 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1333}}
 
-                                , React.createElement(CommandInput, { placeholder: "Type to search circle…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1340}} )
+                                , React.createElement(CommandInput, { placeholder: "Type to search circleâ€¦"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1340}} )
                                 , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1341}}
                                   , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1342}}, "No circle found."  )
                                   , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1343}}
@@ -1083,7 +1083,7 @@ export default function ProjectManagement() {
                       /* District / Tehsil (Area Management) */
                       , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1255}}
 
-                        /* District — searchable */
+                        /* District â€” searchable */
                         , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1368}}
                           , React.createElement(Label, { htmlFor: "district", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1369}}, "District *" )
                           , React.createElement(Popover, { open: districtComboboxOpen, onOpenChange: setDistrictComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1370}}
@@ -1113,7 +1113,7 @@ export default function ProjectManagement() {
                                   return (value || "").toLowerCase().includes(q) ? 1 : 0;
                                 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1393}}
 
-                                , React.createElement(CommandInput, { placeholder: "Type to search district…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1400}} )
+                                , React.createElement(CommandInput, { placeholder: "Type to search districtâ€¦"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1400}} )
                                 , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1401}}
                                   , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1402}}, "No district found."  )
                                   , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1403}}
@@ -1137,7 +1137,7 @@ export default function ProjectManagement() {
                           )
                         )
 
-                        /* Tehsil — searchable */
+                        /* Tehsil â€” searchable */
                         , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1425}}
                           , React.createElement(Label, { htmlFor: "tehsil", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1426}}, "Tehsil *" )
                           , React.createElement(Popover, { open: tehsilComboboxOpen, onOpenChange: setTehsilComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1427}}
@@ -1170,7 +1170,7 @@ export default function ProjectManagement() {
                                   return (value || "").toLowerCase().includes(q) ? 1 : 0;
                                 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 1450}}
 
-                                , React.createElement(CommandInput, { placeholder: "Type to search tehsil…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1457}} )
+                                , React.createElement(CommandInput, { placeholder: "Type to search tehsilâ€¦"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1457}} )
                                 , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1458}}
                                   , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1459}}, "No tehsil found."  )
                                   , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1460}}
@@ -1329,7 +1329,7 @@ export default function ProjectManagement() {
         , projectsLoading ? (
           React.createElement(Card, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1841}}
             , React.createElement(CardContent, { className: "flex flex-col items-center justify-center py-16"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1842}}
-              , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1843}}, "Loading projects…" )
+              , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 1843}}, "Loading projectsâ€¦" )
             )
           )
         ) : filteredProjects.length === 0 ? (
@@ -1366,7 +1366,7 @@ export default function ProjectManagement() {
                             , project.project_name || "Unnamed"
                           )
                           , React.createElement(CardDescription, { className: "text-xs mt-1 text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1879}}, "Updated "
-                             , project.updated_at ? new Date(project.updated_at).toLocaleDateString() : "—"
+                             , project.updated_at ? new Date(project.updated_at).toLocaleDateString() : "â€”"
                           )
                         )
                       )
@@ -1467,385 +1467,348 @@ export default function ProjectManagement() {
           )
         )
 
-        /* Detail panel: selected project info in the space beneath the cards */
-        , selectedProjectForView && (
-          React.createElement(Card, { className: "mt-6 border-primary/20 shadow-lg"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1983}}
-            , React.createElement(CardHeader, { className: "flex flex-row items-center justify-between space-y-0 pb-4"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1984}}
-              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1985}}
-                , React.createElement(CardTitle, { className: "text-xl flex items-center gap-2"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1986}}
-                  , React.createElement(FolderKanban, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1987}} )
-                  , selectedProjectForView.project_name || "Unnamed Project"
-                )
+        /* â”€â”€ PROJECT DETAIL MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        , selectedProjectForView && (() => {
+          const p = selectedProjectForView;
+          const hasCoords = (() => {
+            const lat = Number(p.latitude); const lng = Number(p.longitude);
+            return Number.isFinite(lat) && Number.isFinite(lng);
+          })();
+          const lat = Number(p.latitude); const lng = Number(p.longitude);
 
+          const formatNum = (v) => {
+            if (v === "" || v == null) return "â€”";
+            const n = typeof v === "number" ? v : Number(String(v));
+            return Number.isFinite(n)
+              ? new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n)
+              : String(v);
+          };
+
+          const hasAny = (...vals) =>
+            vals.some((v) => v !== null && v !== undefined && String(v).trim() !== "");
+
+          const showCoreBudget = hasAny(p.total_budget, p.total_consume, p.remaining_budget);
+          const showAllocation  = hasAny(p.allocation_capital_cost, p.allocation_revenue_cost, p.allocation_total_cost);
+          const showPd          = hasAny(p.pd_release_capital_cost, p.pd_release_cost, p.pd_release_total_cost);
+          const showSpending    = hasAny(p.spending_release_capital_cost, p.spending_release_revenue_cost, p.spending_release_total_cost);
+          const showPifra       = hasAny(p.pifra_utilization_capital_cost, p.pifra_utilization_revenue_cost, p.pifra_utilization_total_cost, p.pifra_utilization_date);
+          const showPct         = hasAny(p.percentage_utilization_capital, p.percentage_utilization_revenue, p.percentage_utilization_total);
+          const hasFinancials   = showCoreBudget || showAllocation || showPd || showSpending || showPifra || showPct;
+
+          const InfoChip = ({ icon: Icon, label, value, accent = "emerald" }) => (
+            React.createElement('div', { className: `flex items-start gap-3 rounded-lg border border-slate-200/60 bg-white p-3 sm:p-4 shadow-none`}
+              , React.createElement('div', { className: `h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-${accent}-50 text-${accent}-700 flex items-center justify-center shrink-0`}
+                , React.createElement(Icon, { className: "h-4 w-4 sm:h-5 sm:w-5"})
               )
-              , React.createElement(Button, {
-                variant: "ghost",
-                size: "icon",
-                onClick: () => setSelectedProjectForView(null),
-                className: "shrink-0",
-                'aria-label': "Close detail view"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1992}}
-
-                , React.createElement(X, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 1999}} )
+              , React.createElement('div', { className: "min-w-0 flex-1"}
+                , React.createElement('p', { className: "text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400 mb-0.5"}, label)
+                , React.createElement('p', { className: "text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug break-words"}, value || "â€”")
               )
             )
-            , React.createElement(CardContent, { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2002}}
-              , React.createElement(Tabs, { defaultValue: "overview", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2003}}
-                , React.createElement(TabsList, { className: "w-full justify-start gap-1 overflow-x-auto whitespace-nowrap flex-nowrap"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2004}}
-                  , React.createElement(TabsTrigger, { value: "overview", className: "shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2005}}, "Project Info" )
-                  , React.createElement(TabsTrigger, { value: "financial", className: "shrink-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2006}}, "Financial Details" )
+          );
+
+          const BudgetBar = ({ label, value, total, colorClass }) => {
+            const pct = total > 0 ? Math.min(100, (Number(value) / total) * 100) : 0;
+            return (
+              React.createElement('div', { className: "space-y-1.5"}
+                , React.createElement('div', { className: "flex items-center justify-between gap-2"}
+                  , React.createElement('span', { className: "text-xs font-semibold text-slate-600"}, label)
+                  , React.createElement('span', { className: "text-xs font-bold text-slate-800 tabular-nums"}, `PKR ${formatNum(value)} M`)
                 )
+                , React.createElement('div', { className: "h-2 w-full rounded-full bg-slate-100 overflow-hidden"}
+                  , React.createElement('div', { className: `h-full rounded-full ${colorClass} transition-all`, style: { width: `${pct}%` }})
+                )
+              )
+            );
+          };
 
-                , React.createElement(TabsContent, { value: "overview", className: "mt-4 space-y-6" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2009}}
-                  , selectedProjectForView.project_description && (
-                    React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2011}}
-                      , React.createElement('h4', { className: "text-sm font-medium mb-1"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2012}}, "Description")
-                      , React.createElement('p', { className: "text-sm text-muted-foreground whitespace-pre-wrap"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2013}}, selectedProjectForView.project_description)
-                    )
+          const FinSection = ({ title, icon: Icon, accent, children }) => (
+            React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white shadow-none overflow-hidden"}
+              , React.createElement('div', { className: `flex items-center gap-3 px-4 py-3 border-b bg-${accent}-50/60`}
+                , React.createElement('div', { className: `h-7 w-7 rounded-lg bg-${accent}-100 text-${accent}-700 flex items-center justify-center`}
+                  , React.createElement(Icon, { className: "h-3.5 w-3.5"})
+                )
+                , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, title)
+              )
+              , React.createElement('div', { className: "grid grid-cols-3 divide-x"}, children)
+            )
+          );
+
+          const FinStat = ({ label, value }) => (
+            React.createElement('div', { className: "flex flex-col items-center justify-center py-4 px-2 text-center"}
+              , React.createElement('p', { className: "text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1 leading-tight"}, label)
+              , React.createElement('p', { className: "text-sm sm:text-base font-bold text-slate-800 tabular-nums"}, formatNum(value))
+            )
+          );
+
+          return React.createElement(Dialog, { open: true, onOpenChange: (open) => { if (!open) setSelectedProjectForView(null); }}
+            , React.createElement(DialogContent, {
+              className: "w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto p-0 rounded-xl border-none shadow-xl gap-0 [&>button]:hidden",
+              'aria-describedby': undefined
+            }
+
+              /* â”€â”€ MODAL HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+              , React.createElement(DialogHeader, { className: "sr-only"}
+                , React.createElement(DialogTitle, {}, p.project_name || "Project Details")
+              )
+              , React.createElement('div', { className: "relative bg-gradient-to-br from-[#054332] via-[#033828] to-[#021f17] px-5 sm:px-7 py-6 rounded-t-xl"}
+                , React.createElement('button', {
+                  onClick: () => setSelectedProjectForView(null),
+                  className: "absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors",
+                  'aria-label': "Close"
+                }
+                  , React.createElement(X, { className: "h-4 w-4"})
+                )
+                , React.createElement('div', { className: "flex items-start gap-4"}
+                  , React.createElement('div', { className: "h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0"}
+                    , React.createElement(FolderKanban, { className: "h-6 w-6 text-white"})
                   )
-
-                  , React.createElement('div', { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2017}}
-                    , React.createElement('div', { className: "flex items-center gap-3 rounded-lg border p-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2018}}
-                      , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2019}}
-                        , React.createElement(Building2, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2020}} )
-                      )
-                      , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2022}}
-                        , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2023}}, "Stakeholder")
-                        , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2024}}
-                          , formatProjectStakeholder(selectedProjectForView)
-                        )
-                      )
-                    )
-                    , React.createElement('div', { className: "flex items-center gap-3 rounded-lg border p-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2029}}
-                      , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-violet-500/10 text-violet-700 dark:text-violet-300 flex items-center justify-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2030}}
-                        , React.createElement(Calendar, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2031}} )
-                      )
-                      , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2033}}
-                        , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2034}}, "Start Date" )
-                        , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2035}}
-                          , selectedProjectForView.project_starting_date
-                            ? new Date(selectedProjectForView.project_starting_date).toLocaleDateString()
-                            : "N/A"
-                        )
-                      )
-                    )
-                    , React.createElement('div', { className: "flex items-center gap-3 rounded-lg border p-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2042}}
-                      , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-emerald-600/10 text-emerald-800 dark:text-emerald-300 flex items-center justify-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2043}}
-                        , React.createElement(FileText, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2044}} )
-                      )
-                      , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2046}}
-                        , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2047}}, "Reference No" )
-                        , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2048}}, selectedProjectForView.project_reference_no || "N/A")
-                      )
-                    )
-                    , React.createElement('div', { className: "flex items-center gap-3 rounded-lg border p-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2051}}
-                      , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300 flex items-center justify-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2052}}
-                        , React.createElement(MapPin, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2053}} )
-                      )
-                      , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2055}}
-                        , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2056}}, "Location")
-                        , React.createElement('p', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2057}}
-                          , _nullishCoalesce(selectedProjectForView.tehsil_name, () => ( String(selectedProjectForView.tehsil)))
-                        )
-                      )
-                    )
-                  )
-
-                  , (selectedProjectForView.total_budget_allocated != null || selectedProjectForView.budget_utilized != null) && (
-                    React.createElement('div', { className: "rounded-lg border p-4"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2065}}
-                      , React.createElement('div', { className: "flex items-center gap-2 mb-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2066}}
-                        , React.createElement('div', { className: "h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2067}}
-                          , React.createElement(Wallet, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2068}} )
-                        )
-                        , React.createElement('h4', { className: "text-sm font-medium" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2070}}, "Budget")
-                      )
-                      , React.createElement('div', { className: "flex flex-wrap gap-4 text-sm"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2072}}
-                        , selectedProjectForView.total_budget_allocated != null && selectedProjectForView.total_budget_allocated !== "" && (
-                          React.createElement('span', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2074}}, "Allocated: "
-                             , React.createElement('strong', { className: "text-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2075}}, selectedProjectForView.total_budget_allocated)
-                          )
-                        )
-                        , selectedProjectForView.budget_utilized != null && selectedProjectForView.budget_utilized !== "" && (
-                          React.createElement('span', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2079}}, "Utilized: "
-                             , React.createElement('strong', { className: "text-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2080}}, selectedProjectForView.budget_utilized)
-                          )
-                        )
-                        , selectedProjectForView.budget_remaining != null && selectedProjectForView.budget_remaining !== "" && (
-                          React.createElement('span', { className: "text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2084}}, "Remaining: "
-                             , React.createElement('strong', { className: "text-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2085}}, selectedProjectForView.budget_remaining)
-                          )
-                        )
-                      )
-                    )
-                  )
-
-                  , selectedProjectForView.xer_file && (
-                    React.createElement('div', { className: "rounded-lg border p-3 flex items-center gap-3"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2093}}
-                      , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-emerald-600/10 text-emerald-800 dark:text-emerald-300 flex items-center justify-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2094}}
-                        , React.createElement(FileText, { className: "h-5 w-5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2095}} )
-                      )
-                      , React.createElement('div', { className: "flex-1 min-w-0" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2097}}
-                        , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2098}}, "XER File" )
-                        , React.createElement('a', {
-                          href: selectedProjectForView.xer_file.startsWith("http") ? selectedProjectForView.xer_file : `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}${selectedProjectForView.xer_file.startsWith("/") ? "" : "/"}${selectedProjectForView.xer_file}`,
-                          target: "_blank",
-                          rel: "noopener noreferrer" ,
-                          className: "text-sm font-medium text-primary hover:underline truncate block"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2099}}
-
-                          , _nullishCoalesce(selectedProjectForView.xer_file.split("/").pop(), () => ( selectedProjectForView.xer_file))
-                        )
-                      )
-                    )
-                  )
-
-                  , (() => {
-                    const latRaw = selectedProjectForView.latitude;
-                    const lngRaw = selectedProjectForView.longitude;
-                    const lat = latRaw != null ? Number(latRaw) : Number.NaN;
-                    const lng = lngRaw != null ? Number(lngRaw) : Number.NaN;
-                    const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
-                    if (!hasCoords) return null;
-                    return (
-                      React.createElement('div', { className: "rounded-lg border overflow-hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2120}}
-                        , React.createElement('div', { className: "px-4 py-3 border-b bg-muted/20", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2121}}
-                          , React.createElement('p', { className: "text-sm font-semibold" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2122}}, "Project location")
-                          , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2123}}, "Lat: " , String(latRaw), " · Lng: ", String(lngRaw))
-                        )
-                        , React.createElement('div', { className: "h-[280px] w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2125}}
-                          , React.createElement(MapContainer, {
-                            center: [lat, lng],
-                            zoom: 13,
-                            scrollWheelZoom: false,
-                            style: { height: "100%", width: "100%" }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2126}}
-                            , React.createElement(TileLayer, {
-                              attribution: '&copy; OpenStreetMap contributors',
-                              url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2135}}
-                            )
-                            , React.createElement(Marker, { position: [lat, lng], __self: this, __source: {fileName: _jsxFileName, lineNumber: 2139}}
-                              , React.createElement(Popup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2140}}
-                                , selectedProjectForView.project_name || "Project"
-                              )
-                            )
-                          )
-                        )
-                      )
-                    );
-                  })()
-
-                  , React.createElement('div', { className: "rounded-lg border", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2148}}
-                    , React.createElement('div', { className: "px-4 py-3 border-b bg-muted/20", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2149}}
-                      , React.createElement('p', { className: "text-sm font-semibold", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2150}}, "Activities")
-                      , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2151}}, "Imported from XER (via Project Activities API).")
-                    )
-                    , React.createElement('div', { className: "p-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2153}}
-                      , selectedProjectActivitiesLoading ? (
-                        React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2155}}, "Loading activities…")
-                      ) : selectedProjectActivities.length === 0 ? (
-                        React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2157}}, "No activities found for this project.")
-                      ) : (
-                        React.createElement('div', { className: "space-y-2 max-h-[320px] overflow-auto", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2159}}
-                          , selectedProjectActivities.map((a) => (
-                            React.createElement('div', { key: a.id || a.activity_id || a.activity_name, className: "flex items-start justify-between gap-3 rounded-md border p-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2161}}
-                              , React.createElement('div', { className: "min-w-0", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2162}}
-                                , React.createElement('p', { className: "text-sm font-medium truncate", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2163}}, a.activity_name || a.label || "—")
-                                , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2164}}
-                                  , (a.start_date || a.start || "—"), " → ", (a.end_date || a.end || "—")
-                                )
-                              )
-                              , React.createElement('div', { className: "text-xs text-muted-foreground shrink-0 tabular-nums", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2168}}
-                                , typeof a.progress === "number" ? `${Math.round(a.progress)}%` : (a.progress ?? "")
-                              )
-                            )
-                          ))
-                        )
+                  , React.createElement('div', { className: "min-w-0 flex-1 pt-0.5"}
+                    , React.createElement('h2', { className: "text-lg sm:text-xl font-bold text-white leading-tight truncate"}, p.project_name || "Unnamed Project")
+                    , React.createElement('div', { className: "flex flex-wrap items-center gap-2 mt-2"}
+                      , p.project_category && React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/15 text-white text-[11px] font-semibold"}, p.project_category)
+                      , p.project_reference_no && React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-200 text-[11px] font-semibold"}, "Ref: ", p.project_reference_no)
+                      , React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/10 text-white/80 text-[11px] font-medium"}
+                        , React.createElement(MapPin, { className: "h-3 w-3 mr-1"}), p.tehsil_name || p.district_name || "â€”"
                       )
                     )
                   )
                 )
+              )
 
-                , React.createElement(TabsContent, { value: "financial", className: "mt-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2121}}
-                  , (() => {
-                    const p = selectedProjectForView ;
-                    const hasAny = (...vals) =>
-                      vals.some((v) => v !== null && v !== undefined && String(v).trim() !== "");
-                    // Core project budget fields (new backend schema)
-                    const showCoreBudget = hasAny(p.total_budget, p.total_consume, p.remaining_budget);
-                    const showAllocation = hasAny(p.allocation_capital_cost, p.allocation_revenue_cost, p.allocation_total_cost);
-                    const showPd = hasAny(p.pd_release_capital_cost, p.pd_release_cost, p.pd_release_total_cost);
-                    const showSpending = hasAny(p.spending_release_capital_cost, p.spending_release_revenue_cost, p.spending_release_total_cost);
-                    const showPifra = hasAny(
-                      p.pifra_utilization_capital_cost,
-                      p.pifra_utilization_revenue_cost,
-                      p.pifra_utilization_total_cost,
-                      p.pifra_utilization_date,
-                    );
-                    const showPct = hasAny(p.percentage_utilization_capital, p.percentage_utilization_revenue, p.percentage_utilization_total);
+              /* â”€â”€ TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+              , React.createElement('div', { className: "px-5 sm:px-7 pt-5 pb-6 space-y-5 bg-slate-50/60"}
+                , React.createElement(Tabs, { defaultValue: "overview"}
+                  , React.createElement(TabsList, { className: "h-10 w-full rounded-lg bg-white border border-slate-200/70 shadow-none p-1 gap-1"}
+                    , React.createElement(TabsTrigger, { value: "overview", className: "flex-1 rounded-md text-[13px] font-semibold data-[state=active]:bg-[#054332] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"}, "Project Info")
+                    , React.createElement(TabsTrigger, { value: "financial", className: "flex-1 rounded-md text-[13px] font-semibold data-[state=active]:bg-[#054332] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"}, "Financial Details")
+                  )
 
-                    if (!showCoreBudget && !showAllocation && !showPd && !showSpending && !showPifra && !showPct) {
+                  /* â”€â”€ PROJECT INFO TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                  , React.createElement(TabsContent, { value: "overview", className: "mt-5 space-y-5"}
+
+                    /* Description */
+                    , p.project_description && (
+                      React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white p-4 shadow-none"}
+                        , React.createElement('p', { className: "text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5"}, "Description")
+                        , React.createElement('p', { className: "text-sm text-slate-600 leading-relaxed whitespace-pre-wrap"}, p.project_description)
+                      )
+                    )
+
+                    /* Info chips grid */
+                    , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"}
+                      , React.createElement(InfoChip, { icon: Building2, label: "Stakeholder", value: formatProjectStakeholder(p), accent: "emerald"})
+                      , React.createElement(InfoChip, { icon: Calendar,  label: "Start Date",
+                        value: p.project_starting_date ? new Date(p.project_starting_date).toLocaleDateString("en-PK", { day:"numeric", month:"short", year:"numeric"}) : "â€”",
+                        accent: "violet"
+                      })
+                      , React.createElement(InfoChip, { icon: FileText,  label: "Reference No", value: p.project_reference_no, accent: "emerald"})
+                      , React.createElement(InfoChip, { icon: MapPin,    label: "Tehsil / Location",
+                        value: [p.tehsil_name, p.district_name, p.division_name].filter(Boolean).join(", ") || String(p.tehsil || "â€”"),
+                        accent: "amber"
+                      })
+                      , p.project_category && React.createElement(InfoChip, { icon: ChevronDown, label: "Category", value: p.project_category + (p.project_category_other ? ` â€” ${p.project_category_other}` : ""), accent: "sky"})
+                    )
+
+                    /* Budget summary (if present) */
+                    , showCoreBudget && (() => {
+                      const total    = Number(p.total_budget)    || 0;
+                      const consumed = Number(p.total_consume)   || 0;
+                      const remain   = Number(p.remaining_budget) || Math.max(0, total - consumed);
+                      const pct      = total > 0 ? Math.round((consumed / total) * 100) : 0;
                       return (
-                        React.createElement('div', { className: "rounded-lg border p-6 text-center text-sm text-muted-foreground"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2139}}, "No financial details were provided for this project."
-
+                        React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white p-4 sm:p-5 shadow-none space-y-4"}
+                          , React.createElement('div', { className: "flex items-center justify-between"}
+                            , React.createElement('div', { className: "flex items-center gap-2"}
+                              , React.createElement('div', { className: "h-8 w-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center"}
+                                , React.createElement(Wallet, { className: "h-4 w-4"})
+                              )
+                              , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, "Budget Overview")
+                            )
+                            , React.createElement('span', { className: `text-xs font-bold px-2.5 py-1 rounded-full ${pct >= 90 ? "bg-red-50 text-red-700" : pct >= 60 ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}`}
+                              , pct, "% utilized"
+                            )
+                          )
+                          , React.createElement('div', { className: "space-y-3"}
+                            , React.createElement(BudgetBar, { label: "Total Budget",    value: total,    total: total, colorClass: "bg-slate-300"})
+                            , React.createElement(BudgetBar, { label: "Total Consumed",  value: consumed, total: total, colorClass: "bg-emerald-500"})
+                            , React.createElement(BudgetBar, { label: "Remaining",       value: remain,   total: total, colorClass: "bg-violet-400"})
+                          )
                         )
                       );
-                    }
+                    })()
 
-                    const formatNum = (v) => {
-                      if (v === "" || v == null) return "—";
-                      const n = typeof v === "number" ? v : Number(String(v));
-                      if (!Number.isFinite(n)) return String(v);
-                      return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n);
-                    };
-
-                    const Stat = ({ label, value }) => (
-                      React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2153}}
-                        , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2154}}, label)
-                        , React.createElement('p', { className: "mt-1 text-base font-semibold tabular-nums"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2155}}, formatNum(value))
+                    /* XER file */
+                    , p.xer_file && (
+                      React.createElement('a', {
+                        href: p.xer_file.startsWith("http") ? p.xer_file : `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}${p.xer_file.startsWith("/") ? "" : "/"}${p.xer_file}`,
+                        target: "_blank", rel: "noopener noreferrer",
+                        className: "flex items-center gap-3 rounded-lg border border-slate-200/60 bg-white p-3 shadow-none hover:border-[#054332]/40 transition-all group"
+                      }
+                        , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors"}
+                          , React.createElement(FileText, { className: "h-5 w-5"})
+                        )
+                        , React.createElement('div', { className: "min-w-0 flex-1"}
+                          , React.createElement('p', { className: "text-[10px] font-semibold uppercase tracking-wider text-slate-400"}, "Primavera Schedule (XER)")
+                          , React.createElement('p', { className: "text-sm font-semibold text-[#054332] truncate"}, p.xer_file.split("/").pop() || p.xer_file)
+                        )
+                        , React.createElement(ChevronRight, { className: "h-4 w-4 text-slate-400 group-hover:text-[#054332] transition-colors shrink-0"})
                       )
-                    );
+                    )
 
-                    const Section = ({
-                      title,
-                      icon,
-                      badgeClassName,
-                      children,
-                    }
-
-
-
-
-) => (
-                      React.createElement('div', { className: "rounded-xl border p-4"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2170}}
-                        , React.createElement('div', { className: "flex items-center gap-2 mb-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2171}}
-                          , React.createElement('div', { className: `h-8 w-8 rounded-lg flex items-center justify-center ${badgeClassName}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2172}}
-                            , icon
+                    /* Map */
+                    , hasCoords && (
+                      React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white shadow-none overflow-hidden"}
+                        , React.createElement('div', { className: "flex items-center gap-3 px-4 py-3 border-b bg-slate-50"}
+                          , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center"}
+                            , React.createElement(MapPin, { className: "h-3.5 w-3.5"})
                           )
-                          , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2175}}
-                            , React.createElement('p', { className: "text-sm font-semibold leading-tight"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2176}}, title)
-                            , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2177}}, "Values in millions (M)"   )
+                          , React.createElement('div', {}
+                            , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, "Project Location")
+                            , React.createElement('p', { className: "text-xs text-slate-400 tabular-nums"}, `${lat.toFixed(4)}, ${lng.toFixed(4)}`)
                           )
                         )
-                        , children
+                        , React.createElement('div', { className: "h-[220px] sm:h-[260px] w-full"}
+                          , React.createElement(MapContainer, { center: [lat, lng], zoom: 13, scrollWheelZoom: false, style: { height: "100%", width: "100%" }}
+                            , React.createElement(TileLayer, { attribution: 'Â© OpenStreetMap contributors', url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"})
+                            , React.createElement(Marker, { position: [lat, lng]}
+                              , React.createElement(Popup, {}, p.project_name || "Project")
+                            )
+                          )
+                        )
                       )
-                    );
+                    )
 
-                    return (
-                      React.createElement('div', { className: "space-y-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2185}}
+                    /* Activities */
+                    , React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white shadow-none overflow-hidden"}
+                      , React.createElement('div', { className: "flex items-center justify-between gap-3 px-4 py-3 border-b bg-slate-50"}
+                        , React.createElement('div', { className: "flex items-center gap-3"}
+                          , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-[#054332]/10 text-[#054332] flex items-center justify-center"}
+                            , React.createElement(FolderKanban, { className: "h-3.5 w-3.5"})
+                          )
+                          , React.createElement('div', {}
+                            , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, "Activities")
+                            , React.createElement('p', { className: "text-xs text-slate-400"}, "Imported from Primavera XER")
+                          )
+                        )
+                        , !selectedProjectActivitiesLoading && selectedProjectActivities.length > 0 && (
+                          React.createElement('span', { className: "text-xs font-bold text-[#054332] bg-[#054332]/8 px-2.5 py-1 rounded-full"}
+                            , selectedProjectActivities.length, " tasks"
+                          )
+                        )
+                      )
+                      , React.createElement('div', { className: "divide-y max-h-[340px] overflow-y-auto scrollbar-thin"}
+                        , selectedProjectActivitiesLoading ? (
+                          React.createElement('div', { className: "flex items-center justify-center py-10 gap-3 text-slate-400"}
+                            , React.createElement('div', { className: "h-4 w-4 rounded-full border-2 border-slate-300 border-t-[#054332] animate-spin"})
+                            , React.createElement('span', { className: "text-sm"}, "Loading activitiesâ€¦")
+                          )
+                        ) : selectedProjectActivities.length === 0 ? (
+                          React.createElement('div', { className: "flex flex-col items-center justify-center py-12 text-slate-400"}
+                            , React.createElement(FolderKanban, { className: "h-8 w-8 mb-2 opacity-30"})
+                            , React.createElement('p', { className: "text-sm font-medium"}, "No activities found")
+                            , React.createElement('p', { className: "text-xs mt-1"}, "Upload an XER file to import tasks")
+                          )
+                        ) : (
+                          selectedProjectActivities.map((a, idx) => {
+                            const prog = typeof a.progress === "number" ? Math.round(a.progress) : null;
+                            const progColor = prog === null ? "" : prog >= 100 ? "bg-emerald-500" : prog >= 50 ? "bg-amber-500" : "bg-slate-300";
+                            return (
+                              React.createElement('div', { key: a.id || a.activity_id || idx, className: "flex items-center gap-3 sm:gap-4 px-4 py-3 hover:bg-slate-50 transition-colors"}
+                                , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 text-[11px] font-bold tabular-nums"}, idx + 1)
+                                , React.createElement('div', { className: "flex-1 min-w-0"}
+                                  , React.createElement('p', { className: "text-sm font-semibold text-slate-800 truncate"}, a.activity_name || a.label || "â€”")
+                                  , prog !== null && (
+                                    React.createElement('div', { className: "mt-1.5 flex items-center gap-2"}
+                                      , React.createElement('div', { className: "flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"}
+                                        , React.createElement('div', { className: `h-full rounded-full ${progColor}`, style: { width: `${prog}%` }})
+                                      )
+                                      , React.createElement('span', { className: "text-[10px] font-bold tabular-nums text-slate-500 shrink-0"}, prog, "%")
+                                    )
+                                  )
+                                )
+                              )
+                            );
+                          })
+                        )
+                      )
+                    )
+                  )
+
+                  /* â”€â”€ FINANCIAL DETAILS TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                  , React.createElement(TabsContent, { value: "financial", className: "mt-5"}
+                    , !hasFinancials ? (
+                      React.createElement('div', { className: "flex flex-col items-center justify-center py-16 text-slate-400"}
+                        , React.createElement(Wallet, { className: "h-10 w-10 mb-3 opacity-25"})
+                        , React.createElement('p', { className: "text-sm font-semibold"}, "No financial details")
+                        , React.createElement('p', { className: "text-xs mt-1"}, "Budget figures have not been entered for this project.")
+                      )
+                    ) : (
+                      React.createElement('div', { className: "space-y-4"}
                         , showCoreBudget && (
-                          React.createElement('div', { className: "rounded-xl border p-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2186}}
-                            , React.createElement('div', { className: "flex items-center gap-2 mb-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2187}}
-                              , React.createElement('div', { className: "h-8 w-8 rounded-lg bg-emerald-600/10 text-emerald-800 dark:text-emerald-300 flex items-center justify-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2188}}
-                                , React.createElement(Wallet, { className: "h-4 w-4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2189}} )
-                              )
-                              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2191}}
-                                , React.createElement('p', { className: "text-sm font-semibold leading-tight", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2192}}, "Project Budget")
-                                , React.createElement('p', { className: "text-xs text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2193}}, "Totals")
-                              )
-                            )
-                            , React.createElement('div', { className: "grid gap-3 sm:grid-cols-3", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2196}}
-                              , React.createElement(Stat, { label: "Total Budget", value: p.total_budget, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2197}} )
-                              , React.createElement(Stat, { label: "Total Consumed", value: p.total_consume, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2198}} )
-                              , React.createElement(Stat, { label: "Remaining", value: p.remaining_budget, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2199}} )
-                            )
+                          React.createElement(FinSection, { title: "Project Budget (PKR M)", icon: Wallet, accent: "emerald"}
+                            , React.createElement(FinStat, { label: "Total Budget",   value: _nullishCoalesce(p.total_budget, () => ( "â€”"))})
+                            , React.createElement(FinStat, { label: "Total Consumed", value: _nullishCoalesce(p.total_consume, () => ( "â€”"))})
+                            , React.createElement(FinStat, { label: "Remaining",      value: _nullishCoalesce(p.remaining_budget, () => ( "â€”"))})
                           )
                         )
                         , showAllocation && (
-                          React.createElement(Section, {
-                            title: "Allocation",
-                            icon: React.createElement(Landmark, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2189}} ),
-                            badgeClassName: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2187}}
-
-                            , React.createElement('div', { className: "grid gap-3 sm:grid-cols-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2192}}
-                              , React.createElement(Stat, { label: "Capital (M)" , value: p.allocation_capital_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2193}} )
-                              , React.createElement(Stat, { label: "Revenue (M)" , value: p.allocation_revenue_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2194}} )
-                              , React.createElement(Stat, { label: "Total (M)" , value: p.allocation_total_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2195}} )
-                            )
+                          React.createElement(FinSection, { title: "Allocation (PKR M)", icon: Landmark, accent: "sky"}
+                            , React.createElement(FinStat, { label: "Capital",  value: p.allocation_capital_cost})
+                            , React.createElement(FinStat, { label: "Revenue",  value: p.allocation_revenue_cost})
+                            , React.createElement(FinStat, { label: "Total",    value: p.allocation_total_cost})
                           )
                         )
-
                         , showPd && (
-                          React.createElement(Section, {
-                            title: "P&D Release" ,
-                            icon: React.createElement(HandCoins, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2203}} ),
-                            badgeClassName: "bg-amber-500/10 text-amber-700 dark:text-amber-300"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2201}}
-
-                            , React.createElement('div', { className: "grid gap-3 sm:grid-cols-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2206}}
-                              , React.createElement(Stat, { label: "Capital (M)" , value: p.pd_release_capital_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2207}} )
-                              , React.createElement(Stat, { label: "Revenue (M)" , value: p.pd_release_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2208}} )
-                              , React.createElement(Stat, { label: "Total (M)" , value: p.pd_release_total_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2209}} )
-                            )
+                          React.createElement(FinSection, { title: "P&D Release (PKR M)", icon: HandCoins, accent: "amber"}
+                            , React.createElement(FinStat, { label: "Capital", value: p.pd_release_capital_cost})
+                            , React.createElement(FinStat, { label: "Revenue", value: p.pd_release_cost})
+                            , React.createElement(FinStat, { label: "Total",   value: p.pd_release_total_cost})
                           )
                         )
-
                         , showSpending && (
-                          React.createElement(Section, {
-                            title: "Spending Release" ,
-                            icon: React.createElement(Wallet, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2217}} ),
-                            badgeClassName: "bg-emerald-600/10 text-emerald-800 dark:text-emerald-300"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2215}}
-
-                            , React.createElement('div', { className: "grid gap-3 sm:grid-cols-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2220}}
-                              , React.createElement(Stat, { label: "Capital (M)" , value: p.spending_release_capital_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2221}} )
-                              , React.createElement(Stat, { label: "Revenue (M)" , value: p.spending_release_revenue_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2222}} )
-                              , React.createElement(Stat, { label: "Total (M)" , value: p.spending_release_total_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2223}} )
-                            )
+                          React.createElement(FinSection, { title: "Spending Release (PKR M)", icon: Wallet, accent: "emerald"}
+                            , React.createElement(FinStat, { label: "Capital", value: p.spending_release_capital_cost})
+                            , React.createElement(FinStat, { label: "Revenue", value: p.spending_release_revenue_cost})
+                            , React.createElement(FinStat, { label: "Total",   value: p.spending_release_total_cost})
                           )
                         )
-
                         , showPifra && (
-                          React.createElement('div', { className: "rounded-xl border p-4"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2229}}
-                            , React.createElement('div', { className: "flex items-center gap-2 mb-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2230}}
-                              , React.createElement('div', { className: "h-8 w-8 rounded-lg bg-violet-500/10 text-violet-700 dark:text-violet-300 flex items-center justify-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2231}}
-                                , React.createElement(Wallet, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2232}} )
+                          React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white shadow-none overflow-hidden"}
+                            , React.createElement('div', { className: "flex items-center gap-3 px-4 py-3 border-b bg-violet-50/60"}
+                              , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center"}
+                                , React.createElement(Wallet, { className: "h-3.5 w-3.5"})
                               )
-                              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2234}}
-                                , React.createElement('p', { className: "text-sm font-semibold leading-tight"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2235}}, "PIFRA Utilization" )
-                                , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2236}}, "Values in millions (M)"   )
-                              )
+                              , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, "PIFRA Utilization (PKR M)")
                             )
-                            , React.createElement('div', { className: "grid gap-3 sm:grid-cols-4"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2239}}
-                              , React.createElement(Stat, { label: "Capital (M)" , value: p.pifra_utilization_capital_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2240}} )
-                              , React.createElement(Stat, { label: "Revenue (M)" , value: p.pifra_utilization_revenue_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2241}} )
-                              , React.createElement(Stat, { label: "Total (M)" , value: p.pifra_utilization_total_cost, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2242}} )
-                              , React.createElement('div', { className: "rounded-lg border bg-muted/20 p-3"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2243}}
-                                , React.createElement('p', { className: "text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2244}}
-                                  , React.createElement(CalendarDays, { className: "h-3.5 w-3.5" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2245}} ), "Date"
-
+                            , React.createElement('div', { className: "grid grid-cols-4 divide-x"}
+                              , React.createElement(FinStat, { label: "Capital", value: p.pifra_utilization_capital_cost})
+                              , React.createElement(FinStat, { label: "Revenue", value: p.pifra_utilization_revenue_cost})
+                              , React.createElement(FinStat, { label: "Total",   value: p.pifra_utilization_total_cost})
+                              , React.createElement('div', { className: "flex flex-col items-center justify-center py-4 px-2 text-center"}
+                                , React.createElement('p', { className: "text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1 leading-tight flex items-center gap-1"}
+                                  , React.createElement(CalendarDays, { className: "h-3 w-3"}), "Date"
                                 )
-                                , React.createElement('p', { className: "mt-1 text-base font-semibold tabular-nums"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2248}}
-                                  , p.pifra_utilization_date ? String(p.pifra_utilization_date).slice(0, 10) : "—"
-                                )
+                                , React.createElement('p', { className: "text-sm font-bold text-slate-800"}, p.pifra_utilization_date ? String(p.pifra_utilization_date).slice(0, 10) : "â€”")
                               )
                             )
                           )
                         )
-
                         , showPct && (
-                          React.createElement('div', { className: "rounded-xl border p-4"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2257}}
-                            , React.createElement('div', { className: "flex items-center gap-2 mb-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2258}}
-                              , React.createElement('div', { className: "h-8 w-8 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-300 flex items-center justify-center"        , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2259}}
-                                , React.createElement(Percent, { className: "h-4 w-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2260}} )
-                              )
-                              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2262}}
-                                , React.createElement('p', { className: "text-sm font-semibold leading-tight"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2263}}, "% Utilization vs Spending Release"    )
-                                , React.createElement('p', { className: "text-xs text-muted-foreground" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2264}}, "Percent values (%)"  )
-                              )
-                            )
-                            , React.createElement('div', { className: "grid gap-3 sm:grid-cols-3"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2267}}
-                              , React.createElement(Stat, { label: "Capital %" , value: p.percentage_utilization_capital, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2268}} )
-                              , React.createElement(Stat, { label: "Revenue %" , value: p.percentage_utilization_revenue, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2269}} )
-                              , React.createElement(Stat, { label: "Total %" , value: p.percentage_utilization_total, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2270}} )
-                            )
+                          React.createElement(FinSection, { title: "% Utilization vs Spending", icon: Percent, accent: "rose"}
+                            , React.createElement(FinStat, { label: "Capital %", value: p.percentage_utilization_capital})
+                            , React.createElement(FinStat, { label: "Revenue %", value: p.percentage_utilization_revenue})
+                            , React.createElement(FinStat, { label: "Total %",   value: p.percentage_utilization_total})
                           )
                         )
                       )
-                    );
-                  })()
+                    )
+                  )
                 )
               )
             )
-          )
-        )
-        )
-        )
-      )
+          );
+        })()
 
       /* Add Project Dialog (also used as full-page on /project-management/create) */
       , React.createElement(Dialog, {
@@ -2099,7 +2062,7 @@ export default function ProjectManagement() {
                 )
 
                 , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2506}}
-                  /* Zone — searchable */
+                  /* Zone â€” searchable */
                   , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2507}}
                     , React.createElement(Label, { htmlFor: "zone_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2508}}, "Zone *" )
                     , React.createElement(Popover, { open: zoneComboboxOpen, onOpenChange: setZoneComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2509}}
@@ -2130,7 +2093,7 @@ export default function ProjectManagement() {
                             return (value || "").toLowerCase().includes(q) ? 1 : 0;
                           }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2532}}
 
-                          , React.createElement(CommandInput, { placeholder: "Type to search zone…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2539}} )
+                          , React.createElement(CommandInput, { placeholder: "Type to search zoneâ€¦"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2539}} )
                           , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2540}}
                             , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2541}}, "No zone found."  )
                             , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2542}}
@@ -2153,7 +2116,7 @@ export default function ProjectManagement() {
                       )
                     )
                   )
-                  /* Circle — searchable */
+                  /* Circle â€” searchable */
                   , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2562}}
                     , React.createElement(Label, { htmlFor: "circle_modal", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2563}}, "Circle *" )
                     , React.createElement(Popover, { open: circleComboboxOpen, onOpenChange: setCircleComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2564}}
@@ -2185,7 +2148,7 @@ export default function ProjectManagement() {
                             return (value || "").toLowerCase().includes(q) ? 1 : 0;
                           }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2587}}
 
-                          , React.createElement(CommandInput, { placeholder: "Type to search circle…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2594}} )
+                          , React.createElement(CommandInput, { placeholder: "Type to search circleâ€¦"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2594}} )
                           , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2595}}
                             , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2596}}, "No circle found."  )
                             , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2597}}
@@ -2212,7 +2175,7 @@ export default function ProjectManagement() {
 
                 /* Province/Division removed */
 
-                /* District — searchable */
+                /* District â€” searchable */
                 , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2617}}
                   , React.createElement(Label, { htmlFor: "district", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2618}}, "District *" )
                   , React.createElement(Popover, { open: districtComboboxOpen, onOpenChange: setDistrictComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2619}}
@@ -2242,7 +2205,7 @@ export default function ProjectManagement() {
                           return (value || "").toLowerCase().includes(q) ? 1 : 0;
                         }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2640}}
 
-                        , React.createElement(CommandInput, { placeholder: "Type to search district…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2647}} )
+                        , React.createElement(CommandInput, { placeholder: "Type to search districtâ€¦"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2647}} )
                         , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2648}}
                           , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2649}}, "No district found."  )
                           , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2650}}
@@ -2266,7 +2229,7 @@ export default function ProjectManagement() {
                   )
                 )
 
-                /* Tehsil — searchable */
+                /* Tehsil â€” searchable */
                 , React.createElement('div', { className: "space-y-2", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2672}}
                   , React.createElement(Label, { htmlFor: "tehsil", __self: this, __source: {fileName: _jsxFileName, lineNumber: 2673}}, "Tehsil *" )
                   , React.createElement(Popover, { open: tehsilComboboxOpen, onOpenChange: setTehsilComboboxOpen, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2674}}
@@ -2297,7 +2260,7 @@ export default function ProjectManagement() {
                           return (value || "").toLowerCase().includes(q) ? 1 : 0;
                         }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 2695}}
 
-                        , React.createElement(CommandInput, { placeholder: "Type to search tehsil…"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2702}} )
+                        , React.createElement(CommandInput, { placeholder: "Type to search tehsilâ€¦"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 2702}} )
                         , React.createElement(CommandList, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2703}}
                           , React.createElement(CommandEmpty, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2704}}, "No tehsil found."  )
                           , React.createElement(CommandGroup, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 2705}}
@@ -2402,6 +2365,9 @@ export default function ProjectManagement() {
         )
       )
 
+    )
+    )
+    )
     )
   );
 }
