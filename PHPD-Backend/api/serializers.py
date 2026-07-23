@@ -566,36 +566,3 @@ class GISProjectStatusSerializer(serializers.ModelSerializer):
             return "in_progress"
 
         return "pending"
-
-    
-class ProjectListSerializer(serializers.ModelSerializer):
-
-    zone_name = serializers.SerializerMethodField()
-    district_name = serializers.SerializerMethodField()
-    tehsil_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Project
-        fields = [
-            "id",
-            "project_name",
-            "project_description",
-            "project_starting_date",
-            "project_reference_no",
-            "project_category",
-            "zone_name",
-            "district_name",
-            "tehsil_name",
-            "total_budget",
-            "total_consume",
-            "remaining_budget",
-        ]
-
-    def get_zone_name(self,obj):
-        return obj.zone.zone_name if obj.zone else None
-
-    def get_district_name(self,obj):
-        return obj.district.district_name if obj.district else None
-
-    def get_tehsil_name(self,obj):
-        return obj.tehsil.tehsil_name if obj.tehsil else None
