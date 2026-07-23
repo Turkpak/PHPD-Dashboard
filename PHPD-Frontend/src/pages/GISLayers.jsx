@@ -14,7 +14,7 @@ import {
   listTehsils,
   // getProjectById,
   getProjectGanttData,
-  getProjectGanttAll,
+  getGISProjectStatuses,
 } from "@/api";
 import { FolderKanban, Loader2, AlertTriangle, CalendarCheck, Filter } from "lucide-react";
 import React, { useState, useMemo, useEffect, useCallback } from "react";
@@ -65,47 +65,6 @@ function normalizeProjectGeom(geom) {
 }
 
 
-
-function walkNestedTasks(
-  tasks,
-  visit,
-) {
-  if (!Array.isArray(tasks) || tasks.length === 0) return;
-  for (const t of tasks) {
-    visit(t);
-    if (Array.isArray((t ).subtasks) && (t ).subtasks.length > 0) {
-      walkNestedTasks((t ).subtasks, visit);
-    }
-  }
-}
-
-function deriveProjectStatusFromNestedGantt(
-  tasks,
-) {
-  // Priority:
-  // 1) delayed if any node has_delay === true
-  // 2) in_progress if any node progress > 0
-  // 3) pending if ALL nodes progress_status === "Not Started" (or tasks empty)
-  if (!Array.isArray(tasks) || tasks.length === 0) return "pending";
-
-  let anyDelay = false;
-  let anyProgress = false;
-  let allNotStarted = true;
-
-  walkNestedTasks(tasks, (t) => {
-    if (_optionalChain([t, 'optionalAccess', _ => _.has_delay]) === true) anyDelay = true;
-    const p = Number(_nullishCoalesce(_optionalChain([(t ), 'optionalAccess', _2 => _2.progress]), () => ( 0)));
-    if (Number.isFinite(p) && p > 0) anyProgress = true;
-
-    const ps = String(_nullishCoalesce(_optionalChain([(t ), 'optionalAccess', _3 => _3.progress_status]), () => ( ""))).trim();
-    if (ps !== "Not Started") allNotStarted = false;
-  });
-
-  if (anyDelay) return "in_delay";
-  if (anyProgress) return "in_progress";
-  if (allNotStarted) return "pending";
-  return "pending";
-}
 
 function geometryBboxCenter(geometry) {
   // Returns [lat, lng] (Leaflet order)
@@ -340,11 +299,11 @@ export default function GISLayers() {
     ...PROJECT_QUERY_OPTIONS,
   });
 
-  // Preserve map status functionality, but do not fire this heavy request in
-  // parallel with the initial project request.
-  const { data: allProjectSchedules = [], isFetching: allGanttLoading } = useQuery({
-    queryKey: ["project-gantt-all"],
-    queryFn: getProjectGanttAll,
+  // Load only the lightweight GIS status summary. This replaces the full
+  // nested /api/project-gantt-all/ payload on the GIS page.
+  const { data: gisProjectStatuses = [] } = useQuery({
+    queryKey: ["gis-project-status"],
+    queryFn: getGISProjectStatuses,
     enabled: projects.length > 0 && !projectsLoading,
     ...HEAVY_QUERY_OPTIONS,
   });
@@ -386,26 +345,30 @@ export default function GISLayers() {
 
   const projectStatusById = useMemo(() => {
     const statusByProjectId = new Map();
-    for (const s of allProjectSchedules ) {
-      const idNum = Number(_optionalChain([s, 'optionalAccess', _7 => _7._id]));
+
+    for (const item of gisProjectStatuses) {
+      const idNum = Number(item?.project_id ?? item?.id);
       if (!Number.isFinite(idNum)) continue;
-      const status = deriveProjectStatusFromNestedGantt(_optionalChain([s, 'optionalAccess', _8 => _8.tasks]));
-      statusByProjectId.set(idNum, status);
+
+      const status = String(item?.status || "pending");
+      statusByProjectId.set(
+        idNum,
+        status === "in_delay" || status === "in_progress" ? status : "pending",
+      );
     }
 
     const map = new Map();
-    for (const p of filteredProjects) {
-      const status = _nullishCoalesce(statusByProjectId.get(p.id), () => ( "pending"));
-      map.set(p.id, status);
+    for (const project of filteredProjects) {
+      map.set(project.id, statusByProjectId.get(project.id) ?? "pending");
     }
     return map;
-  }, [filteredProjects, allProjectSchedules]);
+  }, [filteredProjects, gisProjectStatuses]);
 
   /**
    * Project status counts (no hardcoding) — SINGLE approach:
    * - pending: no activity started (percent_complete == 0 and/or no start_date)
-   * - in_delay: project has any nested gantt task with has_delay === true
-   * - in_progress: started but not delayed
+   * - in_delay: lightweight status API reports at least one delay log
+   * - in_progress: at least one activity has progress > 0 and no delay
    *
    * NOTE: `listProjects()` normalizes activities so `percent_complete` + `finish_date`
    * are always present (even if backend sends `progress`/`end_date`).
@@ -523,169 +486,164 @@ export default function GISLayers() {
     React.createElement(Layout, { title: "Advanced GIS Intelligence"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 391}}
       , React.createElement('div', { className: "flex flex-col gap-4 sm:gap-6 w-full min-w-0"     , __self: this, __source: {fileName: _jsxFileName, lineNumber: 392}}
         /* Filters — card panel with clear hierarchy */
-        , React.createElement(Card, { className: "border border-border/60 bg-card shadow-sm overflow-hidden"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 394}}
-          , React.createElement(CardContent, { className: cn("transition-all", hasActiveFilters ? "p-3 sm:p-4" : "p-4 sm:p-5") , __self: this, __source: {fileName: _jsxFileName, lineNumber: 395}}
-            , React.createElement('div', { className: "flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4 w-full"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 397}}
-                , React.createElement('div', { className: "flex items-center gap-2 shrink-0 justify-center sm:justify-start"      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 398}}
-                , React.createElement('div', { className: cn("flex items-center justify-center rounded-lg bg-primary/10 text-primary", hasActiveFilters ? "h-7 w-7" : "h-8 w-8")       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 399}}
-                  , React.createElement(Filter, { className: cn("shrink-0", hasActiveFilters ? "h-3 w-3" : "h-3.5 w-3.5") , 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 400}} )
+        , React.createElement(Card, { className: "border border-border/60 bg-card shadow-sm overflow-hidden", __self: this, __source: {fileName: _jsxFileName, lineNumber: 394}}
+          , React.createElement(CardContent, { className: "p-4" , __self: this, __source: {fileName: _jsxFileName, lineNumber: 395}}
+            , React.createElement('div', { className: "flex flex-wrap items-end gap-3 w-full", __self: this, __source: {fileName: _jsxFileName, lineNumber: 397}}
+
+              /* Filters label */
+              , React.createElement('div', { className: "flex items-center gap-2 shrink-0 pb-[1px]", __self: this, __source: {fileName: _jsxFileName, lineNumber: 398}}
+                , React.createElement('div', { className: "flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary", __self: this, __source: {fileName: _jsxFileName, lineNumber: 399}}
+                  , React.createElement(Filter, { className: "h-3.5 w-3.5 shrink-0", 'aria-hidden': true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 400}} )
                 )
-                , React.createElement('span', { className: cn("font-semibold text-foreground leading-none", hasActiveFilters ? "text-[13px]" : "text-sm")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 402}}, "Filters")
+                , React.createElement('span', { className: "text-sm font-semibold text-foreground leading-none", __self: this, __source: {fileName: _jsxFileName, lineNumber: 402}}, "Filters")
               )
-                , React.createElement('div', { className: "grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-nowrap sm:items-end sm:justify-end sm:gap-3 min-w-0"          , __self: this, __source: {fileName: _jsxFileName, lineNumber: 404}}
-                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 405}}
-                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 406}}, "Zone")
-                    , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, __self: this, __source: {fileName: _jsxFileName, lineNumber: 407}}
-                      , React.createElement(SelectTrigger, { className: cn("w-full sm:w-[120px] border-border/60 bg-background rounded-xl shadow-sm", hasActiveFilters ? "h-8" : "h-9")      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 408}}
-                        , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 409}} )
-                      )
-                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 411}}
-                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 412}}, "All")
-                        , zones.map((z) => (
-                          React.createElement(SelectItem, { key: z.id, value: String(z.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 414}}
-                            , _nullishCoalesce(z.zone_name, () => ( z.province_name))
-                          )
-                        ))
-                      )
-                    )
+
+              /* Divider */
+              , React.createElement('div', { className: "hidden sm:block w-px h-8 bg-border/60 self-center", __self: this, __source: {fileName: _jsxFileName, lineNumber: 403}} )
+
+              /* Zone */
+              , React.createElement('div', { className: "flex flex-col gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 405}}
+                , React.createElement('label', { className: "text-xs font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 406}}, "Zone")
+                , React.createElement(Select, { value: selectedZoneId, onValueChange: handleZoneChange, __self: this, __source: {fileName: _jsxFileName, lineNumber: 407}}
+                  , React.createElement(SelectTrigger, { className: "w-[130px] h-9 border-border/60 bg-background rounded-lg shadow-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 408}}
+                    , React.createElement(SelectValue, { placeholder: zonesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 409}} )
                   )
-
-                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 422}}
-                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "Circle")
-                    , React.createElement(Select, {
-                      value: selectedCircleId,
-                      onValueChange: handleCircleChange,
-                      disabled: selectedZoneId === "all" || circlesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
-
-                      , React.createElement(SelectTrigger, {
-                        className: cn(
-                          "w-full sm:w-[120px] border-border/60 bg-background rounded-xl shadow-sm",
-                          hasActiveFilters ? "h-8" : "h-9",
-                          (selectedZoneId === "all" || circlesLoading) &&
-                            "opacity-60 cursor-not-allowed",
-                        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
-
-                        , React.createElement(SelectValue, { placeholder: circlesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 436}} )
+                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 411}}
+                    , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 412}}, "All")
+                    , zones.map((z) => (
+                      React.createElement(SelectItem, { key: z.id, value: String(z.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 414}}
+                        , _nullishCoalesce(z.zone_name, () => ( z.province_name))
                       )
-                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 438}}
-                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 439}}, "All")
-                        , selectedZoneId !== "all" &&
-                          circles.map((c) => (
-                            React.createElement(SelectItem, { key: c.id, value: String(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}
-                              , _nullishCoalesce(c.circle_name, () => ( c.division_name))
-                            )
-                          ))
-                      )
-                    )
-                  )
-
-                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 422}}
-                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "District")
-                    , React.createElement(Select, {
-                      value: selectedDistrictId,
-                      onValueChange: handleDistrictChange,
-                      disabled: selectedCircleId === "all" || districtsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
-
-                      , React.createElement(SelectTrigger, {
-                        className: cn(
-                          "w-full sm:w-[120px] border-border/60 bg-background rounded-xl shadow-sm",
-                          hasActiveFilters ? "h-8" : "h-9",
-                          (selectedCircleId === "all" || districtsLoading) &&
-                            "opacity-60 cursor-not-allowed",
-                        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
-
-                        , React.createElement(SelectValue, { placeholder: districtsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 436}} )
-                      )
-                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 438}}
-                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 439}}, "All")
-                        , selectedCircleId !== "all" &&
-                          districts.map((dist) => (
-                            React.createElement(SelectItem, { key: dist.id, value: String(dist.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}
-                              , dist.district_name
-                            )
-                          ))
-                      )
-                    )
-                  )
-
-                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 450}}
-                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 451}}, "Tehsil")
-                    , React.createElement(Select, {
-                      value: selectedTehsilId,
-                      onValueChange: handleTehsilChange,
-                      disabled: 
-                        selectedZoneId === "all" ||
-                        selectedCircleId === "all" ||
-                        selectedDistrictId === "all" ||
-                        tehsilsLoading
-                      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 452}}
-
-                      , React.createElement(SelectTrigger, {
-                        className: cn(
-                          "w-full sm:w-[120px] border-border/60 bg-background rounded-xl shadow-sm",
-                          hasActiveFilters ? "h-8" : "h-9",
-                          (selectedZoneId === "all" ||
-                            selectedCircleId === "all" ||
-                            selectedDistrictId === "all" ||
-                            tehsilsLoading) && "opacity-60 cursor-not-allowed",
-                        ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 461}}
-
-                        , React.createElement(SelectValue, { placeholder: tehsilsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 469}} )
-                      )
-                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 471}}
-                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 472}}, "All")
-                        , selectedZoneId !== "all" &&
-                          selectedCircleId !== "all" &&
-                          selectedDistrictId !== "all" &&
-                          tehsils.map((teh) => (
-                            React.createElement(SelectItem, { key: teh.id, value: String(teh.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 476}}
-                              , teh.tehsil_name
-                            )
-                          ))
-                      )
-                    )
-                  )
-
-                  , React.createElement('div', { className: "flex flex-col gap-1 min-w-0"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 484}}
-                    , React.createElement('label', { className: cn("font-medium text-muted-foreground", hasActiveFilters ? "text-[10px]" : "text-xs")  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 485}}, "Project")
-                    , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 486}}
-                      , React.createElement(SelectTrigger, { className: cn("w-full sm:w-[140px] border-border/60 bg-background rounded-xl shadow-sm", hasActiveFilters ? "h-8" : "h-9")      , __self: this, __source: {fileName: _jsxFileName, lineNumber: 487}}
-                        , React.createElement(SelectValue, { placeholder: "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 488}} )
-                      )
-                      , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 490}}
-                        , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 491}}, "All (" , filteredProjects.length, ")")
-                        , filteredProjects.map((p) => (
-                          React.createElement(SelectItem, { key: p.id, value: String(p.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 493}}
-                            , p.project_name || `#${p.id}`
-                          )
-                        ))
-                      )
-                    )
-                  )
-
-                  , hasActiveFilters && (
-                    React.createElement(Button, {
-                      variant: "destructive",
-                      size: "sm",
-                      onClick: () => {
-                        setSelectedZoneId("all");
-                        setSelectedCircleId("all");
-                        setSelectedDistrictId("all");
-                        setSelectedTehsilId("all");
-                        setSelectedProjectId("all");
-                      },
-                      className: cn(
-                        "col-span-2 px-3 text-white bg-red-600 hover:bg-red-700 border-0 rounded-xl font-semibold shadow-sm sm:col-span-auto sm:ml-2 sm:self-end",
-                        hasActiveFilters ? "h-8 text-[11px]" : "h-9 text-xs",
-                      )           , __self: this, __source: {fileName: _jsxFileName, lineNumber: 505}}
-, "Clear filters"
-
-                    )
+                    ))
                   )
                 )
+              )
+
+              /* Circle */
+              , React.createElement('div', { className: "flex flex-col gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 422}}
+                , React.createElement('label', { className: "text-xs font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "Circle")
+                , React.createElement(Select, {
+                  value: selectedCircleId,
+                  onValueChange: handleCircleChange,
+                  disabled: selectedZoneId === "all" || circlesLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
+                  , React.createElement(SelectTrigger, {
+                    className: cn(
+                      "w-[140px] h-9 border-border/60 bg-background rounded-lg shadow-sm",
+                      (selectedZoneId === "all" || circlesLoading) && "opacity-50 cursor-not-allowed",
+                    ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
+                    , React.createElement(SelectValue, { placeholder: circlesLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 436}} )
+                  )
+                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 438}}
+                    , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 439}}, "All")
+                    , selectedZoneId !== "all" &&
+                      circles.map((c) => (
+                        React.createElement(SelectItem, { key: c.id, value: String(c.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}
+                          , _nullishCoalesce(c.circle_name, () => ( c.division_name))
+                        )
+                      ))
+                  )
+                )
+              )
+
+              /* District */
+              , React.createElement('div', { className: "flex flex-col gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 422}}
+                , React.createElement('label', { className: "text-xs font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}, "District")
+                , React.createElement(Select, {
+                  value: selectedDistrictId,
+                  onValueChange: handleDistrictChange,
+                  disabled: selectedCircleId === "all" || districtsLoading, __self: this, __source: {fileName: _jsxFileName, lineNumber: 424}}
+                  , React.createElement(SelectTrigger, {
+                    className: cn(
+                      "w-[140px] h-9 border-border/60 bg-background rounded-lg shadow-sm",
+                      (selectedCircleId === "all" || districtsLoading) && "opacity-50 cursor-not-allowed",
+                    ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 429}}
+                    , React.createElement(SelectValue, { placeholder: districtsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 436}} )
+                  )
+                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 438}}
+                    , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 439}}, "All")
+                    , selectedCircleId !== "all" &&
+                      districts.map((dist) => (
+                        React.createElement(SelectItem, { key: dist.id, value: String(dist.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}
+                          , dist.district_name
+                        )
+                      ))
+                  )
+                )
+              )
+
+              /* Tehsil */
+              , React.createElement('div', { className: "flex flex-col gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 450}}
+                , React.createElement('label', { className: "text-xs font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 451}}, "Tehsil")
+                , React.createElement(Select, {
+                  value: selectedTehsilId,
+                  onValueChange: handleTehsilChange,
+                  disabled:
+                    selectedZoneId === "all" ||
+                    selectedCircleId === "all" ||
+                    selectedDistrictId === "all" ||
+                    tehsilsLoading
+                  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 452}}
+                  , React.createElement(SelectTrigger, {
+                    className: cn(
+                      "w-[140px] h-9 border-border/60 bg-background rounded-lg shadow-sm",
+                      (selectedZoneId === "all" || selectedCircleId === "all" || selectedDistrictId === "all" || tehsilsLoading) && "opacity-50 cursor-not-allowed",
+                    ), __self: this, __source: {fileName: _jsxFileName, lineNumber: 461}}
+                    , React.createElement(SelectValue, { placeholder: tehsilsLoading ? "Loading…" : "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 469}} )
+                  )
+                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 471}}
+                    , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 472}}, "All")
+                    , selectedZoneId !== "all" &&
+                      selectedCircleId !== "all" &&
+                      selectedDistrictId !== "all" &&
+                      tehsils.map((teh) => (
+                        React.createElement(SelectItem, { key: teh.id, value: String(teh.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 476}}
+                          , teh.tehsil_name
+                        )
+                      ))
+                  )
+                )
+              )
+
+              /* Project */
+              , React.createElement('div', { className: "flex flex-col gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 484}}
+                , React.createElement('label', { className: "text-xs font-medium text-muted-foreground", __self: this, __source: {fileName: _jsxFileName, lineNumber: 485}}, "Project")
+                , React.createElement(Select, { value: selectedProjectId, onValueChange: setSelectedProjectId, __self: this, __source: {fileName: _jsxFileName, lineNumber: 486}}
+                  , React.createElement(SelectTrigger, { className: "w-[160px] h-9 border-border/60 bg-background rounded-lg shadow-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 487}}
+                    , React.createElement(SelectValue, { placeholder: "All", __self: this, __source: {fileName: _jsxFileName, lineNumber: 488}} )
+                  )
+                  , React.createElement(SelectContent, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 490}}
+                    , React.createElement(SelectItem, { value: "all", __self: this, __source: {fileName: _jsxFileName, lineNumber: 491}}, "All (" , filteredProjects.length, ")")
+                    , filteredProjects.map((p) => (
+                      React.createElement(SelectItem, { key: p.id, value: String(p.id), __self: this, __source: {fileName: _jsxFileName, lineNumber: 493}}
+                        , p.project_name || `#${p.id}`
+                      )
+                    ))
+                  )
+                )
+              )
+
+              /* Clear filters — only when active */
+              , hasActiveFilters && (
+                React.createElement('div', { className: "flex flex-col gap-1", __self: this, __source: {fileName: _jsxFileName, lineNumber: 500}}
+                  , React.createElement('span', { className: "text-xs font-medium text-muted-foreground opacity-0 select-none", __self: this, __source: {fileName: _jsxFileName, lineNumber: 501}}, "\u00a0")
+                  , React.createElement(Button, {
+                    variant: "destructive",
+                    onClick: () => {
+                      setSelectedZoneId("all");
+                      setSelectedCircleId("all");
+                      setSelectedDistrictId("all");
+                      setSelectedTehsilId("all");
+                      setSelectedProjectId("all");
+                    },
+                    className: "h-9 px-4 text-xs font-semibold bg-red-600 hover:bg-red-700 border-0 rounded-lg shadow-sm", __self: this, __source: {fileName: _jsxFileName, lineNumber: 505}}
+                  , "Clear filters"
+                  )
+                )
+              )
             )
           )
         )
+
 
         /* Project stats cards — refined layout, accent bar, icon badge */
         , React.createElement('div', { className: "grid grid-cols-2 lg:grid-cols-4 gap-4"   , __self: this, __source: {fileName: _jsxFileName, lineNumber: 526}}
