@@ -872,6 +872,23 @@ export default function Dashboard() {
   const apiProjects = dashboardPageData?.projects ?? [];
   const apiProjectGanttAll = dashboardPageData?.projectGanttAll ?? [];
 
+  // Canonical, backend-calculated dashboard values. These are the single source
+  // of truth for all root views: Zones, Circles, Tehsils and Projects.
+  const apiDashboardSummary = dashboardPageData?.summary ?? {};
+  const apiFinancialChart = dashboardPageData?.financialChart ?? {
+    planned: 100,
+    actual: 0,
+    variance: 100,
+  };
+  const apiPhysicalChart = dashboardPageData?.physicalChart ?? {
+    planned: 100,
+    actual: 0,
+    variance: 100,
+  };
+  const apiBestPerformingProjects = dashboardPageData?.bestPerformingProjects ?? [];
+  const apiTopHierarchy = dashboardPageData?.topHierarchy ?? [];
+  const apiMapProjects = dashboardPageData?.mapProjects ?? [];
+
   const ganttProgressByProjectId = useMemo(() => {
     const findNodeById = (
       nodes,
@@ -900,8 +917,16 @@ export default function Dashboard() {
       const root = _nullishCoalesce(_nullishCoalesce(findNodeById(tasks, "1"), () => (tasks[0])), () => (null));
       map.set(pid, toPct(_optionalChain([root, 'optionalAccess', _14 => _14.progress])));
     }
+
+    // New calculated dashboard API already supplies one physical-progress value
+    // per project, so the heavy all-project Gantt payload is no longer required.
+    for (const project of apiProjects) {
+      const pid = Number(project.id);
+      if (!Number.isFinite(pid) || map.has(pid)) continue;
+      map.set(pid, toPct(project.physical_progress));
+    }
     return map;
-  }, [apiProjectGanttAll]);
+  }, [apiProjectGanttAll, apiProjects]);
 
   // Map status (delay / in progress / pending) derived from nested gantt, for GIS boundary coloring + markers.
   const projectStatusById = useMemo(() => {
@@ -912,8 +937,13 @@ export default function Dashboard() {
       const tasks = _optionalChain([s, 'optionalAccess', _13 => _13.tasks]);
       statusByProjectId.set(pid, deriveProjectStatusFromNestedGantt(tasks));
     }
+    for (const project of apiProjects) {
+      const pid = Number(project.id);
+      if (!Number.isFinite(pid) || statusByProjectId.has(pid)) continue;
+      statusByProjectId.set(pid, project.status || "pending");
+    }
     return statusByProjectId;
-  }, [apiProjectGanttAll]);
+  }, [apiProjectGanttAll, apiProjects]);
 
   // All Projects overall % (average of root task `_id:"1"` progress across projects)
   const allProjectsOverallFromGantt = useMemo(() => {
@@ -970,6 +1000,12 @@ export default function Dashboard() {
   }, [apiProjects, ganttProgressByProjectId, divisionNameById, districtNameById, tehsilNameById]);
 
   const divisionCompletionData = useMemo(() => {
+    if (viewType === "divisions" && Array.isArray(apiTopHierarchy) && apiTopHierarchy.length > 0) {
+      return apiTopHierarchy.slice(0, 5).map((row) => ({
+        city: row.name,
+        completion: Number(row.physical_progress ?? 0),
+      }));
+    }
     if (!Array.isArray(apiDivisions) || apiDivisions.length === 0) return [];
     if (!Array.isArray(apiDistricts) || !Array.isArray(apiTehsils) || !Array.isArray(apiProjects))
       return [];
@@ -1019,7 +1055,7 @@ export default function Dashboard() {
       })
       .sort((a, b) => b.completion - a.completion)
       .slice(0, 5);           // Top 5 zones only
-  }, [apiDivisions, apiDistricts, apiTehsils, apiProjects, ganttProgressByProjectId]);
+  }, [viewType, apiTopHierarchy, apiDivisions, apiDistricts, apiTehsils, apiProjects, ganttProgressByProjectId]);
 
   const toSlug = (value) =>
     value
@@ -1487,8 +1523,8 @@ export default function Dashboard() {
   // Projects to show on the embedded GIS map (matches current dashboard scope).
   const mapScopeProjects = useMemo(() => {
     if (selectedItemId && selectedItemType) return projectsInSelectedGeography;
-    return apiProjects;
-  }, [selectedItemId, selectedItemType, projectsInSelectedGeography, apiProjects]);
+    return apiMapProjects.length > 0 ? apiMapProjects : apiProjects;
+  }, [selectedItemId, selectedItemType, projectsInSelectedGeography, apiMapProjects, apiProjects]);
 
   const dashboardMapGeoData = useMemo(() => {
     return buildProjectsFeatureCollection(mapScopeProjects, projectStatusById) || undefined;
@@ -1496,23 +1532,22 @@ export default function Dashboard() {
 
   // Get aggregated data based on view type (all projects)
   const aggregatedData = useMemo(() => {
+    const backendPhysical = Number(apiDashboardSummary.physical_progress);
+    if (Number.isFinite(backendPhysical)) {
+      return generateCityDataFromOverall(backendPhysical);
+    }
     return getAggregatedDataFromProjects(apiProjects);
-  }, [apiProjects]);
+  }, [apiDashboardSummary, apiProjects]);
 
   /** Top projects by budget utilization for root "All Punjab *" views (real API data, not duplicate phase placeholders). */
   const topProjectsForAggregateViews = useMemo(() => {
-    if (apiProjects.length === 0) return [];
+    if (apiBestPerformingProjects.length > 0) {
+      return apiBestPerformingProjects.slice(0, 6);
+    }
     return [...apiProjects]
-      .map((p) => {
-        const total = parseFloat(p.total_budget_allocated || "0") || 0;
-        const utilized = parseFloat(p.budget_utilized || "0") || 0;
-        const ratio = total > 0 ? utilized / total : 0;
-        return { p, ratio };
-      })
-      .sort((a, b) => b.ratio - a.ratio)
-      .map((x) => x.p)
+      .sort((a, b) => Number(b.overall_progress || 0) - Number(a.overall_progress || 0))
       .slice(0, 6);
-  }, [apiProjects]);
+  }, [apiBestPerformingProjects, apiProjects]);
 
   // Overall for All Punjab Divisions (average of division overalls)
   const allDivisionsOverall = useMemo(() => {
@@ -1773,7 +1808,8 @@ export default function Dashboard() {
 
   // Only show this section on the main (no-filter) All Divisions view.
   const showBestPerformingSection =
-    viewType === "divisions" && !selectedItemType && !selectedItemName;
+    !selectedItemType && !selectedItemName &&
+    ["divisions", "districts", "tehsils", "projects"].includes(viewType);
 
   // Render aggregated charts function
   const renderAggregatedCharts = (
@@ -1813,21 +1849,14 @@ export default function Dashboard() {
       sumBudgetAllocated > 0 ? clamp01((sumBudgetUtilized / sumBudgetAllocated) * 100) : 0;
 
     // Physical progress %: average of activity progresses (project-level avg, then avg across projects)
-    const physicalPct = (() => {
-      if (!scopeProjects.length) return 0;
-      let sum = 0;
-      for (const p of scopeProjects) {
-        const acts = Array.isArray(_optionalChain([(p), 'optionalAccess', _26 => _26.activities])) ? (p).activities : [];
-        if (acts.length === 0) {
-          sum += 0;
-          continue;
-        }
-        const projAvg =
-          acts.reduce((acc, a) => acc + getActivityProgress(a), 0) / Math.max(1, acts.length);
-        sum += projAvg;
-      }
-      return clamp01(sum / Math.max(1, scopeProjects.length));
-    })();
+    const isRootCalculatedScope = !selectedItemType && !selectedItemName;
+    const physicalPct = isRootCalculatedScope
+      ? clamp01(Number(apiPhysicalChart.actual ?? apiDashboardSummary.physical_progress ?? 0))
+      : (() => {
+          if (!scopeProjects.length) return 0;
+          const values = scopeProjects.map((p) => Number(p.physical_progress ?? 0));
+          return clamp01(values.reduce((sum, value) => sum + value, 0) / Math.max(1, values.length));
+        })();
 
     // Calculate overall planned and actual from all phases
     let totalPlanned = 0;
@@ -1856,7 +1885,9 @@ export default function Dashboard() {
 
     // Financial donut (percent-based): planned=100, actual=util%, variance=remaining to 100
     const financialPlanned = 100;
-    const financialActual = utilizationPct;
+    const financialActual = isRootCalculatedScope
+      ? clamp01(Number(apiFinancialChart.actual ?? apiDashboardSummary.financial_progress ?? 0))
+      : utilizationPct;
     const absFinancialVariance = Math.max(0, 100 - financialActual);
 
     // Overall progress donut (physical, percent-based)
@@ -2938,12 +2969,9 @@ export default function Dashboard() {
               }
 
               const overall =
-                selectedItemName && singleItemData ? singleItemData.overall
-                  : viewType === "projects" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
-                    : viewType === "tehsils" && !selectedItemName && !selectedItemType ? allProjectsOverallFromGantt
-                      : viewType === "divisions" && !selectedItemName && !selectedItemType ? allDivisionsOverall
-                        : viewType === "districts" && !selectedItemName && !selectedItemType ? allDistrictsOverall
-                          : aggregatedData?.overall || 0;
+                selectedItemName && singleItemData
+                  ? singleItemData.overall
+                  : Number(apiDashboardSummary.physical_progress ?? aggregatedData?.overall ?? 0);
 
               const overallLabel =
                 (viewType === "projects" || viewType === "tehsils" || viewType === "divisions" || viewType === "districts") && !selectedItemName && !selectedItemType
@@ -2952,7 +2980,9 @@ export default function Dashboard() {
 
               const financialScopeProjects =
                 selectedItemName && selectedItemType ? projectsInSelectedGeography : apiProjects;
-              const financialPct = calcOverallProgress(financialScopeProjects);
+              const financialPct = !selectedItemName && !selectedItemType
+                ? Number(apiDashboardSummary.financial_progress ?? 0)
+                : calcOverallProgress(financialScopeProjects);
               const financialLabel =
                 !selectedItemName && !selectedItemType ? financialPct.toFixed(2) : financialPct.toFixed(1);
 
@@ -3618,25 +3648,12 @@ export default function Dashboard() {
         viewType === "tehsils" &&
         (isLoading ? (
           React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3310 } }
-            , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3311 } }
-              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3312 } }
-                , React.createElement(Skeleton, { className: "h-7 w-48 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3313 } })
-                , React.createElement(Skeleton, { className: "h-4 w-80", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3314 } })
-              )
-            )
-            , React.createElement('div', { className: "space-y-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3317 } }
-              , Array.from({ length: 2 }).map((_, i) => (
-                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3319 } }
-                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3320 } })
-                  , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3321 } }
-                    , Array.from({ length: 4 }).map((_, j) => (
-                      React.createElement(Card, { key: j, className: "p-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3323 } }
-                        , React.createElement(Skeleton, { className: "h-5 w-24 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3324 } })
-                        , React.createElement(Skeleton, { className: "h-8 w-16 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3325 } })
-                        , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3326 } })
-                      )
-                    ))
-                  )
+            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3311 } }
+              , Array.from({ length: 4 }).map((_, i) => (
+                React.createElement(Card, { key: i, className: "p-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3312 } }
+                  , React.createElement(Skeleton, { className: "h-6 w-32 mb-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3313 } })
+                  , React.createElement(Skeleton, { className: "h-10 w-20 mb-2", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3314 } })
+                  , React.createElement(Skeleton, { className: "h-2 w-full rounded-full", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3315 } })
                 )
               ))
             )
@@ -3644,233 +3661,69 @@ export default function Dashboard() {
           )
         ) : aggregatedData ? (
           (() => {
-            // Default districts to show: Lahore and Sheikhupura
-            const DEFAULT_DISTRICTS = ["Lahore", "Sheikhupura"];
-
-            // Filter districts based on search query first
-            const allDistricts = Object.entries(tehsilsDataByDistrict).filter(
-              ([districtName]) => {
-                if (!tehsilSearchQuery.trim()) return true;
-                return districtName
-                  .toLowerCase()
-                  .includes(tehsilSearchQuery.toLowerCase());
-              },
-            );
-
-            // Filter districts to show: by default only Lahore and Sheikhupura, unless all are expanded
-            const filteredDistricts = allDistricts.filter(
-              ([districtName]) => {
-                // If search query exists, show all matching districts
-                if (tehsilSearchQuery.trim()) return true;
-                // If all expanded, show all districts
-                if (allTehsilGroupsExpanded) return true;
-                // Otherwise, show only default districts
-                return DEFAULT_DISTRICTS.includes(districtName);
-              },
-            );
-
-            // Toggle all groups expand/collapse
-            const handleToggleAllGroups = () => {
-              const newState = !allTehsilGroupsExpanded;
-              setAllTehsilGroupsExpanded(newState);
-
-              if (newState) {
-                // Expand All: show all districts and expand them
-                const allExpandedGroups = {};
-                allDistricts.forEach(([districtName]) => {
-                  allExpandedGroups[districtName] = true;
-                });
-                setExpandedTehsilGroups(allExpandedGroups);
-              } else {
-                // Collapse All: collapse to only show default districts
-                const defaultState = {};
-                DEFAULT_DISTRICTS.forEach((districtName) => {
-                  if (tehsilsDataByDistrict[districtName]) {
-                    defaultState[districtName] = true;
-                  }
-                });
-                setExpandedTehsilGroups(defaultState);
-              }
-            };
+            const normalizedSearch = tehsilSearchQuery.trim().toLowerCase();
+            const allTehsilsData = apiTehsils
+              .map((teh, index) => ({
+                id: teh.id,
+                name: teh.tehsil_name,
+                circleId: teh.circle ?? teh.district,
+                circleName: teh.circle_name ?? teh.district_name,
+                zoneId: teh.zone ?? teh.division,
+                zoneName: teh.zone_name ?? teh.division_name,
+                overall: Number(teh.physical_progress ?? 0),
+                financialProgress: Number(teh.financial_progress ?? 0),
+                color: CARD_COLORS[index % CARD_COLORS.length],
+              }))
+              .filter((teh) => !normalizedSearch || teh.name.toLowerCase().includes(normalizedSearch))
+              .sort((a, b) => b.overall - a.overall || a.name.localeCompare(b.name));
 
             return (
-              React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3387 } }
-                , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3388 } }
-                  , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3389 } }
-                    , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3390 } }, "All Punjab Tehsils"
-
-                    )
-                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3393 } }, "Tehsils grouped by district, sorted by progress"
-
-                    )
+              React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3330 } }
+                , React.createElement('div', { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3331 } }
+                  , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3332 } }
+                    , React.createElement('h2', { className: "text-xl font-bold font-heading mb-1", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3333 } }, "All Punjab Tehsils")
+                    , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3334 } }, "Tehsils sorted by API-calculated physical progress")
                   )
-
-                  /* Search and Expand/Collapse Controls */
-                  , React.createElement('div', { className: "flex flex-col sm:flex-row gap-3", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3399 } }
-                    /* Search Input */
-                    , React.createElement('div', { className: "relative flex-1 sm:min-w-[250px]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3401 } }
-                      , React.createElement(Search, { className: "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3402 } })
-                      , React.createElement(Input, {
-                        type: "text",
-                        placeholder: "Search by district name...",
-                        value: tehsilSearchQuery,
-                        onChange: (e) => setTehsilSearchQuery(e.target.value),
-                        className: "pl-9 h-9 rounded-xl border-border/50 bg-background", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3403 }
-                      }
-                      )
-                    )
-
-                    /* Expand/Collapse All Button */
-                    , filteredDistricts.length > 0 && (
-                      React.createElement(Button, {
-                        variant: "default",
-                        onClick: handleToggleAllGroups,
-                        className: "rounded-xl h-9 whitespace-nowrap bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3414 }
-                      }
-
-                        , allTehsilGroupsExpanded ? (
-                          React.createElement(React.Fragment, null
-                            , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3421 } }), "Collapse All"
-
-                          )
-                        ) : (
-                          React.createElement(React.Fragment, null
-                            , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3426 } }), "Expand All"
-
-                          )
-                        )
-                      )
-                    )
+                  , React.createElement('div', { className: "relative w-full sm:w-[300px]", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3335 } }
+                    , React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3336 } })
+                    , React.createElement(Input, {
+                      type: "text",
+                      placeholder: "Search by tehsil name...",
+                      value: tehsilSearchQuery,
+                      onChange: (e) => setTehsilSearchQuery(e.target.value),
+                      className: "pl-9 h-10 rounded-xl border-border/50 bg-background", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3337 }
+                    })
                   )
                 )
 
-                /* Tehsil Cards Grouped by District */
-                , filteredDistricts.length === 0 ? (
-                  React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3437 } }
-                    , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3438 } }
-                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3439 } }, "No districts found matching \""
-                        , tehsilSearchQuery, "\". Please try a different search term."
-
-                      )
+                , allTehsilsData.length === 0 ? (
+                  React.createElement(Card, { className: "border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3347 } }
+                    , React.createElement(CardContent, { className: "p-8 text-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3348 } }
+                      , React.createElement('p', { className: "text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3349 } }, `No tehsils found matching "${tehsilSearchQuery}".`)
                     )
                   )
                 ) : (
-                  React.createElement('div', { className: "space-y-6", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3446 } }
-                    , filteredDistricts.map(
-                      ([districtName, tehsils]
-
-
-
-
-
-
-
-
-
-                      ) => {
-                        const isExpanded =
-                          _nullishCoalesce(expandedTehsilGroups[districtName], () => (false));
-                        const visibleTehsils = isExpanded
-                          ? tehsils
-                          : tehsils.slice(0, 4);
-                        const hasMore = tehsils.length > 4;
-
-                        return (
-                          React.createElement('div', { key: districtName, className: "space-y-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3467 } }
-                            /* District Header */
-                            , React.createElement('div', { className: "flex items-center justify-between pb-2 border-b border-border/50", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3469 } }
-                              , React.createElement('div', { __self: this, __source: { fileName: _jsxFileName, lineNumber: 3470 } }
-                                , React.createElement('h3', { className: "text-lg font-bold font-heading", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3471 } }
-                                  , districtName, " Circle"
-                                )
-                                , React.createElement('p', { className: "text-sm text-muted-foreground", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3474 } }
-                                  , tehsils.length, " tehsil"
-                                  , tehsils.length !== 1 ? "s" : "", " • Max Progress:"
-                                  , " "
-                                  , Math.max(...tehsils.map((t) => t.overall)), "%"
-
-                                )
-                              )
-                            )
-
-                            /* Tehsil Cards for this District */
-                            , React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3485 } }
-                              , visibleTehsils.map((teh) => (
-                                React.createElement(HierarchyCard, {
-                                  key: teh.id,
-                                  title: teh.name,
-                                  overallProgress: teh.overall,
-                                  color: teh.color,
-                                  onClick: () => {
-                                    const parentDist = districtsData.find(
-                                      (d) => d.id === teh.districtId,
-                                    );
-                                    const parentDiv = divisionsData.find(
-                                      (d) => d.id === _optionalChain([parentDist, 'optionalAccess', _47 => _47.divisionId]),
-                                    );
-                                    setParentDistrictId(teh.districtId);
-                                    setParentDistrictName(districtName);
-                                    setParentDivisionId(
-                                      _nullishCoalesce(_optionalChain([parentDist, 'optionalAccess', _48 => _48.divisionId]), () => (null)),
-                                    );
-                                    setParentDivisionName(
-                                      _nullishCoalesce(_optionalChain([parentDiv, 'optionalAccess', _49 => _49.name]), () => (null)),
-                                    );
-                                    setSelectedItemId(teh.id);
-                                    setSelectedItemName(teh.name);
-                                    setSelectedItemType("tehsil");
-                                  }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3487 }
-                                }
-                                )
-                              ))
-                            )
-
-                            /* Expand/Collapse Button for this District */
-                            , hasMore && (
-                              React.createElement('div', { className: "flex justify-center", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3517 } }
-                                , React.createElement(Button, {
-                                  variant: "default",
-                                  onClick: () => {
-                                    setExpandedTehsilGroups((prev) => {
-                                      const newState = !isExpanded;
-                                      // Update allTehsilGroupsExpanded based on whether all groups are expanded
-                                      const updated = {
-                                        ...prev,
-                                        [districtName]: newState,
-                                      };
-                                      const allExpanded =
-                                        filteredDistricts.every(
-                                          ([name]) => _nullishCoalesce(updated[name], () => (false)),
-                                        );
-                                      setAllTehsilGroupsExpanded(allExpanded);
-                                      return updated;
-                                    });
-                                  },
-                                  className: "rounded-xl bg-primary text-primary-foreground border border-primary hover:bg-primary/90 cursor-pointer", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3518 }
-                                }
-
-                                  , isExpanded ? (
-                                    React.createElement(React.Fragment, null
-                                      , React.createElement(ChevronUp, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3540 } }), "Show Less ("
-                                      , tehsils.length - 4, " hidden)"
-                                    )
-                                  ) : (
-                                    React.createElement(React.Fragment, null
-                                      , React.createElement(ChevronDown, { className: "h-4 w-4 mr-2 text-white", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3545 } }), "Show More ("
-                                      , tehsils.length - 4, " more)"
-                                    )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        );
-                      },
-                    )
+                  React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4", __self: this, __source: { fileName: _jsxFileName, lineNumber: 3354 } }
+                    , allTehsilsData.map((teh) => (
+                      React.createElement(HierarchyCard, {
+                        key: teh.id,
+                        title: teh.name,
+                        overallProgress: teh.overall,
+                        color: teh.color,
+                        onClick: () => {
+                          setParentDistrictId(teh.circleId ?? null);
+                          setParentDistrictName(teh.circleName ?? null);
+                          setParentDivisionId(teh.zoneId ?? null);
+                          setParentDivisionName(teh.zoneName ?? null);
+                          setSelectedItemId(teh.id);
+                          setSelectedItemName(teh.name);
+                          setSelectedItemType("tehsil");
+                        }, __self: this, __source: { fileName: _jsxFileName, lineNumber: 3355 }
+                      })
+                    ))
                   )
                 )
 
-                /* Aggregated Charts Section */
                 , renderAggregatedCharts(
                   "All Punjab Tehsils",
                   aggregatedData,

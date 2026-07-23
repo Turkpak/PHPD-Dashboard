@@ -1467,7 +1467,7 @@ export default function ProjectManagement() {
           )
         )
 
-        /* â”€â”€ PROJECT DETAIL MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── PROJECT DETAIL MODAL ──────────────────────────────────────── */
         , selectedProjectForView && (() => {
           const p = selectedProjectForView;
           const hasCoords = (() => {
@@ -1477,7 +1477,7 @@ export default function ProjectManagement() {
           const lat = Number(p.latitude); const lng = Number(p.longitude);
 
           const formatNum = (v) => {
-            if (v === "" || v == null) return "â€”";
+            if (v === "" || v == null) return "—";
             const n = typeof v === "number" ? v : Number(String(v));
             return Number.isFinite(n)
               ? new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n)
@@ -1495,119 +1495,170 @@ export default function ProjectManagement() {
           const showPct         = hasAny(p.percentage_utilization_capital, p.percentage_utilization_revenue, p.percentage_utilization_total);
           const hasFinancials   = showCoreBudget || showAllocation || showPd || showSpending || showPifra || showPct;
 
-          const InfoChip = ({ icon: Icon, label, value, accent = "emerald" }) => (
-            React.createElement('div', { className: `flex items-start gap-3 rounded-lg border border-slate-200/60 bg-white p-3 sm:p-4 shadow-none`}
-              , React.createElement('div', { className: `h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-${accent}-50 text-${accent}-700 flex items-center justify-center shrink-0`}
-                , React.createElement(Icon, { className: "h-4 w-4 sm:h-5 sm:w-5"})
-              )
-              , React.createElement('div', { className: "min-w-0 flex-1"}
-                , React.createElement('p', { className: "text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400 mb-0.5"}, label)
-                , React.createElement('p', { className: "text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug break-words"}, value || "â€”")
-              )
-            )
-          );
+          const accentStyles = {
+            emerald: {
+              bg: "bg-emerald-50/80 dark:bg-emerald-950/20",
+              text: "text-emerald-700 dark:text-emerald-300",
+              border: "border-emerald-100/70 dark:border-emerald-900/30",
+              iconBg: "bg-emerald-100/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200"
+            },
+            violet: {
+              bg: "bg-violet-50/80 dark:bg-violet-950/20",
+              text: "text-violet-700 dark:text-violet-300",
+              border: "border-violet-100/70 dark:border-violet-900/30",
+              iconBg: "bg-violet-100/60 dark:bg-violet-900/40 text-violet-800 dark:text-violet-200"
+            },
+            amber: {
+              bg: "bg-amber-50/80 dark:bg-amber-950/20",
+              text: "text-amber-700 dark:text-amber-300",
+              border: "border-amber-100/70 dark:border-amber-900/30",
+              iconBg: "bg-amber-100/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200"
+            },
+            sky: {
+              bg: "bg-sky-50/80 dark:bg-sky-950/20",
+              text: "text-sky-700 dark:text-sky-300",
+              border: "border-sky-100/70 dark:border-sky-900/30",
+              iconBg: "bg-sky-100/60 dark:bg-sky-900/40 text-sky-800 dark:text-sky-200"
+            },
+            rose: {
+              bg: "bg-rose-50/80 dark:bg-rose-950/20",
+              text: "text-rose-700 dark:text-rose-300",
+              border: "border-rose-100/70 dark:border-rose-900/30",
+              iconBg: "bg-rose-100/60 dark:bg-rose-900/40 text-rose-800 dark:text-rose-200"
+            }
+          };
 
-          const BudgetBar = ({ label, value, total, colorClass }) => {
-            const pct = total > 0 ? Math.min(100, (Number(value) / total) * 100) : 0;
+          const InfoChip = ({ icon: Icon, label, value, accent = "emerald" }) => {
+            const styles = accentStyles[accent] || accentStyles.emerald;
             return (
-              React.createElement('div', { className: "space-y-1.5"}
-                , React.createElement('div', { className: "flex items-center justify-between gap-2"}
-                  , React.createElement('span', { className: "text-xs font-semibold text-slate-600"}, label)
-                  , React.createElement('span', { className: "text-xs font-bold text-slate-800 tabular-nums"}, `PKR ${formatNum(value)} M`)
+              React.createElement('div', { className: `flex items-start gap-3 rounded-xl border ${styles.border} ${styles.bg} p-3.5 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}
+                , React.createElement('div', { className: `h-9 w-9 rounded-lg ${styles.iconBg} flex items-center justify-center shrink-0 shadow-sm`}
+                  , React.createElement(Icon, { className: "h-4.5 w-4.5"})
                 )
-                , React.createElement('div', { className: "h-2 w-full rounded-full bg-slate-100 overflow-hidden"}
-                  , React.createElement('div', { className: `h-full rounded-full ${colorClass} transition-all`, style: { width: `${pct}%` }})
+                , React.createElement('div', { className: "min-w-0 flex-1"}
+                  , React.createElement('p', { className: "text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5"}, label)
+                  , React.createElement('p', { className: "text-[13px] sm:text-[14px] font-semibold text-slate-800 dark:text-slate-100 leading-snug break-words"}, value || "—")
                 )
               )
             );
           };
 
-          const FinSection = ({ title, icon: Icon, accent, children }) => (
-            React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white shadow-none overflow-hidden"}
-              , React.createElement('div', { className: `flex items-center gap-3 px-4 py-3 border-b bg-${accent}-50/60`}
-                , React.createElement('div', { className: `h-7 w-7 rounded-lg bg-${accent}-100 text-${accent}-700 flex items-center justify-center`}
-                  , React.createElement(Icon, { className: "h-3.5 w-3.5"})
+          const BudgetBar = ({ label, value, total, colorClass }) => {
+            const pct = total > 0 ? Math.min(100, (Number(value) / total) * 100) : 0;
+            let barGradient = "bg-gradient-to-r from-slate-400 to-slate-500";
+            if (colorClass.includes("emerald")) {
+              barGradient = "bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.3)]";
+            } else if (colorClass.includes("violet") || colorClass.includes("purple") || colorClass.includes("indigo")) {
+              barGradient = "bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.3)]";
+            } else if (colorClass.includes("slate") || colorClass.includes("gray")) {
+              barGradient = "bg-gradient-to-r from-slate-400 to-slate-500";
+            }
+            
+            return (
+              React.createElement('div', { className: "space-y-1.5"}
+                , React.createElement('div', { className: "flex items-center justify-between gap-2"}
+                  , React.createElement('span', { className: "text-xs font-semibold text-slate-600"}, label)
+                  , React.createElement('span', { className: "text-xs font-bold text-slate-800 dark:text-slate-200 tabular-nums"}, `PKR ${formatNum(value)} M`)
                 )
-                , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, title)
+                , React.createElement('div', { className: "h-2.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shadow-inner"}
+                  , React.createElement('div', { className: `h-full rounded-full ${barGradient} transition-all duration-500 ease-out`, style: { width: `${pct}%` }})
+                )
               )
-              , React.createElement('div', { className: "grid grid-cols-3 divide-x"}, children)
-            )
-          );
+            );
+          };
+
+          const FinSection = ({ title, icon: Icon, accent, children }) => {
+            const styles = accentStyles[accent] || accentStyles.emerald;
+            return (
+              React.createElement('div', { className: "rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md"}
+                , React.createElement('div', { className: `flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 dark:border-slate-800 ${styles.bg}`}
+                  , React.createElement('div', { className: `h-7.5 w-7.5 rounded-lg ${styles.iconBg} flex items-center justify-center shadow-sm`}
+                    , React.createElement(Icon, { className: "h-4 w-4"})
+                  )
+                  , React.createElement('p', { className: "text-sm font-bold text-slate-800 dark:text-slate-100"}, title)
+                )
+                , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 dark:divide-slate-800"}, children)
+              )
+            );
+          };
 
           const FinStat = ({ label, value }) => (
             React.createElement('div', { className: "flex flex-col items-center justify-center py-4 px-2 text-center"}
               , React.createElement('p', { className: "text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1 leading-tight"}, label)
-              , React.createElement('p', { className: "text-sm sm:text-base font-bold text-slate-800 tabular-nums"}, formatNum(value))
+              , React.createElement('p', { className: "text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 tabular-nums"}, formatNum(value))
             )
           );
 
           return React.createElement(Dialog, { open: true, onOpenChange: (open) => { if (!open) setSelectedProjectForView(null); }}
             , React.createElement(DialogContent, {
-              className: "w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto p-0 rounded-xl border-none shadow-xl gap-0 [&>button]:hidden",
+              className: "w-[95vw] sm:w-[90vw] max-w-3xl h-[85vh] max-h-[750px] overflow-hidden p-0 rounded-2xl border-none shadow-2xl flex flex-col bg-slate-50 [&>button]:hidden",
               'aria-describedby': undefined
             }
 
-              /* â”€â”€ MODAL HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+              /* ── MODAL HEADER ──────────────────────── */
               , React.createElement(DialogHeader, { className: "sr-only"}
                 , React.createElement(DialogTitle, {}, p.project_name || "Project Details")
               )
-              , React.createElement('div', { className: "relative bg-gradient-to-br from-[#054332] via-[#033828] to-[#021f17] px-5 sm:px-7 py-6 rounded-t-xl"}
+              , React.createElement('div', { className: "relative bg-gradient-to-br from-[#054332] via-[#022c22] to-[#011c15] px-5 sm:px-7 py-5 shrink-0 shadow-md"}
                 , React.createElement('button', {
                   onClick: () => setSelectedProjectForView(null),
-                  className: "absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors",
+                  className: "absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 hover:rotate-90 transition-all duration-200",
                   'aria-label': "Close"
                 }
                   , React.createElement(X, { className: "h-4 w-4"})
                 )
                 , React.createElement('div', { className: "flex items-start gap-4"}
-                  , React.createElement('div', { className: "h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0"}
+                  , React.createElement('div', { className: "h-12 w-12 rounded-xl bg-white/15 flex items-center justify-center shrink-0 shadow-inner"}
                     , React.createElement(FolderKanban, { className: "h-6 w-6 text-white"})
                   )
                   , React.createElement('div', { className: "min-w-0 flex-1 pt-0.5"}
                     , React.createElement('h2', { className: "text-lg sm:text-xl font-bold text-white leading-tight truncate"}, p.project_name || "Unnamed Project")
-                    , React.createElement('div', { className: "flex flex-wrap items-center gap-2 mt-2"}
-                      , p.project_category && React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/15 text-white text-[11px] font-semibold"}, p.project_category)
-                      , p.project_reference_no && React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-200 text-[11px] font-semibold"}, "Ref: ", p.project_reference_no)
-                      , React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/10 text-white/80 text-[11px] font-medium"}
-                        , React.createElement(MapPin, { className: "h-3 w-3 mr-1"}), p.tehsil_name || p.district_name || "â€”"
+                    , React.createElement('div', { className: "flex flex-wrap items-center gap-1.5 mt-2"}
+                      , p.project_category && React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/15 text-white text-[11px] font-semibold border border-white/10 shadow-sm"}, p.project_category)
+                      , p.project_reference_no && React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-200 text-[11px] font-semibold border border-emerald-500/20 shadow-sm"}, "Ref: ", p.project_reference_no)
+                      , React.createElement('span', { className: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/10 text-white/80 text-[11px] font-medium border border-white/5"}
+                        , React.createElement(MapPin, { className: "h-3 w-3 mr-1 text-emerald-300"}), p.tehsil_name || p.district_name || "—"
                       )
                     )
                   )
                 )
               )
 
-              /* â”€â”€ TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-              , React.createElement('div', { className: "px-5 sm:px-7 pt-5 pb-6 space-y-5 bg-slate-50/60"}
-                , React.createElement(Tabs, { defaultValue: "overview"}
-                  , React.createElement(TabsList, { className: "h-10 w-full rounded-lg bg-white border border-slate-200/70 shadow-none p-1 gap-1"}
-                    , React.createElement(TabsTrigger, { value: "overview", className: "flex-1 rounded-md text-[13px] font-semibold data-[state=active]:bg-[#054332] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"}, "Project Info")
-                    , React.createElement(TabsTrigger, { value: "financial", className: "flex-1 rounded-md text-[13px] font-semibold data-[state=active]:bg-[#054332] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"}, "Financial Details")
+              /* ── TABS ────────────────────────────────── */
+              , React.createElement('div', { className: "px-5 sm:px-7 pt-4 pb-4 bg-slate-50/60 dark:bg-slate-950/20 flex-1 overflow-hidden flex flex-col"}
+                , React.createElement(Tabs, { defaultValue: "overview", className: "flex-1 overflow-hidden flex flex-col"}
+                  , React.createElement(TabsList, { className: "h-11 w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 shadow-sm p-1 gap-1 shrink-0"}
+                    , React.createElement(TabsTrigger, { value: "overview", className: "flex-1 rounded-lg text-[13px] font-semibold data-[state=active]:bg-[#054332] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all py-2"}, "Project Info")
+                    , React.createElement(TabsTrigger, { value: "financial", className: "flex-1 rounded-lg text-[13px] font-semibold data-[state=active]:bg-[#054332] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all py-2"}, "Financial Details")
                   )
 
-                  /* â”€â”€ PROJECT INFO TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-                  , React.createElement(TabsContent, { value: "overview", className: "mt-5 space-y-5"}
+                  /* ── PROJECT INFO TAB ─────────────── */
+                  , React.createElement(TabsContent, { value: "overview", className: "mt-4 space-y-4 flex-1 overflow-y-auto pr-1 pb-4 scrollbar-thin"}
 
                     /* Description */
                     , p.project_description && (
-                      React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white p-4 shadow-none"}
-                        , React.createElement('p', { className: "text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5"}, "Description")
-                        , React.createElement('p', { className: "text-sm text-slate-600 leading-relaxed whitespace-pre-wrap"}, p.project_description)
+                      React.createElement('div', { className: "rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm space-y-2"}
+                        , React.createElement('div', { className: "flex items-center gap-2 text-slate-400"}
+                          , React.createElement(FileText, { className: "h-4 w-4"})
+                          , React.createElement('span', { className: "text-[10px] font-bold uppercase tracking-wider"}, "Project Description")
+                        )
+                        , React.createElement('p', { className: "text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap pl-6"}, p.project_description)
                       )
                     )
 
                     /* Info chips grid */
-                    , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"}
+                    , React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5"}
                       , React.createElement(InfoChip, { icon: Building2, label: "Stakeholder", value: formatProjectStakeholder(p), accent: "emerald"})
                       , React.createElement(InfoChip, { icon: Calendar,  label: "Start Date",
-                        value: p.project_starting_date ? new Date(p.project_starting_date).toLocaleDateString("en-PK", { day:"numeric", month:"short", year:"numeric"}) : "â€”",
+                        value: p.project_starting_date ? new Date(p.project_starting_date).toLocaleDateString("en-PK", { day:"numeric", month:"short", year:"numeric"}) : "—",
                         accent: "violet"
                       })
                       , React.createElement(InfoChip, { icon: FileText,  label: "Reference No", value: p.project_reference_no, accent: "emerald"})
                       , React.createElement(InfoChip, { icon: MapPin,    label: "Tehsil / Location",
-                        value: [p.tehsil_name, p.district_name, p.division_name].filter(Boolean).join(", ") || String(p.tehsil || "â€”"),
+                        value: [p.tehsil_name, p.district_name, p.division_name].filter(Boolean).join(", ") || String(p.tehsil || "—"),
                         accent: "amber"
                       })
-                      , p.project_category && React.createElement(InfoChip, { icon: ChevronDown, label: "Category", value: p.project_category + (p.project_category_other ? ` â€” ${p.project_category_other}` : ""), accent: "sky"})
+                      , p.project_category && React.createElement(InfoChip, { icon: ChevronDown, label: "Category", value: p.project_category + (p.project_category_other ? ` — ${p.project_category_other}` : ""), accent: "sky"})
                     )
 
                     /* Budget summary (if present) */
@@ -1617,22 +1668,22 @@ export default function ProjectManagement() {
                       const remain   = Number(p.remaining_budget) || Math.max(0, total - consumed);
                       const pct      = total > 0 ? Math.round((consumed / total) * 100) : 0;
                       return (
-                        React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white p-4 sm:p-5 shadow-none space-y-4"}
+                        React.createElement('div', { className: "rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm space-y-4"}
                           , React.createElement('div', { className: "flex items-center justify-between"}
                             , React.createElement('div', { className: "flex items-center gap-2"}
-                              , React.createElement('div', { className: "h-8 w-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center"}
-                                , React.createElement(Wallet, { className: "h-4 w-4"})
+                              , React.createElement('div', { className: "h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shadow-sm"}
+                                , React.createElement(Wallet, { className: "h-4.5 w-4.5"})
                               )
-                              , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, "Budget Overview")
+                              , React.createElement('p', { className: "text-sm font-bold text-slate-800 dark:text-slate-100"}, "Budget Overview")
                             )
                             , React.createElement('span', { className: `text-xs font-bold px-2.5 py-1 rounded-full ${pct >= 90 ? "bg-red-50 text-red-700" : pct >= 60 ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}`}
                               , pct, "% utilized"
                             )
                           )
                           , React.createElement('div', { className: "space-y-3"}
-                            , React.createElement(BudgetBar, { label: "Total Budget",    value: total,    total: total, colorClass: "bg-slate-300"})
-                            , React.createElement(BudgetBar, { label: "Total Consumed",  value: consumed, total: total, colorClass: "bg-emerald-500"})
-                            , React.createElement(BudgetBar, { label: "Remaining",       value: remain,   total: total, colorClass: "bg-violet-400"})
+                            , React.createElement(BudgetBar, { label: "Total Budget",    value: total,    total: total, colorClass: "slate"})
+                            , React.createElement(BudgetBar, { label: "Total Consumed",  value: consumed, total: total, colorClass: "emerald"})
+                            , React.createElement(BudgetBar, { label: "Remaining",       value: remain,   total: total, colorClass: "violet"})
                           )
                         )
                       );
@@ -1643,34 +1694,34 @@ export default function ProjectManagement() {
                       React.createElement('a', {
                         href: p.xer_file.startsWith("http") ? p.xer_file : `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}${p.xer_file.startsWith("/") ? "" : "/"}${p.xer_file}`,
                         target: "_blank", rel: "noopener noreferrer",
-                        className: "flex items-center gap-3 rounded-lg border border-slate-200/60 bg-white p-3 shadow-none hover:border-[#054332]/40 transition-all group"
+                        className: "flex items-center gap-3 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm hover:border-[#054332]/40 transition-all group"
                       }
-                        , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors"}
+                        , React.createElement('div', { className: "h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors shadow-sm"}
                           , React.createElement(FileText, { className: "h-5 w-5"})
                         )
                         , React.createElement('div', { className: "min-w-0 flex-1"}
                           , React.createElement('p', { className: "text-[10px] font-semibold uppercase tracking-wider text-slate-400"}, "Primavera Schedule (XER)")
-                          , React.createElement('p', { className: "text-sm font-semibold text-[#054332] truncate"}, p.xer_file.split("/").pop() || p.xer_file)
+                          , React.createElement('p', { className: "text-sm font-semibold text-[#054332] dark:text-emerald-400 truncate"}, p.xer_file.split("/").pop() || p.xer_file)
                         )
-                        , React.createElement(ChevronRight, { className: "h-4 w-4 text-slate-400 group-hover:text-[#054332] transition-colors shrink-0"})
+                        , React.createElement(ChevronRight, { className: "h-4 w-4 text-slate-400 group-hover:text-[#054332] dark:group-hover:text-emerald-400 transition-colors shrink-0"})
                       )
                     )
 
                     /* Map */
                     , hasCoords && (
-                      React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white shadow-none overflow-hidden"}
-                        , React.createElement('div', { className: "flex items-center gap-3 px-4 py-3 border-b bg-slate-50"}
-                          , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center"}
+                      React.createElement('div', { className: "rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden"}
+                        , React.createElement('div', { className: "flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20"}
+                          , React.createElement('div', { className: "h-7.5 w-7.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shadow-sm"}
                             , React.createElement(MapPin, { className: "h-3.5 w-3.5"})
                           )
                           , React.createElement('div', {}
-                            , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, "Project Location")
-                            , React.createElement('p', { className: "text-xs text-slate-400 tabular-nums"}, `${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+                            , React.createElement('p', { className: "text-sm font-bold text-slate-700 dark:text-slate-200"}, "Project Location")
+                            , React.createElement('p', { className: "text-xs text-slate-400 dark:text-slate-500 tabular-nums"}, `${lat.toFixed(4)}, ${lng.toFixed(4)}`)
                           )
                         )
                         , React.createElement('div', { className: "h-[220px] sm:h-[260px] w-full"}
                           , React.createElement(MapContainer, { center: [lat, lng], zoom: 13, scrollWheelZoom: false, style: { height: "100%", width: "100%" }}
-                            , React.createElement(TileLayer, { attribution: 'Â© OpenStreetMap contributors', url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"})
+                            , React.createElement(TileLayer, { attribution: '© OpenStreetMap contributors', url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"})
                             , React.createElement(Marker, { position: [lat, lng]}
                               , React.createElement(Popup, {}, p.project_name || "Project")
                             )
@@ -1680,28 +1731,28 @@ export default function ProjectManagement() {
                     )
 
                     /* Activities */
-                    , React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white shadow-none overflow-hidden"}
-                      , React.createElement('div', { className: "flex items-center justify-between gap-3 px-4 py-3 border-b bg-slate-50"}
+                    , React.createElement('div', { className: "rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden"}
+                      , React.createElement('div', { className: "flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20"}
                         , React.createElement('div', { className: "flex items-center gap-3"}
-                          , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-[#054332]/10 text-[#054332] flex items-center justify-center"}
+                          , React.createElement('div', { className: "h-7.5 w-7.5 rounded-lg bg-[#054332]/10 text-[#054332] dark:bg-emerald-950/30 dark:text-emerald-400 flex items-center justify-center shadow-sm"}
                             , React.createElement(FolderKanban, { className: "h-3.5 w-3.5"})
                           )
                           , React.createElement('div', {}
-                            , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, "Activities")
-                            , React.createElement('p', { className: "text-xs text-slate-400"}, "Imported from Primavera XER")
+                            , React.createElement('p', { className: "text-sm font-bold text-slate-700 dark:text-slate-200"}, "Activities")
+                            , React.createElement('p', { className: "text-xs text-slate-400 dark:text-slate-500"}, "Imported from Primavera XER")
                           )
                         )
                         , !selectedProjectActivitiesLoading && selectedProjectActivities.length > 0 && (
-                          React.createElement('span', { className: "text-xs font-bold text-[#054332] bg-[#054332]/8 px-2.5 py-1 rounded-full"}
+                          React.createElement('span', { className: "text-xs font-bold text-[#054332] dark:text-emerald-300 bg-[#054332]/8 dark:bg-emerald-950/55 px-2.5 py-1 rounded-full border border-[#054332]/15 dark:border-emerald-500/25"}
                             , selectedProjectActivities.length, " tasks"
                           )
                         )
                       )
-                      , React.createElement('div', { className: "divide-y max-h-[340px] overflow-y-auto scrollbar-thin"}
+                      , React.createElement('div', { className: "divide-y divide-slate-100 dark:divide-slate-800 max-h-[300px] overflow-y-auto scrollbar-thin"}
                         , selectedProjectActivitiesLoading ? (
                           React.createElement('div', { className: "flex items-center justify-center py-10 gap-3 text-slate-400"}
                             , React.createElement('div', { className: "h-4 w-4 rounded-full border-2 border-slate-300 border-t-[#054332] animate-spin"})
-                            , React.createElement('span', { className: "text-sm"}, "Loading activitiesâ€¦")
+                            , React.createElement('span', { className: "text-sm"}, "Loading activities…")
                           )
                         ) : selectedProjectActivities.length === 0 ? (
                           React.createElement('div', { className: "flex flex-col items-center justify-center py-12 text-slate-400"}
@@ -1712,18 +1763,18 @@ export default function ProjectManagement() {
                         ) : (
                           selectedProjectActivities.map((a, idx) => {
                             const prog = typeof a.progress === "number" ? Math.round(a.progress) : null;
-                            const progColor = prog === null ? "" : prog >= 100 ? "bg-emerald-500" : prog >= 50 ? "bg-amber-500" : "bg-slate-300";
+                            const progColor = prog === null ? "" : prog >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : prog >= 50 ? "bg-gradient-to-r from-amber-400 to-amber-500" : "bg-slate-300";
                             return (
-                              React.createElement('div', { key: a.id || a.activity_id || idx, className: "flex items-center gap-3 sm:gap-4 px-4 py-3 hover:bg-slate-50 transition-colors"}
-                                , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 text-[11px] font-bold tabular-nums"}, idx + 1)
+                              React.createElement('div', { key: a.id || a.activity_id || idx, className: "flex items-center gap-3 sm:gap-4 px-4 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"}
+                                , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0 text-[11px] font-bold tabular-nums"}, idx + 1)
                                 , React.createElement('div', { className: "flex-1 min-w-0"}
-                                  , React.createElement('p', { className: "text-sm font-semibold text-slate-800 truncate"}, a.activity_name || a.label || "â€”")
+                                  , React.createElement('p', { className: "text-sm font-semibold text-slate-800 dark:text-slate-200 truncate"}, a.activity_name || a.label || "—")
                                   , prog !== null && (
-                                    React.createElement('div', { className: "mt-1.5 flex items-center gap-2"}
-                                      , React.createElement('div', { className: "flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"}
+                                    React.createElement('div', { className: "mt-2 flex items-center gap-2"}
+                                      , React.createElement('div', { className: "flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"}
                                         , React.createElement('div', { className: `h-full rounded-full ${progColor}`, style: { width: `${prog}%` }})
                                       )
-                                      , React.createElement('span', { className: "text-[10px] font-bold tabular-nums text-slate-500 shrink-0"}, prog, "%")
+                                      , React.createElement('span', { className: "text-[10px] font-bold tabular-nums text-slate-500 dark:text-slate-400 shrink-0"}, prog, "%")
                                     )
                                   )
                                 )
@@ -1735,8 +1786,8 @@ export default function ProjectManagement() {
                     )
                   )
 
-                  /* â”€â”€ FINANCIAL DETAILS TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-                  , React.createElement(TabsContent, { value: "financial", className: "mt-5"}
+                  /* ── FINANCIAL DETAILS TAB ─────────── */
+                  , React.createElement(TabsContent, { value: "financial", className: "mt-4 space-y-4 flex-1 overflow-y-auto pr-1 pb-4 scrollbar-thin"}
                     , !hasFinancials ? (
                       React.createElement('div', { className: "flex flex-col items-center justify-center py-16 text-slate-400"}
                         , React.createElement(Wallet, { className: "h-10 w-10 mb-3 opacity-25"})
@@ -1747,9 +1798,9 @@ export default function ProjectManagement() {
                       React.createElement('div', { className: "space-y-4"}
                         , showCoreBudget && (
                           React.createElement(FinSection, { title: "Project Budget (PKR M)", icon: Wallet, accent: "emerald"}
-                            , React.createElement(FinStat, { label: "Total Budget",   value: _nullishCoalesce(p.total_budget, () => ( "â€”"))})
-                            , React.createElement(FinStat, { label: "Total Consumed", value: _nullishCoalesce(p.total_consume, () => ( "â€”"))})
-                            , React.createElement(FinStat, { label: "Remaining",      value: _nullishCoalesce(p.remaining_budget, () => ( "â€”"))})
+                            , React.createElement(FinStat, { label: "Total Budget",   value: _nullishCoalesce(p.total_budget, () => ( "—"))})
+                            , React.createElement(FinStat, { label: "Total Consumed", value: _nullishCoalesce(p.total_consume, () => ( "—"))})
+                            , React.createElement(FinStat, { label: "Remaining",      value: _nullishCoalesce(p.remaining_budget, () => ( "—"))})
                           )
                         )
                         , showAllocation && (
@@ -1774,14 +1825,14 @@ export default function ProjectManagement() {
                           )
                         )
                         , showPifra && (
-                          React.createElement('div', { className: "rounded-lg border border-slate-200/60 bg-white shadow-none overflow-hidden"}
-                            , React.createElement('div', { className: "flex items-center gap-3 px-4 py-3 border-b bg-violet-50/60"}
-                              , React.createElement('div', { className: "h-7 w-7 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center"}
+                          React.createElement('div', { className: "rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md"}
+                            , React.createElement('div', { className: "flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-violet-50/60 dark:bg-violet-950/20"}
+                              , React.createElement('div', { className: "h-7.5 w-7.5 rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-200 flex items-center justify-center shadow-sm"}
                                 , React.createElement(Wallet, { className: "h-3.5 w-3.5"})
                               )
-                              , React.createElement('p', { className: "text-sm font-bold text-slate-700"}, "PIFRA Utilization (PKR M)")
+                              , React.createElement('p', { className: "text-sm font-bold text-slate-800 dark:text-slate-100"}, "PIFRA Utilization (PKR M)")
                             )
-                            , React.createElement('div', { className: "grid grid-cols-4 divide-x"}
+                            , React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 dark:divide-slate-800"}
                               , React.createElement(FinStat, { label: "Capital", value: p.pifra_utilization_capital_cost})
                               , React.createElement(FinStat, { label: "Revenue", value: p.pifra_utilization_revenue_cost})
                               , React.createElement(FinStat, { label: "Total",   value: p.pifra_utilization_total_cost})
@@ -1789,7 +1840,7 @@ export default function ProjectManagement() {
                                 , React.createElement('p', { className: "text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1 leading-tight flex items-center gap-1"}
                                   , React.createElement(CalendarDays, { className: "h-3 w-3"}), "Date"
                                 )
-                                , React.createElement('p', { className: "text-sm font-bold text-slate-800"}, p.pifra_utilization_date ? String(p.pifra_utilization_date).slice(0, 10) : "â€”")
+                                , React.createElement('p', { className: "text-sm font-bold text-slate-800 dark:text-slate-200"}, p.pifra_utilization_date ? String(p.pifra_utilization_date).slice(0, 10) : "—")
                               )
                             )
                           )
@@ -1809,6 +1860,7 @@ export default function ProjectManagement() {
             )
           );
         })()
+
 
       /* Add Project Dialog (also used as full-page on /project-management/create) */
       , React.createElement(Dialog, {

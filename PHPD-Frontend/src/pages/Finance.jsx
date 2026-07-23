@@ -770,7 +770,7 @@ export default function Finance() {
             , React.createElement(Card, { className: "border-2 transition-colors hover:border-primary/60", __self: this, __source: {fileName: _jsxFileName, lineNumber: 932}}
               , React.createElement(CardHeader, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 933}}
                 , React.createElement(CardTitle, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 934}}, "Financial flow curve"  )
-                , React.createElement(CardDescription, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 935}}, "Allocation → P&D release → Spending release → PIFRA utilization (Capital / Revenue / Total), based on current selection."
+                
 
 
                 )
