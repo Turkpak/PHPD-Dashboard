@@ -93,10 +93,15 @@ urlpatterns = [
     path("add-delay-log/", ActivityDelayLogCreateView.as_view()),
     path("list-delay-log/", ActivityDelayLogListView.as_view()),
     path("update-delay-log/<int:pk>/", ActivityDelayLogUpdateView.as_view()),
-path(
-    "dashboard/<str:page>/", DashboardPageDataView.as_view(),
-    name="dashboard-page-data",
-),
+    path(
+        "gis-project-status/",
+        GISProjectStatusView.as_view(),
+        name="gis-project-status",
+    ),
+    path(
+        "dashboard/<str:page>/", DashboardPageDataView.as_view(),
+        name="dashboard-page-data",
+    ),
 ]
 
 # if settings.DEBUG:

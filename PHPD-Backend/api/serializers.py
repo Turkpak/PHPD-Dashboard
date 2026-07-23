@@ -539,3 +539,30 @@ class GISProjectSerializer(serializers.ModelSerializer):
             "longitude",
             "geom",
         ]
+
+class GISProjectStatusSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "project_name",
+            "status",
+        ]
+
+    def get_status(self, obj):
+        activities = obj.activities.all()
+
+        if not activities.exists():
+            return "pending"
+
+        # Any delayed activity?
+        if activities.filter(activitydelaylog__isnull=False).exists():
+            return "in_delay"
+
+        # Any started activity?
+        if activities.filter(progress__gt=0).exists():
+            return "in_progress"
+
+        return "pending"

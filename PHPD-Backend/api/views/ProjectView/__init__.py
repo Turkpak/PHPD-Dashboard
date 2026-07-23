@@ -6,3 +6,4 @@ from .ProjectSummaryView import *
 from .TopProject import *
 from .ProjectUpdateLog import *
 from .GISProject import *
+from .GISProjectStatus import *
