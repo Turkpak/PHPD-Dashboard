@@ -67,7 +67,11 @@ router.register(r'delete-progress-image', DeleteProgressImageView, basename='del
 router.register(r'create-project-document', ProjectDocumentCreateView, basename='create-project-document')
 router.register(r'list-project-document', ListProjectDocumentView, basename='list-project-document')
 router.register(r'update-project-document', UpdateProjectDocumentView, basename='update-project-document')
-
+router.register(
+    r'gis-project',
+    GISProjectView,
+    basename='gis-project'
+)
 
 # Mounted under /api/ from server.urls — single include keeps routes at /api/<resource>/.
 urlpatterns = [
