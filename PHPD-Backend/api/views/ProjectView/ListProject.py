@@ -84,13 +84,17 @@ class ListProjectView(viewsets.ViewSet):
         try:
             project_id = request.query_params.get("id")
 
-            activity_queryset = (
-                ProjectActivity.objects
-                .select_related("parent")
-                .prefetch_related("delay_logs")
-            )
-
+            # ============================
+            # SINGLE PROJECT DETAIL
+            # ============================
             if project_id:
+
+                activity_queryset = (
+                    ProjectActivity.objects
+                    .select_related("parent")
+                    .prefetch_related("delay_logs")
+                )
+
                 project = (
                     Project.objects
                     .select_related(
@@ -127,6 +131,11 @@ class ListProjectView(viewsets.ViewSet):
                     http_status=status.HTTP_200_OK,
                 ).create_response()
 
+
+            # ============================
+            # PROJECT LIST (LIGHTWEIGHT)
+            # ============================
+
             queryset = (
                 Project.objects
                 .select_related(
@@ -136,25 +145,21 @@ class ListProjectView(viewsets.ViewSet):
                     "tehsil",
                     "tehsil__circle",
                 )
-                .prefetch_related(
-                    "stakeholder",
-                    Prefetch(
-                        "activities",
-                        queryset=activity_queryset,
-                    ),
-                )
                 .order_by("id")
             )
 
-            serializer = ProjectSerializer(queryset, many=True)
+            serializer = ProjectListSerializer(
+                queryset,
+                many=True
+            )
 
-    
             return ApiResponse(
                 status=status.HTTP_200_OK,
                 message="All Projects Found.",
                 data=serializer.data,
                 http_status=status.HTTP_200_OK,
             ).create_response()
+
 
         except serializers.ValidationError as e:
             return ApiResponse(
@@ -163,6 +168,7 @@ class ListProjectView(viewsets.ViewSet):
                 data=e.detail,
                 http_status=status.HTTP_400_BAD_REQUEST,
             ).create_response()
+
 
         except Exception:
             print("=" * 80)
