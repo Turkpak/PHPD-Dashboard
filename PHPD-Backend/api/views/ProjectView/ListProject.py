@@ -67,9 +67,9 @@
     #             data=str(e),
     #             http_status=status.HTTP_500_INTERNAL_SERVER_ERROR
     #         ).create_response()
+
 from ..common_imports import *
 from django.db.models import Prefetch
-import traceback
 
 
 class ListProjectView(viewsets.ViewSet):
@@ -84,16 +84,7 @@ class ListProjectView(viewsets.ViewSet):
         try:
             project_id = request.query_params.get("id")
 
-            # ============================
-            # SINGLE PROJECT DETAIL
-            # ============================
             if project_id:
-
-                activity_queryset = (
-                    ProjectActivity.objects
-                    .select_related("parent")
-                    .prefetch_related("delay_logs")
-                )
 
                 project = (
                     Project.objects
@@ -102,13 +93,12 @@ class ListProjectView(viewsets.ViewSet):
                         "district",
                         "district__circle",
                         "tehsil",
-                        "tehsil__circle",
                     )
                     .prefetch_related(
                         "stakeholder",
                         Prefetch(
                             "activities",
-                            queryset=activity_queryset,
+                            queryset=ProjectActivity.objects.select_related("parent")
                         ),
                     )
                     .filter(id=project_id)
@@ -131,11 +121,6 @@ class ListProjectView(viewsets.ViewSet):
                     http_status=status.HTTP_200_OK,
                 ).create_response()
 
-
-            # ============================
-            # PROJECT LIST (LIGHTWEIGHT)
-            # ============================
-
             queryset = (
                 Project.objects
                 .select_related(
@@ -143,15 +128,13 @@ class ListProjectView(viewsets.ViewSet):
                     "district",
                     "district__circle",
                     "tehsil",
-                    "tehsil__circle",
                 )
-                .order_by("id")
+                .prefetch_related(
+                    "stakeholder",
+                )
             )
 
-            serializer = ProjectListSerializer(
-                queryset,
-                many=True
-            )
+            serializer = ProjectSerializer(queryset, many=True)
 
             return ApiResponse(
                 status=status.HTTP_200_OK,
@@ -159,7 +142,6 @@ class ListProjectView(viewsets.ViewSet):
                 data=serializer.data,
                 http_status=status.HTTP_200_OK,
             ).create_response()
-
 
         except serializers.ValidationError as e:
             return ApiResponse(
@@ -169,10 +151,10 @@ class ListProjectView(viewsets.ViewSet):
                 http_status=status.HTTP_400_BAD_REQUEST,
             ).create_response()
 
-
-        except Exception:
-            print("=" * 80)
-            print("LIST PROJECT ERROR")
-            traceback.print_exc()
-            print("=" * 80)
-            raise
+        except Exception as e:
+            return ApiResponse(
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Server error.",
+                data=str(e),
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ).create_response()
