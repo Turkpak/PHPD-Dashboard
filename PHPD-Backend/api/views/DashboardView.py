@@ -275,68 +275,53 @@ def _legacy_hierarchy_payloads(project_rows: list[dict]):
     return divisions, districts, tehsils
 
 
+import time
+
 class DashboardPageDataView(APIView):
-    permission_classes = [IsAuthenticated]
-    VALID_PAGES = {"zones", "circles", "tehsils", "projects"}
 
     def get(self, request, page):
-        if page not in self.VALID_PAGES:
-            return Response({"detail": "Invalid dashboard page."}, status=404)
 
-        activity_queryset = (
-            ProjectActivity.objects
-            .select_related("parent")
-            .prefetch_related("delay_logs")
-            .order_by("id")
-        )
+        total = time.perf_counter()
+
+        t = time.perf_counter()
+
         projects = list(
             Project.objects
-            .select_related("zone", "district", "district__circle", "tehsil", "tehsil__circle")
-            .prefetch_related("stakeholder", Prefetch("activities", queryset=activity_queryset))
-            .order_by("id")
+            .select_related(
+                "zone",
+                "district",
+                "district__circle",
+                "tehsil",
+                "tehsil__circle"
+            )
+            .prefetch_related(
+                "stakeholder",
+                Prefetch("activities", queryset=activity_queryset)
+            )
         )
 
+        print("Projects:", time.perf_counter() - t)
+
+        t = time.perf_counter()
+
         project_rows = [_project_metrics(project) for project in projects]
+
+        print("Metrics:", time.perf_counter() - t)
+
+        t = time.perf_counter()
+
         hierarchy_rows = _all_hierarchy_rows(page, project_rows)
-        summary = _page_summary(page, hierarchy_rows, project_rows)
-        best_projects = _top_projects(project_rows, 6)
-        top_hierarchy = _top_hierarchy(hierarchy_rows, 5)
-        divisions, districts, tehsils = _legacy_hierarchy_payloads(project_rows)
 
-        serialized_projects = ProjectSerializer(projects, many=True, context={"request": request}).data
-        metrics_by_id = {row["id"]: row for row in project_rows}
-        projects_payload = []
-        for project_data in serialized_projects:
-            row = dict(project_data)
-            metrics = metrics_by_id.get(row["id"], {})
-            row.update({
-                "physical_progress": metrics.get("physical_progress", 0),
-                "financial_progress": metrics.get("financial_progress", 0),
-                "overall_progress": metrics.get("overall_progress", 0),
-                "status": metrics.get("status", "pending"),
-                "has_delay": metrics.get("has_delay", False),
-            })
-            projects_payload.append(row)
+        print("Hierarchy:", time.perf_counter() - t)
 
-        return Response({
-            "page": page,
-            "summary": summary,
-            "financial_chart": {
-                "planned": 100.0,
-                "actual": summary["financial_progress"],
-                "variance": round(max(0.0, 100.0 - summary["financial_progress"]), 2),
-            },
-            "physical_chart": {
-                "planned": 100.0,
-                "actual": summary["physical_progress"],
-                "variance": round(max(0.0, 100.0 - summary["physical_progress"]), 2),
-            },
-            "best_performing_projects": best_projects,
-            "top_hierarchy": top_hierarchy,
-            "map_projects": project_rows,
-            "divisions": divisions,
-            "districts": districts,
-            "tehsils": tehsils,
-            "projects": projects_payload,
-            "project_gantt_all": [],
-        })
+        t = time.perf_counter()
+
+        serialized_projects = ProjectSerializer(
+            projects,
+            many=True,
+            context={"request": request}
+        ).data
+
+        print("Serializer:", time.perf_counter() - t)
+
+        print("TOTAL:", time.perf_counter() - total)
