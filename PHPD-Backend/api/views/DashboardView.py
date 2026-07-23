@@ -283,69 +283,32 @@ class DashboardPageDataView(APIView):
         if page not in self.VALID_PAGES:
             return Response({"detail": "Invalid dashboard page."}, status=404)
 
-        # -----------------------------
-        # Prefetch all activities once
-        # -----------------------------
         activity_queryset = (
             ProjectActivity.objects
             .select_related("parent")
             .prefetch_related("delay_logs")
             .order_by("id")
         )
-
-        # -----------------------------
-        # Fetch projects with related data
-        # -----------------------------
         projects = list(
             Project.objects
-            .select_related(
-                "zone",
-                "district",
-                "district__circle",
-                "tehsil",
-                "tehsil__circle",
-            )
-            .prefetch_related(
-                "stakeholder",
-                Prefetch(
-                    "activities",
-                    queryset=activity_queryset,
-                ),
-            )
+            .select_related("zone", "district", "district__circle", "tehsil", "tehsil__circle")
+            .prefetch_related("stakeholder", Prefetch("activities", queryset=activity_queryset))
             .order_by("id")
         )
 
-        # -----------------------------
-        # Calculate project metrics
-        # -----------------------------
         project_rows = [_project_metrics(project) for project in projects]
-
         hierarchy_rows = _all_hierarchy_rows(page, project_rows)
         summary = _page_summary(page, hierarchy_rows, project_rows)
-
         best_projects = _top_projects(project_rows, 6)
         top_hierarchy = _top_hierarchy(hierarchy_rows, 5)
-
         divisions, districts, tehsils = _legacy_hierarchy_payloads(project_rows)
 
-        # -----------------------------
-        # Serialize projects
-        # -----------------------------
-        serialized_projects = ProjectSerializer(
-            projects,
-            many=True,
-            context={"request": request},
-        ).data
-
+        serialized_projects = ProjectSerializer(projects, many=True, context={"request": request}).data
         metrics_by_id = {row["id"]: row for row in project_rows}
-
         projects_payload = []
-
         for project_data in serialized_projects:
             row = dict(project_data)
-
             metrics = metrics_by_id.get(row["id"], {})
-
             row.update({
                 "physical_progress": metrics.get("physical_progress", 0),
                 "financial_progress": metrics.get("financial_progress", 0),
@@ -353,48 +316,27 @@ class DashboardPageDataView(APIView):
                 "status": metrics.get("status", "pending"),
                 "has_delay": metrics.get("has_delay", False),
             })
-
             projects_payload.append(row)
 
-        # -----------------------------
-        # Return response
-        # -----------------------------
         return Response({
             "page": page,
-
             "summary": summary,
-
             "financial_chart": {
                 "planned": 100.0,
                 "actual": summary["financial_progress"],
-                "variance": round(
-                    max(0.0, 100.0 - summary["financial_progress"]),
-                    2,
-                ),
+                "variance": round(max(0.0, 100.0 - summary["financial_progress"]), 2),
             },
-
             "physical_chart": {
                 "planned": 100.0,
                 "actual": summary["physical_progress"],
-                "variance": round(
-                    max(0.0, 100.0 - summary["physical_progress"]),
-                    2,
-                ),
+                "variance": round(max(0.0, 100.0 - summary["physical_progress"]), 2),
             },
-
             "best_performing_projects": best_projects,
-
             "top_hierarchy": top_hierarchy,
-
             "map_projects": project_rows,
-
             "divisions": divisions,
-
             "districts": districts,
-
             "tehsils": tehsils,
-
             "projects": projects_payload,
-
             "project_gantt_all": [],
         })
