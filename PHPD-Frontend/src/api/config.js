@@ -33,9 +33,29 @@ export function apiUrl(path) {
  * When dev uses Vite proxy (`API_BASE_URL === ""`), media is NOT under `/api`,
  * so we fall back to the backend origin.
  */
+// export function mediaUrl(path) {
+//   const p = path.startsWith("/") ? path : `/${path}`;
+//   // Prefer localhost:8000 in dev to match browser host and avoid edge DNS issues on Windows.
+//   const base = API_BASE_URL || DEFAULT_BACKEND_URL;
+//   return `${base}${p}`;
+// }
+
+
 export function mediaUrl(path) {
+  if (!path) return "";
+
+  // Keep absolute URLs unchanged.
+  if (/^https?:\/\//i.test(path)) return path;
+
   const p = path.startsWith("/") ? path : `/${path}`;
-  // Prefer localhost:8000 in dev to match browser host and avoid edge DNS issues on Windows.
+
+  // Production: use the current website's HTTPS origin.
+  if (import.meta.env.PROD) {
+    return `${window.location.origin}${p}`;
+  }
+
+  // Development: use the configured backend.
   const base = API_BASE_URL || DEFAULT_BACKEND_URL;
   return `${base}${p}`;
 }
+
